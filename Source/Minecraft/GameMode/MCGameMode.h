@@ -15,15 +15,16 @@ class MINECRAFT_API AMCGameMode : public AGameMode
 	GENERATED_BODY()
 
 public:
-	virtual void Tick(float DeltaSeconds) override;
-	
+	virtual void Tick(float DeltaTime) override;
+	virtual void StartPlay() override;
+
 private:
 	bool UpdateLocation();
 	void AddChunk();
 	void RemoveChunk();
 
 private:
-	FVector2D ChunkLocation; // 实际是下标
+	FVector2D ChunkLocation = FVector2D::ZeroVector; // 实际是下标
 
 	UPROPERTY(EditAnywhere)
 	float ChunkSize = 1600.0f;

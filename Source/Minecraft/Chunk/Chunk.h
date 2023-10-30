@@ -19,6 +19,5 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* CubeMesh;
+	float BlockSize = 100.0f;
 };

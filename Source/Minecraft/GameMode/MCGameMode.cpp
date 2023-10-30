@@ -6,20 +6,29 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "MineCraft/Chunk/Chunk.h"
 
-void AMCGameMode::Tick(float DeltaSeconds)
+void AMCGameMode::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaSeconds);
+	Super::Tick(DeltaTime);
 
 	bool bIsUpdated = UpdateLocation();
-	if (!bIsUpdated) return;
+	if (bIsUpdated)
+	{
+		AddChunk();
+		RemoveChunk();
+	}
+}
+
+void AMCGameMode::StartPlay()
+{
+	Super::StartPlay();
 
 	AddChunk();
-	RemoveChunk();
 }
 
 bool AMCGameMode::UpdateLocation()
 {
 	FVector2D NewLocation2D = FVector2D(UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation());
+	UE_LOG(LogTemp, Warning, TEXT("%f, %f"), NewLocation2D.X, NewLocation2D.Y);
 	if (!UKismetMathLibrary::EqualEqual_Vector2DVector2D(ChunkLocation * ChunkSize, NewLocation2D, 100.0f))
 	{
 		ChunkLocation = (NewLocation2D / ChunkSize);
@@ -35,11 +44,11 @@ void AMCGameMode::AddChunk()
 	float y = ChunkLocation.Y;
 	float range = RenderingRange / ChunkSize;
 
-	int maxX = x + range;
-	int maxY = y + range;
-	for (int i = x - range; i <= maxX; ++i)
+	int32 maxX = x + range;
+	int32 maxY = y + range;
+	for (int32 i = x - range; i <= maxX; ++i)
 	{
-		for (int j = y - range; j <= maxY; ++j)
+		for (int32 j = y - range; j <= maxY; ++j)
 		{
 			FVector2D ActualLocation(i * ChunkSize, j * ChunkSize);
 			if (AllChunks.Contains(ActualLocation)) continue;
@@ -63,14 +72,21 @@ void AMCGameMode::AddChunk()
 
 void AMCGameMode::RemoveChunk()
 {
-	for (auto& elem : AllChunks)
+	TArray<FVector2D> ElementsToRemove;
+
+	for (auto& Elem : AllChunks)
 	{
 		FVector2D Location = ChunkLocation * ChunkSize;
-		double distance = UKismetMathLibrary::Distance2D(Location, elem.Key);
+		double distance = UKismetMathLibrary::Distance2D(Location, Elem.Key);
 		if (distance > RenderingRange)
 		{
-			elem.Value->Destroy();
-			AllChunks.Remove(elem.Key);
+			ElementsToRemove.Add(Elem.Key);
+			Elem.Value->Destroy();
 		}
+	}
+
+	for (const auto& Element : ElementsToRemove)
+	{
+		AllChunks.Remove(Element);
 	}
 }
