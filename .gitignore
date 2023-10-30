@@ -1,0 +1,18 @@
+# 忽略编译生成的文件
+Saved/
+Intermediate/
+
+# 忽略编辑器自动生成的文件
+Binaries/
+DerivedDataCache/
+
+# Visual Studio files and folder
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.user
+*.vcxproj.filters
+*.csproj
+
+
+
