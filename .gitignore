@@ -14,5 +14,6 @@ DerivedDataCache/
 *.vcxproj.filters
 *.csproj
 
-
-
+Content/Characters
+Content/ThirdPerson
+Content/LevelPrototyping
