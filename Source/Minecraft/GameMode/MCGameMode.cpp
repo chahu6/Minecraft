@@ -5,6 +5,18 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "MineCraft/Chunk/Chunk.h"
+#include "SimplexNoiseLibrary.h"
+
+void AMCGameMode::StartPlay()
+{
+	Super::StartPlay();
+	
+	// 设置随机数种子
+	USimplexNoiseLibrary::SetNoiseSeed(Seed);
+
+	AddChunk();
+}
+
 
 void AMCGameMode::Tick(float DeltaTime)
 {
@@ -18,17 +30,9 @@ void AMCGameMode::Tick(float DeltaTime)
 	}
 }
 
-void AMCGameMode::StartPlay()
-{
-	Super::StartPlay();
-
-	AddChunk();
-}
-
 bool AMCGameMode::UpdateLocation()
 {
 	FVector2D NewLocation2D = FVector2D(UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation());
-	UE_LOG(LogTemp, Warning, TEXT("%f, %f"), NewLocation2D.X, NewLocation2D.Y);
 	if (!UKismetMathLibrary::EqualEqual_Vector2DVector2D(ChunkLocation * ChunkSize, NewLocation2D, 100.0f))
 	{
 		ChunkLocation = (NewLocation2D / ChunkSize);
