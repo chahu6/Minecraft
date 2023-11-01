@@ -25,6 +25,17 @@ void AChunk::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	CreateBlock(0, 32);
+}
+
+void AChunk::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+void AChunk::CreateBlock(float rangeMin, float rangeMax, float inFactor)
+{
 	for (int32 x = -7; x <= 8; ++x)
 	{
 		for (int32 y = -7; y <= 8; ++y)
@@ -35,10 +46,10 @@ void AChunk::BeginPlay()
 			/*
 			int32 random = UKismetMathLibrary::RandomIntegerInRange(0, 2);*/
 			FVector ActorLocation = GetActorLocation();
-			
+
 			float Noise_X = LocationX + ActorLocation.X;
 			float Noise_Y = LocationY + ActorLocation.Y;
-			float LocationZ = USimplexNoiseLibrary::SimplexNoiseInRange2D(Noise_X, Noise_Y, 0, 32, 0.0001f);
+			float LocationZ = USimplexNoiseLibrary::SimplexNoiseInRange2D(Noise_X, Noise_Y, rangeMin, rangeMax, inFactor);
 			LocationZ = FMath::Floor(LocationZ);
 			LocationZ = LocationZ * BlockSize - 50.0f;
 
@@ -48,11 +59,5 @@ void AChunk::BeginPlay()
 			Block->AddInstance(transform);
 		}
 	}
-}
-
-void AChunk::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 

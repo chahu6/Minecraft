@@ -19,6 +19,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	void CreateBlock(float rangeMin, float rangeMax, float inFactor = 0.0001f);
+
+private:
 	UPROPERTY(VisibleAnywhere)
 	UInstancedStaticMeshComponent* Block;
 
