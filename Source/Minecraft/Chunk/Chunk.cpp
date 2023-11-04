@@ -6,7 +6,7 @@
 #include "SimplexNoiseLibrary.h"
 
 #define GetLocationFromIndex(x) ((x) * BlockSize - 50.0f)
-#define GetIndex(x, y, z)				((x) + (y * 16) + (z * 256))
+#define GetBlocksIndex(x, y, z)				((x) + (y * 16) + (z * 256))
 
 constexpr int32 CHUNK_SIZE		=		16,
 				CHUNK_AREA		=		16 * 16,
@@ -21,6 +21,12 @@ AChunk::AChunk()
 	RootComponent = ProduralMesh;
 	// 是否投射阴影
 	ProduralMesh->SetCastShadow(true);
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTableAsset(TEXT("/Script/Engine.DataTable'/Game/Blueprints/Datas/DataTable/DT_BlockDataTable.DT_BlockDataTable'"));
+	if (DataTableAsset.Succeeded())
+	{
+		DataTable = DataTableAsset.Object;
+	}
 }
 
 void AChunk::BeginPlay()
@@ -57,14 +63,20 @@ void AChunk::BuildBlock(int32 X, int32 Y, int32 Z)
 		FVector Position(LocationX, LocationY, LocationZ);
 		if (IsCreateFaceInDirection(FaceType, X, Y, Z))
 		{
-			BuildFace(FaceType, Position);
+			BuildFace(FaceType, Position, StaticCast<uint8>(Blocks[GetBlocksIndex(X, Y, Z)]));
 		}
 	}
 }
 
-void AChunk::BuildFace(EFaceType FaceType, const FVector& Center)
+void AChunk::BuildFace(EFaceType FaceType, const FVector& Center, uint8 BlockID)
 {
-	int32 index = Vertices.Num();
+	FMeshData TempMeshData;
+	if (MeshDatas.Find(BlockID))
+	{
+		TempMeshData = MeshDatas[BlockID];
+	}
+
+	int32 index = TempMeshData.Vertices.Num();
 
 	FVector FaceCenter;
 	FVector Up;
@@ -125,40 +137,42 @@ void AChunk::BuildFace(EFaceType FaceType, const FVector& Center)
 	FVector CenterPosition = Center + FaceCenter;
 
 	// 顶点
-	Vertices.Add(CenterPosition - Up * 50.0f + Right * 50.0f);
-	Vertices.Add(CenterPosition - Up * 50.0f - Right * 50.0f);
-	Vertices.Add(CenterPosition + Up * 50.0f - Right * 50.0f);
-	Vertices.Add(CenterPosition + Up * 50.0f + Right * 50.0f);
+	TempMeshData.Vertices.Add(CenterPosition - Up * 50.0f + Right * 50.0f);
+	TempMeshData.Vertices.Add(CenterPosition - Up * 50.0f - Right * 50.0f);
+	TempMeshData.Vertices.Add(CenterPosition + Up * 50.0f - Right * 50.0f);
+	TempMeshData.Vertices.Add(CenterPosition + Up * 50.0f + Right * 50.0f);
 
 	// 索引
 	if (Reversed)
 	{
-		Triangles.Add(index + 0);
-		Triangles.Add(index + 1);
-		Triangles.Add(index + 2);
-		Triangles.Add(index + 2);
-		Triangles.Add(index + 3);
-		Triangles.Add(index + 0);
+		TempMeshData.Triangles.Add(index + 0);
+		TempMeshData.Triangles.Add(index + 1);
+		TempMeshData.Triangles.Add(index + 2);
+		TempMeshData.Triangles.Add(index + 2);
+		TempMeshData.Triangles.Add(index + 3);
+		TempMeshData.Triangles.Add(index + 0);
 	}
 	else
 	{
-		Triangles.Add(index + 1);
-		Triangles.Add(index + 0);
-		Triangles.Add(index + 3);
-		Triangles.Add(index + 3);
-		Triangles.Add(index + 2);
-		Triangles.Add(index + 1);
+		TempMeshData.Triangles.Add(index + 1);
+		TempMeshData.Triangles.Add(index + 0);
+		TempMeshData.Triangles.Add(index + 3);
+		TempMeshData.Triangles.Add(index + 3);
+		TempMeshData.Triangles.Add(index + 2);
+		TempMeshData.Triangles.Add(index + 1);
 	}
 
 	// 顶点颜色
 	float Direction = UKismetMathLibrary::MapRangeClamped(StaticCast<float>(FaceType), 0.0, 5.0, 0.0, 1.0);
-	VertexColors.Add({0.0f, 0.0f, 0.0f, Direction});
-	VertexColors.Add({0.0f, 0.0f, 0.0f, Direction});
-	VertexColors.Add({0.0f, 0.0f, 0.0f, Direction});
-	VertexColors.Add({0.0f, 0.0f, 0.0f, Direction});
+	TempMeshData.VertexColors.Add({0.0f, 0.0f, 0.0f, Direction});
+	TempMeshData.VertexColors.Add({0.0f, 0.0f, 0.0f, Direction});
+	TempMeshData.VertexColors.Add({0.0f, 0.0f, 0.0f, Direction});
+	TempMeshData.VertexColors.Add({0.0f, 0.0f, 0.0f, Direction});
 
 	const FVector2D bUVs[] = { FVector2D(0.0, 1.0),FVector2D(1.0, 1.0) ,FVector2D(1.0, 0.0) ,FVector2D(0.0, 0.0) };
-	UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
+	TempMeshData.UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
+
+	MeshDatas.Add(BlockID, TempMeshData);
 }
 
 void AChunk::CollectBlocksType(float rangeMin, float rangeMax, float inFactor)
@@ -184,14 +198,8 @@ void AChunk::CollectBlocksType(float rangeMin, float rangeMax, float inFactor)
 
 			for (int32 height = 0; height < 256; ++height)
 			{
-				if (height <= Noise_Z)
-				{
-					Blocks[GetIndex(XOffset, YOffset, height)] = EBlockType::Stone;
-				}
-				else
-				{
-					Blocks[GetIndex(XOffset, YOffset, height)] = EBlockType::Air;
-				}
+				uint8 BlockID = CalcBlockID(height, Noise_Z);
+				Blocks[GetBlocksIndex(XOffset, YOffset, height)] = StaticCast<EBlockType>(BlockID);
 			}
 		}
 	}
@@ -205,7 +213,7 @@ void AChunk::GenerateBlock()
 		{
 			for (int32 Z = 0; Z < 256; ++Z)
 			{
-				if (Blocks[GetIndex(X, Y, Z)] > EBlockType::Air)
+				if (Blocks[GetBlocksIndex(X, Y, Z)] > EBlockType::Air)
 				{
 					BuildBlock(X, Y, Z);
 				}
@@ -217,8 +225,13 @@ void AChunk::GenerateBlock()
 void AChunk::DrawBlock()
 {
 	ProduralMesh->ClearAllMeshSections();
-	ProduralMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UV0, VertexColors, Tangents, true);
-	ProduralMesh->SetMaterial(0, MaterialInstance);
+	for (auto& Elem : MeshDatas)
+	{
+		ProduralMesh->CreateMeshSection_LinearColor(Elem.Key, Elem.Value.Vertices, Elem.Value.Triangles, Elem.Value.Normals, Elem.Value.UV0, Elem.Value.VertexColors, Elem.Value.Tangents, true);
+		FBlockInfoTableRow* BlockInfo = GetBlockInfo(Elem.Key);
+		if(BlockInfo)
+			ProduralMesh->SetMaterial(Elem.Key, BlockInfo->Material);
+	}
 }
 
 bool AChunk::IsCreateFaceInDirection(EFaceType FaceType, int32 X, int32 Y, int32 Z)
@@ -248,8 +261,34 @@ bool AChunk::IsCreateFaceInDirection(EFaceType FaceType, int32 X, int32 Y, int32
 	if (X < 0 || X >= CHUNK_SIZE || Y < 0 || Y >= CHUNK_SIZE || Z < 0 || Z >= 256)
 		return true;
 
-	if (Blocks[GetIndex(X, Y, Z)] == EBlockType::Air)
+	if (Blocks[GetBlocksIndex(X, Y, Z)] == EBlockType::Air)
 		return true;
 
 	return false;
+}
+
+uint8 AChunk::CalcBlockID(int32 ZValue, int32 MaxZValue)
+{
+	if (ZValue > MaxZValue)
+	{
+		return 1;
+	}
+	else
+	{
+		if (ZValue == 0)
+		{
+			return 5;
+		}
+		if (ZValue > MaxZValue - 3 && ZValue <= MaxZValue)
+		{
+			return 4;
+		}
+	}
+
+	return 2;
+}
+
+FBlockInfoTableRow* AChunk::GetBlockInfo(uint8 BlockID)
+{
+	return DataTable->FindRow<FBlockInfoTableRow>(FName(FString::FromInt(BlockID)), nullptr);
 }
