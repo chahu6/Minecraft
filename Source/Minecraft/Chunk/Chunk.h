@@ -24,12 +24,37 @@ enum class EBlockType : uint8
 	None = 0,
 
 	Air,
+	Stone,
 	Dirt,
 	Grass,
-	Stone,
-	Gravel,
+	BedRock,
 
 	EBT_MAX
+};
+
+USTRUCT(BlueprintType)
+struct FMeshData
+{
+	GENERATED_USTRUCT_BODY();
+
+	TArray<FVector> Vertices;
+	TArray<int32> Triangles;
+	TArray<FVector> Normals;
+	TArray<FVector2D> UV0;
+	TArray<FLinearColor> VertexColors;
+	TArray<FProcMeshTangent> Tangents;
+};
+
+USTRUCT(BlueprintType)
+struct FBlockInfoTableRow : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
+	FText Name;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
+	UMaterialInterface* Material;
 };
 
 UCLASS()
@@ -49,27 +74,26 @@ public:
 private:
 	void BuildChunk(float rangeMin, float rangeMax, float inFactor = 0.0001f);
 	void BuildBlock(int32 X, int32 Y, int32 Z);
-	void BuildFace(EFaceType FaceType, const FVector& Center);
+	void BuildFace(EFaceType FaceType, const FVector& Center, uint8 BlockID = 0);
 	void CollectBlocksType(float rangeMin, float rangeMax, float inFactor);
 	void GenerateBlock();
 	void DrawBlock();
 
 	bool IsCreateFaceInDirection(EFaceType FaceType, int32 X, int32 Y, int32 Z);
+
+	uint8 CalcBlockID(int32 ZValue, int32 MaxZValue);
+
+	FBlockInfoTableRow* GetBlockInfo(uint8 BlockID);
 private:
 	UPROPERTY(VisibleAnywhere)
 	UProceduralMeshComponent* ProduralMesh;
 
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInstance* MaterialInstance;
 private:
 	float BlockSize = 100.0f;
 
-	TArray<EBlockType> Blocks;
+	UPROPERTY()
+	UDataTable* DataTable;
 
-	TArray<FVector> Vertices;
-	TArray<int32> Triangles;
-	TArray<FVector> Normals;
-	TArray<FVector2D> UV0;
-	TArray<FLinearColor> VertexColors;
-	TArray<FProcMeshTangent> Tangents;
+	TArray<EBlockType> Blocks;
+	TMap<uint8, FMeshData> MeshDatas;
 };
