@@ -19,22 +19,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	bool UpdateLocation();
-	void AddChunk();
-	void RemoveChunk();
-
-private:
-	FVector2D ChunkLocation = FVector2D::ZeroVector; // 实际是下标
-
 	UPROPERTY(EditAnywhere)
-	int32 Seed;
-
-	UPROPERTY(EditAnywhere)
-	float ChunkSize = 1600.0f;
-
-	UPROPERTY(EditAnywhere)
-	float RenderingRange = 4800.0f;
-
-	UPROPERTY(EditAnywhere)
-	TMap<FVector2D, class AChunk*> AllChunks;
+	TSubclassOf<class AWorldManager> WorldManagerClass;
 };
