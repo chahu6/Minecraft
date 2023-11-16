@@ -3,22 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameMode.h"
+#include "GameFramework/GameModeBase.h"
 #include "MCGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MINECRAFT_API AMCGameMode : public AGameMode
+class MINECRAFT_API AMCGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-
-public:
-	virtual void StartPlay() override;
-	virtual void Tick(float DeltaTime) override;
-
-private:
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AWorldManager> WorldManagerClass;
+	
 };

@@ -7,12 +7,13 @@
 #include "Minecraft/MinecraftType/BlockType.h"
 #include "Chunk.generated.h"
 
+class ITerrainGenerator;
+
 UCLASS()
 class MINECRAFT_API AChunk : public AActor
 {
 	GENERATED_BODY()
 	
-	friend class AWorldManager;
 	friend class UChunkMeshComponent;
 public:	
 	AChunk();
@@ -20,33 +21,31 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	void Load(class ITerrainGenerator* Generator);
+	uint8 GetBlock(int32 X, int32 Y, int32 Z);
 
-	void DrawChunk();
+	void SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID);
 
-	void SetBlock(int32 X, int32 Y, int32 Z, EBlockType BlockType);
+	void Render();
 
-	EBlockType GetBlock(int32 X, int32 Y, int32 Z);
+	void Load(ITerrainGenerator* Generator);
+
+	void BuildChunkMesh();
 
 private:
 	UPROPERTY(VisibleAnywhere)
 	class UChunkMeshComponent* ChunkMesh;
 
 private:
-	TArray<EBlockType> Blocks;
+	TArray<uint8> Blocks;
 
 	int32 Seed = -1;
 	FString SlotName;
 
-	bool bIsChunkLoaded = false;
-	bool bIsRendering = false;
-
 public:
 	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }
-	FORCEINLINE bool HasLoaded() const noexcept { return bIsChunkLoaded; }
-	FORCEINLINE bool HasRendering() const noexcept { return bIsRendering; }
 };
