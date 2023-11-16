@@ -1,9 +1,12 @@
 #pragma once
 #include "TerrainGenerator.h"
 
+class AChunk;
+
 class FClassicOverWorldGenerator : public ITerrainGenerator
 {
 public:
+	FClassicOverWorldGenerator();
 	FClassicOverWorldGenerator(int32 NewSeed);
 
 	virtual void GenerateChunk(AChunk* Chunk) override;
@@ -20,5 +23,5 @@ private:
 
 	TArray<uint8> HeightMap;
 
-	class AChunk* CurrentChunk = nullptr;
+	AChunk* CurrentChunk = nullptr;
 };
