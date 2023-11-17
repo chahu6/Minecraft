@@ -29,6 +29,10 @@ private:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
+	void SwitchPerspectives();
+
+	void HandleEvent();
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	class USpringArmComponent* CameraBoom;
@@ -36,12 +40,31 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	class UCameraComponent* FollowCamera;
 
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	UCameraComponent* FirstCamera;
+
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	UCameraComponent* FreeCamera;
+
 	UPROPERTY(VisibleAnywhere, Category = "Collision")
 	class UBoxComponent* BoxCollision;
 
 	UPROPERTY(VisibleAnywhere)
 	class UFloatingPawnMovement* FloatingPawnMovement;
 
+	UPROPERTY(VisibleAnywhere)
+	USkeletalMeshComponent* Mesh;
+
+private:
+	enum class EPerspective : uint8
+	{
+		First,
+		Third,
+		Free
+	};
+
+	EPerspective Perspective = EPerspective::Third;
+
 public:
-	FORCEINLINE UCameraComponent* GetCamera() const noexcept { return FollowCamera; };
+	FORCEINLINE UCameraComponent* GetCamera() const noexcept { return FirstCamera; };
 };

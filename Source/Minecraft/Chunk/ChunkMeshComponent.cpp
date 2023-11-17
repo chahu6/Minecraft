@@ -46,6 +46,16 @@ void UChunkMeshComponent::BuildMesh()
 	FChunkMeshBuilder::BuildChunkMesh(Chunk, MeshData);
 }
 
+void UChunkMeshComponent::ClearMeshData()
+{
+	MeshData.Normals.Empty();
+	MeshData.Vertices.Empty();
+	MeshData.VertexColors.Empty();
+	MeshData.Tangents.Empty();
+	MeshData.Triangles.Empty();
+	MeshData.UV0.Empty();
+}
+
 FBlockInfoTableRow* UChunkMeshComponent::GetBlockInfo(uint8 BlockID)
 {
 	UDataTable* DataTable = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/Blueprints/Datas/DataTable/DT_BlockDataTable.DT_BlockDataTable'"));

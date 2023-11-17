@@ -3,6 +3,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "Minecraft/Controller/MCPlayerController.h"
 
 
 AMCPlayer::AMCPlayer()
@@ -15,6 +16,12 @@ AMCPlayer::AMCPlayer()
 	BoxCollision->InitBoxExtent(FVector(31.0f, 31.0f, 90.0f));
 	BoxCollision->SetCollisionProfileName(TEXT("BlockAll"));
 
+	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
+	Mesh->SetupAttachment(BoxCollision);
+	Mesh->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
+	Mesh->SetRelativeRotation(FRotator(0.0, -90.0f, 0.0f));
+	Mesh->bOwnerNoSee = true;
+
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->bUsePawnControlRotation = true;
@@ -22,9 +29,21 @@ AMCPlayer::AMCPlayer()
 	CameraBoom->SetRelativeRotation(FRotator(310.0, 0.0, 0.0));
 	CameraBoom->SetRelativeLocation(FVector(0, 0, BaseEyeHeight));
 
+	// 第三人称视角
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+	FollowCamera->bAutoActivate = false;
+
+	// 第一人称视角
+	FirstCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstCamera"));
+	FirstCamera->SetupAttachment(RootComponent);
+	FirstCamera->SetRelativeLocation(FVector(0.0f, 0.0f, BaseEyeHeight));
+	FirstCamera->bUsePawnControlRotation = true;
+
+	// 自由视角
+	//FreeCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FreeCamera"));
+
 
 	FloatingPawnMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("FloatingPawnMovement"));
 }
@@ -50,6 +69,9 @@ void AMCPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAxis("TurnRight", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+
+	PlayerInputComponent->BindAction("Switch Perspectives", IE_Pressed, this, &AMCPlayer::SwitchPerspectives);
+	PlayerInputComponent->BindAction("RayCast", IE_Pressed, this, &AMCPlayer::HandleEvent);
 }
 
 void AMCPlayer::MoveForward(float Value)
@@ -76,3 +98,38 @@ void AMCPlayer::MoveRight(float Value)
 	}
 }
 
+void AMCPlayer::SwitchPerspectives()
+{
+	switch (Perspective)
+	{
+		case AMCPlayer::EPerspective::First:
+		{
+			FollowCamera->SetActive(false);
+			FirstCamera->SetActive(true);
+			Perspective = EPerspective::Third;
+			Mesh->SetOwnerNoSee(true);
+			break;
+		}
+		case AMCPlayer::EPerspective::Third:
+		{
+			FollowCamera->SetActive(true);
+			FirstCamera->SetActive(false);
+			Perspective = EPerspective::First;
+			Mesh->SetOwnerNoSee(false);
+			break;
+		}
+		case AMCPlayer::EPerspective::Free:
+		{
+			break;
+		}
+	}
+}
+
+void AMCPlayer::HandleEvent()
+{
+	AMCPlayerController* PlayerController = Cast<AMCPlayerController>(Controller);
+	if (PlayerController)
+	{
+		PlayerController->RemoveBlock();
+	}
+}

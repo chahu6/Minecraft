@@ -41,11 +41,14 @@ public:
 	void Render();
 
 	void BuildMesh();
+
+	void ClearMeshData();
+
 private:
 	FBlockInfoTableRow* GetBlockInfo(uint8 BlockID);
 
 private:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	class UProceduralMeshComponent* ProduralMesh;
 
 private:

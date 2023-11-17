@@ -44,9 +44,19 @@ uint8 AChunk::GetBlock(int32 X, int32 Y, int32 Z)
 	return Blocks[GetBlocksIndex(X, Y, Z)];
 }
 
+uint8 AChunk::GetBlock(int32 Index)
+{
+	return Blocks[Index];
+}
+
 void AChunk::SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID)
 {
 	Blocks[GetBlocksIndex(X, Y, Z)] = BlockID;
+}
+
+void AChunk::SetBlock(int32 Index, uint8 BlockID)
+{
+	Blocks[Index] = BlockID;
 }
 
 void AChunk::Render()
@@ -62,4 +72,16 @@ void AChunk::Load(ITerrainGenerator* Generator)
 void AChunk::BuildChunkMesh()
 {
 	ChunkMesh->BuildMesh();
+}
+
+void AChunk::Rebuild()
+{
+	ClearChunkMesh();
+	BuildChunkMesh();
+	Render();
+}
+
+void AChunk::ClearChunkMesh()
+{
+	ChunkMesh->ClearMeshData();
 }
