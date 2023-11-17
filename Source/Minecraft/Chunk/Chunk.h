@@ -27,14 +27,21 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	uint8 GetBlock(int32 X, int32 Y, int32 Z);
+	uint8 GetBlock(int32 Index);
 
 	void SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID);
+	void SetBlock(int32 Index, uint8 BlockID);
 
 	void Render();
 
 	void Load(ITerrainGenerator* Generator);
 
 	void BuildChunkMesh();
+
+	void Rebuild();
+
+private:
+	void ClearChunkMesh();
 
 private:
 	UPROPERTY(VisibleAnywhere)

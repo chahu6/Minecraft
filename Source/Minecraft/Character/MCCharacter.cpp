@@ -2,7 +2,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 
-
 AMCCharacter::AMCCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
