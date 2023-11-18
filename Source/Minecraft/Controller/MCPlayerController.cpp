@@ -56,12 +56,12 @@ void AMCPlayerController::RemoveBlock()
 
 void AMCPlayerController::ShowDebugInfo()
 {
-	if (bIsOpened)
+	if (bIsDebug)
 	{
 		if (MinecraftHUD)
 		{
 			MinecraftHUD->RemoveDebugInfo();
-			bIsOpened = false;
+			bIsDebug = false;
 		}
 	}
 	else
@@ -69,7 +69,7 @@ void AMCPlayerController::ShowDebugInfo()
 		if (MinecraftHUD)
 		{
 			MinecraftHUD->AddDebugInfo();
-			bIsOpened = true;
+			bIsDebug = true;
 		}
 	}
 }
@@ -77,45 +77,68 @@ void AMCPlayerController::ShowDebugInfo()
 void AMCPlayerController::RayCast()
 {
 	UCameraComponent* Camera = MCPlayer->GetCamera();
-	FVector Loca = MCPlayer->GetActorLocation();
+
 	// 起点与终点
 	FVector Ray_Start = Camera->GetComponentLocation();
 	FVector Ray_End = Camera->GetComponentLocation() + Camera->GetComponentRotation().Vector() * MAX_RAY_DIST * BlockSize;
 
-	DrawDebugLine(GetWorld(), Ray_Start, Ray_End, FColor::Green, false, -1.0f, 0U, 3);
+	// 起始体素位置
+	FVector Current_Voxel(FMath::Floor(Ray_Start.X / BlockSize),
+						  FMath::Floor(Ray_Start.Y / BlockSize),
+						  FMath::Floor(Ray_Start.Z / BlockSize));
 
-#if 0
-	// 另一种写法，但是单位是1，还要改一下
+	// 终点体素位置
+	FVector Last_Voxel(FMath::Floor(Ray_End.X / BlockSize),
+					   FMath::Floor(Ray_End.Y / BlockSize),
+					   FMath::Floor(Ray_End.Z / BlockSize));
+
+	// 射线方向向量
+	FVector Ray = Ray_End - Ray_Start;
+
+#if 1
 	float tMaxX, tMaxY, tMaxZ, tDeltaX, tDeltaY, tDeltaZ;
-	FVector Block;
 	
-	int32 dx = FMath::Sign(Ray_End.X - Ray_Start.X);
-	if (dx != 0) tDeltaX = FMath::Min(dx / (Ray_End.X - Ray_Start.X), 10000000.0f); else tDeltaX = 10000000.0f;
-	if (dx > 0) tMaxX = tDeltaX = tDeltaX * FMath::Frac(Ray_Start.X); else tMaxX = tDeltaX * FMath::Frac(Ray_Start.X);
-	Block.X = (int)Ray_Start.X;
+	int32 dx = FMath::Sign(Ray.X);
+	if (dx != 0) tDeltaX = FMath::Min(BlockSize / (Ray.X) * dx, 10000000.0f); else tDeltaX = 10000000.0f;
+	if (dx > 0) tMaxX = tDeltaX * (1 - FMath::Frac(Ray_Start.X / BlockSize)); else tMaxX = tDeltaX * FMath::Frac(Ray_Start.X / BlockSize);
 	
-	int32 dy = FMath::Sign(Ray_End.Y - Ray_Start.Y);
-	if (dy != 0) tDeltaY = FMath::Min(dy / (Ray_End.Y - Ray_Start.Y), 10000000.0f); else tDeltaY = 10000000.0f;
-	if (dy > 0) tMaxY = tDeltaY = tDeltaY * FMath::Frac(Ray_Start.Y); else tMaxY = tDeltaY * FMath::Frac(Ray_Start.Y);
-	Block.Y = (int)Ray_Start.Y;
+	int32 dy = FMath::Sign(Ray.Y);
+	if (dy != 0) tDeltaY = FMath::Min(BlockSize / (Ray_End.Y - Ray_Start.Y) * dy, 10000000.0f); else tDeltaY = 10000000.0f;
+	if (dy > 0) tMaxY = tDeltaY * (1 - FMath::Frac(Ray_Start.Y / BlockSize)); else tMaxY = tDeltaY * FMath::Frac(Ray_Start.Y / BlockSize);
 
-	int32 dz = FMath::Sign(Ray_End.Z - Ray_Start.Z);
-	if (dz != 0) tDeltaZ = FMath::Min(dz / (Ray_End.Z - Ray_Start.Z), 10000000.0f); else tDeltaZ = 10000000.0f;
-	if (dz > 0) tMaxZ = tDeltaZ = tDeltaZ * FMath::Frac(Ray_Start.Z); else tMaxZ = tDeltaZ * FMath::Frac(Ray_Start.Z);
-	Block.Z = (int)Ray_Start.Z;
+	int32 dz = FMath::Sign(Ray.Z);
+	if (dz != 0) tDeltaZ = FMath::Min(BlockSize / (Ray_End.Z - Ray_Start.Z) * dz, 10000000.0f); else tDeltaZ = 10000000.0f;
+	if (dz > 0) tMaxZ = tDeltaZ * (1 - FMath::Frac(Ray_Start.Z / BlockSize)); else tMaxZ = tDeltaZ * FMath::Frac(Ray_Start.Z / BlockSize);
+
+	// 调试相关
+	if (bIsDebug)
+	{
+		DrawDebugLine(GetWorld(), Ray_Start, Ray_End, FColor::Red, false, -1.0f, 0U, 5);
+		DrawDebugLine(GetWorld(), Current_Voxel * BlockSize, Last_Voxel * BlockSize, FColor::Blue, false, -1.0f, 0U, 5);
+	}
 
 	while (true)
 	{
+		if (GetBlockData(Current_Voxel))
+		{
+			return;
+		}
+
+		if (bIsDebug)
+		{
+			DrawDebugLine(GetWorld(), Current_Voxel * BlockSize, Last_Voxel * BlockSize, FColor::Green, false, -1.0f, 0U, 5);
+		}
+
 		if (tMaxX < tMaxY)
 		{
 			if (tMaxX < tMaxZ)
 			{
-				Block.X += dx;
+				Current_Voxel.X += dx;
 				tMaxX += tDeltaX;
 			}
 			else
 			{
-				Block.Z += dz;
+				Current_Voxel.Z += dz;
 				tMaxZ += tDeltaZ;
 			}
 		}
@@ -123,34 +146,25 @@ void AMCPlayerController::RayCast()
 		{
 			if (tMaxY < tMaxZ)
 			{
-				Block.Y += dy;
+				Current_Voxel.Y += dy;
 				tMaxY += tDeltaY;
 			}
 			else
 			{
-				Block.Z += dz;
+				Current_Voxel.Z += dz;
 				tMaxZ += tDeltaZ;
 			}
 		}
 		if (tMaxX > 1 && tMaxY > 1 && tMaxZ > 1) break;
-
-
 	}
-#endif
 
-	// 起始体素位置
-	FVector Current_Voxel(FMath::Floor(Ray_Start[0] / BlockSize),
-						  FMath::Floor(Ray_Start[1] / BlockSize),
-						  FMath::Floor(Ray_Start[2] / BlockSize));
+#else
 
-	// 终点体素位置
-	FVector Last_Voxel(FMath::Floor(Ray_End[0] / BlockSize),
-					   FMath::Floor(Ray_End[1] / BlockSize),
-					   FMath::Floor(Ray_End[2] / BlockSize));
-
-	// 射线方向向量
-	FVector Ray = Ray_End - Ray_Start;
-
+	/* 
+	* 过时算法
+	* 有问题的算法, 不够准确
+	* 将在下次删除
+	*/
 	int32 Step_Dir = -1;
 
 	// 射线的前进方向
@@ -183,7 +197,13 @@ void AMCPlayerController::RayCast()
 	if (Current_Voxel[1] != Last_Voxel[1] && Ray[1] < 0) { Diff[1]--; Neg_Ray = true; }
 	if (Current_Voxel[2] != Last_Voxel[2] && Ray[2] < 0) { Diff[2]--; Neg_Ray = true; }
 
-	DrawDebugLine(GetWorld(), Current_Voxel * BlockSize, Last_Voxel * BlockSize, FColor::Blue, false, -1.0f, 0U, 5);
+	// 调试相关
+	if (bIsDebug)
+	{
+		DrawDebugLine(GetWorld(), Ray_Start, Ray_End, FColor::Red, false, -1.0f, 0U, 5);
+		DrawDebugLine(GetWorld(), Current_Voxel * BlockSize, Last_Voxel * BlockSize, FColor::Blue, false, -1.0f, 0U, 5);
+	}
+
 	if (Neg_Ray)
 	{
 		Current_Voxel += Diff;
@@ -228,11 +248,17 @@ void AMCPlayerController::RayCast()
 			}
 		}
 
+		if (bIsDebug)
+		{
+			DrawDebugLine(GetWorld(), Current_Voxel * BlockSize, Last_Voxel * BlockSize, FColor::Green, false, -1.0f, 0U, 5);
+		}
+
 		if (GetBlockData(Current_Voxel))
 		{
 			return;
 		}
 	}
+#endif
 }
 
 bool AMCPlayerController::GetBlockData(const FVector& VoxelWorldPosition)
