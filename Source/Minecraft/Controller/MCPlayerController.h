@@ -15,6 +15,8 @@ struct FBlockData
 	FVector Normal;
 	int32 BlockIndex;
 	int32 ChunkIndex;
+	FVector VoxelLocalPosition; // Chunk下的相对坐标
+	FVector VoxelWorldPosition; // 体素坐标下的世界坐标，没有乘以BlockSize
 };
 
 class AMCPlayer;
@@ -41,8 +43,12 @@ private:
 
 	void RayCast();
 
-	bool GetBlockData(const FVector& VoxelWorldPosition);
+	uint8 GetBlockID(const FVector& VoxelWorldPosition, FBlockData& OutBlockData);
 	
+	void Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z);
+
+	void Rebuild_Adjacent_Chunks();
+
 private:
 	UPROPERTY()
 	class AMinecraftHUD* MinecraftHUD;

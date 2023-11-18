@@ -71,7 +71,8 @@ void AMCPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
 	PlayerInputComponent->BindAction("Switch Perspectives", IE_Pressed, this, &AMCPlayer::SwitchPerspectives);
-	PlayerInputComponent->BindAction("RayCast", IE_Pressed, this, &AMCPlayer::HandleEvent);
+	PlayerInputComponent->BindAction("Add Block", IE_Pressed, this, &AMCPlayer::AddBlock);
+	PlayerInputComponent->BindAction("Remove Block", IE_Pressed, this, &AMCPlayer::RemoveBlock);
 }
 
 void AMCPlayer::MoveForward(float Value)
@@ -125,7 +126,16 @@ void AMCPlayer::SwitchPerspectives()
 	}
 }
 
-void AMCPlayer::HandleEvent()
+void AMCPlayer::AddBlock()
+{
+	AMCPlayerController* PlayerController = Cast<AMCPlayerController>(Controller);
+	if (PlayerController)
+	{
+		PlayerController->AddBlock();
+	}
+}
+
+void AMCPlayer::RemoveBlock()
 {
 	AMCPlayerController* PlayerController = Cast<AMCPlayerController>(Controller);
 	if (PlayerController)
