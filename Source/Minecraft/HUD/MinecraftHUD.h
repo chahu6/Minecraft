@@ -23,7 +23,10 @@ public:
 
 public:
 	void AddDebugInfo();
+
 	void RemoveDebugInfo();
+
+	void DrawCrosshairs();
 
 private:
 	UPROPERTY(EditAnywhere)
@@ -32,4 +35,7 @@ private:
 	UPROPERTY()
 	class UUserWidget* DebugInfoUI;
 
+	// Ê®×Ö×¼ÐÇ
+	UPROPERTY(EditAnywhere, Category = "Crosshairs")
+	UTexture2D* Crosshairs;
 };

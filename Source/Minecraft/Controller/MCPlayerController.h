@@ -50,7 +50,7 @@ private:
 	UPROPERTY()
 	AMCPlayer* MCPlayer;
 
-	bool bIsOpened = false;
+	bool bIsDebug = false;
 
 	FBlockData BlockData;
 };
