@@ -31,7 +31,8 @@ private:
 
 	void SwitchPerspectives();
 
-	void HandleEvent();
+	void AddBlock();
+	void RemoveBlock();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")

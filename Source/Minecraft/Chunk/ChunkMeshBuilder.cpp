@@ -4,18 +4,14 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Minecraft/MinecraftType/FaceType.h"
 #include "Minecraft/World/WorldManager.h"
-
-inline bool OutOfBounds(int32 X, int32 Min, int32 Max)
-{
-	return X >= Min && X < Max;
-}
+#include "Minecraft/Utils/Utils.h"
 
 int32 GetChunkIndexFromWorld(const FVector& WorldLocation)
 {
 	int32 ChunkIndex_X = FMath::Floor(WorldLocation.X / ChunkSize);
 	int32 ChunkIndex_Y = FMath::Floor(WorldLocation.Y / ChunkSize);
 	int32 ChunkIndex_Z = FMath::Floor(WorldLocation.Z / ChunkSize);
-	if (!(OutOfBounds(ChunkIndex_X, 0, WORLD_W) && OutOfBounds(ChunkIndex_Y, 0, WORLD_D) && OutOfBounds(ChunkIndex_Z, 0, WORLD_H)))
+	if (!(Utils::OutOfBounds(ChunkIndex_X, 0, WORLD_W) && Utils::OutOfBounds(ChunkIndex_Y, 0, WORLD_D) && Utils::OutOfBounds(ChunkIndex_Z, 0, WORLD_H)))
 	{
 		return -1;
 	}
