@@ -14,7 +14,8 @@ constexpr int32 MAX_RAY_DIST = 5;
 constexpr int32 BlockSize = 100;
 
 // 一个Chunk的尺寸
-constexpr int32 ChunkSize = CHUNK_SIZE * BlockSize;
+constexpr int32 ChunkSize = CHUNK_SIZE * BlockSize,
+				ChunkSize_Half = ChunkSize / 2;
 
 // 海平面
 constexpr int32 WATER_LEVEL = 64;

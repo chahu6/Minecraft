@@ -6,28 +6,15 @@
 #include "Minecraft/World/WorldManager.h"
 #include "Minecraft/Utils/Utils.h"
 
-int32 GetChunkIndexFromWorld(const FVector& WorldLocation)
-{
-	int32 ChunkIndex_X = FMath::Floor(WorldLocation.X / ChunkSize);
-	int32 ChunkIndex_Y = FMath::Floor(WorldLocation.Y / ChunkSize);
-	int32 ChunkIndex_Z = FMath::Floor(WorldLocation.Z / ChunkSize);
-	if (!(Utils::OutOfBounds(ChunkIndex_X, 0, WORLD_W) && Utils::OutOfBounds(ChunkIndex_Y, 0, WORLD_D) && Utils::OutOfBounds(ChunkIndex_Z, 0, WORLD_H)))
-	{
-		return -1;
-	}
-	
-	int32 ChunkIndex = ChunkIndex_X + ChunkIndex_Y * WORLD_W + ChunkIndex_Z * WORLD_AREA;
-	return ChunkIndex;
-}
-
 bool IsVoid(int32 X, int32 Y, int32 Z, const FVector& WorldLocation, AWorldManager* WorldManager)
 {
-	int32 Index = GetChunkIndexFromWorld(WorldLocation);
-	if (Index == -1)
+	int32 ChunkVoxel_X = FMath::Floor(WorldLocation.X / ChunkSize);
+	int32 ChunkVoxel_Y = FMath::Floor(WorldLocation.Y / ChunkSize);
+	int32 ChunkVoxel_Z = FMath::Floor(WorldLocation.Z / ChunkSize);
+
+	AChunk* Chunk = WorldManager->GetChunk(FVector(ChunkVoxel_X, ChunkVoxel_Y, ChunkVoxel_Z));
+	if (Chunk == nullptr)
 		return false;
-
-	AChunk* Chunk = WorldManager->GetChunk(Index);
-
 
 	int32 Local_X = (X + CHUNK_SIZE) % CHUNK_SIZE;
 	int32 Local_Y = (Y + CHUNK_SIZE) % CHUNK_SIZE;

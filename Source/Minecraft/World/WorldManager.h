@@ -2,10 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Minecraft/Generation/TerrainGenerator.h"
 #include "WorldManager.generated.h"
 
 class AChunk;
+class UChunkManagerComponent;
 
 UCLASS()
 class MINECRAFT_API AWorldManager : public AActor
@@ -21,17 +21,26 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	void Render();
-
-	AChunk* GetChunk(int32 Index);
+	// Key是Chunk在Voxel World的位置，没有乘以ChunkSize的位置
+	AChunk* GetChunk(const FVector& ChunkVoxelPosition);
 
 private:
+	bool UpdatePosition();
+
+	void AddChunk();
+
+	void RemoveChunk();
+
 	void BuildChunks();
 
-	void BuildChunkMesh();
+	void RenderChunks();
 
 private:
-	TArray<AChunk*> Chunks;
+	UPROPERTY(VisibleAnywhere)
+	UChunkManagerComponent* ChunkManager;
 
-	TUniquePtr<ITerrainGenerator> TerrainGenerator;
+	UPROPERTY(EditAnywhere)
+	int32 ChunkRenderingRange = 5;
+
+	FVector2D CharacterPosition;
 };

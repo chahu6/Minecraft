@@ -14,9 +14,9 @@ struct FBlockData
 	uint8 BlockID;
 	FVector Normal;
 	int32 BlockIndex;
-	int32 ChunkIndex;
 	FVector VoxelLocalPosition; // Chunk下的相对坐标
 	FVector VoxelWorldPosition; // 体素坐标下的世界坐标，没有乘以BlockSize
+	FVector ChunkVoexlWorldPosition;
 };
 
 class AMCPlayer;

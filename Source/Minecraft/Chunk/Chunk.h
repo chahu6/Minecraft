@@ -36,12 +36,10 @@ public:
 
 	void Load(ITerrainGenerator* Generator);
 
-	void BuildChunkMesh();
-
 	void Rebuild();
 
+	void RecalculateEmpty();
 private:
-	void ClearChunkMesh();
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -53,6 +51,15 @@ private:
 	int32 Seed = -1;
 	FString SlotName;
 
+	// 是否Blocks数据修改过
+	bool bIsDirty = true;
+
+	// 是否都是Air或None
+	bool bIsEmpty = true;
+
 public:
 	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }
+	FORCEINLINE void SetDirty(bool bNewDirty) { bIsDirty = bNewDirty; }
+	FORCEINLINE void SetEmpty(bool bNewEmpty) { bIsEmpty = bNewEmpty; }
+	FORCEINLINE bool IsEmpty() { return bIsEmpty; }
 };
