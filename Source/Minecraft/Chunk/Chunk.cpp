@@ -61,27 +61,44 @@ void AChunk::SetBlock(int32 Index, uint8 BlockID)
 
 void AChunk::Render()
 {
-	ChunkMesh->Render();
+	if (bIsDirty)
+	{
+		if (!bIsEmpty)
+		{
+			ChunkMesh->ClearMeshData();
+
+			ChunkMesh->BuildMesh();
+
+			ChunkMesh->Render();
+		}
+		bIsDirty = false;
+	}
 }
 
 void AChunk::Load(ITerrainGenerator* Generator)
 {
 	Generator->GenerateChunk(this);
-}
 
-void AChunk::BuildChunkMesh()
-{
-	ChunkMesh->BuildMesh();
+	for (uint8 Element : Blocks)
+	{
+		if (Element != 0)
+		{
+			bIsEmpty = false;
+			break;
+		}
+	}
+	// 也可以这么写
+	//bIsEmpty = Blocks.ContainsByPredicate([](uint8 Element) {return Element != 0; });
 }
 
 void AChunk::Rebuild()
 {
-	ClearChunkMesh();
-	BuildChunkMesh();
+	bIsDirty = true;
+
 	Render();
 }
 
-void AChunk::ClearChunkMesh()
+void AChunk::RecalculateEmpty()
 {
-	ChunkMesh->ClearMeshData();
+	bIsDirty = !Blocks.ContainsByPredicate([](uint8 Element) {return Element != 0; });
 }

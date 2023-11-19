@@ -49,8 +49,13 @@ void AMCPlayerController::AddBlock()
 			AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 			if (WorldManager)
 			{
-				WorldManager->GetChunk(Temp.ChunkIndex)->SetBlock(Temp.BlockIndex, 2);
-				WorldManager->GetChunk(Temp.ChunkIndex)->Rebuild();
+				AChunk* Chunk = WorldManager->GetChunk(Temp.ChunkVoexlWorldPosition);
+				Chunk->SetBlock(Temp.BlockIndex, 2);
+				if (Chunk->IsEmpty())
+				{
+					Chunk->SetEmpty(false);
+				}
+				Chunk->Rebuild();
 			}
 		}
 	}
@@ -63,8 +68,12 @@ void AMCPlayerController::RemoveBlock()
 		AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 		if (WorldManager)
 		{
-			WorldManager->GetChunk(BlockData.ChunkIndex)->SetBlock(BlockData.BlockIndex, 0);
-			WorldManager->GetChunk(BlockData.ChunkIndex)->Rebuild();
+			AChunk* Chunk = WorldManager->GetChunk(BlockData.ChunkVoexlWorldPosition);
+			Chunk->SetBlock(BlockData.BlockIndex, 0);
+
+			// 重新计算空值
+			Chunk->RecalculateEmpty();
+			Chunk->Rebuild();
 			Rebuild_Adjacent_Chunks();
 		}
 	}
@@ -198,33 +207,33 @@ void AMCPlayerController::RayCast()
 
 uint8 AMCPlayerController::GetBlockID(const FVector& VoxelWorldPosition, FBlockData& OutBlockData)
 {
-	int32 ChunkIndex_X = VoxelWorldPosition.X / CHUNK_SIZE;
-	int32 ChunkIndex_Y = VoxelWorldPosition.Y / CHUNK_SIZE;
-	int32 ChunkIndex_Z = VoxelWorldPosition.Z / CHUNK_SIZE;
+	int32 ChunkWorld_X = FMath::Floor(VoxelWorldPosition.X / CHUNK_SIZE);
+	int32 ChunkWorld_Y = FMath::Floor(VoxelWorldPosition.Y / CHUNK_SIZE);
+	int32 ChunkWorld_Z = FMath::Floor(VoxelWorldPosition.Z / CHUNK_SIZE);
 
-	if (0 <= ChunkIndex_X && ChunkIndex_X < WORLD_W && 0 <= ChunkIndex_Y && ChunkIndex_Y < WORLD_D && 0 <= ChunkIndex_Z && ChunkIndex_Z < WORLD_H)
+	FVector ChunkVoexlWorldPosition(ChunkWorld_X, ChunkWorld_Y, ChunkWorld_Z);
+
+	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
+	if (WorldManager)
 	{
-		int32 ChunkIndex = ChunkIndex_X + ChunkIndex_Y * WORLD_W + ChunkIndex_Z * WORLD_AREA;
+		AChunk* Chunk = WorldManager->GetChunk(ChunkVoexlWorldPosition);
 
-		AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
-		if (WorldManager)
-		{
-			AChunk* Chunk = WorldManager->GetChunk(ChunkIndex);
+		// 在游玩时，因为地形一直是随着玩家的位置加载的所以完整游戏中，不因该为空
+		if (Chunk == nullptr) return 0;
 
-			int32 Local_X = VoxelWorldPosition.X - ChunkIndex_X * CHUNK_SIZE;
-			int32 Local_Y = VoxelWorldPosition.Y - ChunkIndex_Y * CHUNK_SIZE;
-			int32 Local_Z = VoxelWorldPosition.Z - ChunkIndex_Z * CHUNK_SIZE;
+		int32 Local_X = VoxelWorldPosition.X - ChunkWorld_X * CHUNK_SIZE;
+		int32 Local_Y = VoxelWorldPosition.Y - ChunkWorld_Y * CHUNK_SIZE;
+		int32 Local_Z = VoxelWorldPosition.Z - ChunkWorld_Z * CHUNK_SIZE;
 
-			int32 BlockIndex = Local_X + Local_Y * CHUNK_SIZE + Local_Z * CHUNK_AREA;
+		int32 BlockIndex = Local_X + Local_Y * CHUNK_SIZE + Local_Z * CHUNK_AREA;
 
-			OutBlockData.BlockID = Chunk->GetBlock(BlockIndex);
-			OutBlockData.BlockIndex = BlockIndex;
-			OutBlockData.ChunkIndex = ChunkIndex;
-			OutBlockData.VoxelLocalPosition = FVector(Local_X, Local_Y, Local_Z);
-			OutBlockData.VoxelWorldPosition = VoxelWorldPosition;
+		OutBlockData.BlockID = Chunk->GetBlock(BlockIndex);
+		OutBlockData.BlockIndex = BlockIndex;
+		OutBlockData.VoxelLocalPosition = FVector(Local_X, Local_Y, Local_Z);
+		OutBlockData.VoxelWorldPosition = VoxelWorldPosition;
+		OutBlockData.ChunkVoexlWorldPosition = ChunkVoexlWorldPosition;
 
-			return OutBlockData.BlockID;
-		}
+		return OutBlockData.BlockID;
 	}
 
 	return 0;
@@ -235,11 +244,12 @@ void AMCPlayerController::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_Wor
 	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 	if (WorldManager)
 	{
-		if (Utils::OutOfBounds(Chunk_World_X, 0, WORLD_W) && Utils::OutOfBounds(Chunk_World_Y, 0, WORLD_D) && Utils::OutOfBounds(Chunk_World_Z, 0, WORLD_H))
-		{
-			int32 ChunkIndex = Chunk_World_X + Chunk_World_Y * WORLD_W + Chunk_World_Z * WORLD_AREA;
-			WorldManager->GetChunk(ChunkIndex)->Rebuild();
-		}
+		AChunk* Chunk = WorldManager->GetChunk(FVector(Chunk_World_X, Chunk_World_Y, Chunk_World_Z));
+	
+		if (Chunk == nullptr)
+			return;
+
+		Chunk->Rebuild();
 	}
 }
 
@@ -250,10 +260,10 @@ void AMCPlayerController::Rebuild_Adjacent_Chunks()
 	int32 Voxel_Local_Y = BlockData.VoxelLocalPosition.Y;
 	int32 Voxel_Local_Z = BlockData.VoxelLocalPosition.Z;
 
-	// 获取Voxel所在Chunk位置
-	int32 Chunk_World_X = BlockData.VoxelWorldPosition.X / CHUNK_SIZE;
-	int32 Chunk_World_Y = BlockData.VoxelWorldPosition.Y / CHUNK_SIZE;
-	int32 Chunk_World_Z = BlockData.VoxelWorldPosition.Z / CHUNK_SIZE;
+	// 获取Chunk所在Voxel位置
+	int32 Chunk_World_X = FMath::Floor(BlockData.VoxelWorldPosition.X / CHUNK_SIZE);
+	int32 Chunk_World_Y = FMath::Floor(BlockData.VoxelWorldPosition.Y / CHUNK_SIZE);
+	int32 Chunk_World_Z = FMath::Floor(BlockData.VoxelWorldPosition.Z / CHUNK_SIZE);
 
 	// X轴
 	if (Voxel_Local_X == 0)

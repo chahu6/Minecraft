@@ -2,15 +2,16 @@
 #include "Minecraft/World/WorldSettings.h"
 #include "Minecraft/Chunk/Chunk.h"
 #include "Minecraft/Generation/ClassicOverWorldGenerator.h"
+#include "ChunkManagerComponent.h"
 #include "SimplexNoiseLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AWorldManager::AWorldManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	Chunks.SetNum(WORLD_VOL);
-
-	TerrainGenerator = MakeUnique<FClassicOverWorldGenerator>();
+	ChunkManager = CreateDefaultSubobject<UChunkManagerComponent>(TEXT("ChunkManagerComponent"));
 }
 
 void AWorldManager::BeginPlay()
@@ -18,58 +19,88 @@ void AWorldManager::BeginPlay()
 	Super::BeginPlay();
 
 	USimplexNoiseLibrary::SetNoiseSeed(234324);
-	
-	BuildChunks();
-	BuildChunkMesh();
-	Render();
+
+
 }
 
 void AWorldManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	bool bIsUpdated = UpdatePosition();
+	if (bIsUpdated)
+	{
+		AddChunk();
+		RemoveChunk();
+		RenderChunks();
+	}
 }
 
-void AWorldManager::BuildChunks()
+bool AWorldManager::UpdatePosition()
 {
-	for (int32 X = 0; X < WORLD_W; ++X)
+	FVector2D NewLocation2D(UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation());
+	if (!UKismetMathLibrary::EqualEqual_Vector2DVector2D(CharacterPosition * ChunkSize, NewLocation2D, ChunkSize_Half))
 	{
-		for (int32 Y = 0; Y < WORLD_D; ++Y)
+		CharacterPosition = NewLocation2D / ChunkSize;
+		return true;
+	}
+
+	return false;
+}
+
+void AWorldManager::AddChunk()
+{
+	int32 ChunkPositionX = CharacterPosition.X;
+	int32 ChunkPositionY = CharacterPosition.Y;
+
+	int32 MinRenderingRangeX = ChunkPositionX - ChunkRenderingRange;
+	int32 MaxRenderingRangeX = ChunkPositionX + ChunkRenderingRange;
+
+	int32 MinRenderingRangeY = ChunkPositionY - ChunkRenderingRange;
+	int32 MaxRenderingRangeY = ChunkPositionY + ChunkRenderingRange;
+
+	for (int32 X = MinRenderingRangeX; X <= MaxRenderingRangeX; ++X)
+	{
+		for (int32 Y = MinRenderingRangeY; Y <= MaxRenderingRangeY; ++Y)
 		{
-			for (int32 Z = 0; Z < WORLD_H; ++Z)
+			for (int32 Z = 0; Z < 3; ++Z)
 			{
-				UWorld* World = GetWorld();
-				if (World)
-				{
-					FActorSpawnParameters SpawnParams;
-					SpawnParams.Owner = this;
-					AChunk* Chunk = World->SpawnActor<AChunk>(AChunk::StaticClass(), FVector(X * ChunkSize, Y * ChunkSize, Z * ChunkSize), FRotator::ZeroRotator, SpawnParams);
-					int32 ChunkIndex = X + WORLD_W * Y + WORLD_AREA * Z;
-					Chunks[ChunkIndex] = Chunk;
-					Chunk->Load(TerrainGenerator.Get());
-				}
+				FVector ChunkPosition(X, Y, Z);
+				ChunkManager->LoadChunk(ChunkPosition);
 			}
 		}
 	}
 }
 
-void AWorldManager::BuildChunkMesh()
+void AWorldManager::RemoveChunk()
 {
-	for (auto& Chunk : Chunks)
+
+}
+
+void AWorldManager::BuildChunks()
+{
+	for (int32 X = -ChunkRenderingRange; X <= ChunkRenderingRange; ++X)
 	{
-		Chunk->BuildChunkMesh();
+		for (int32 Y = -ChunkRenderingRange; Y <= ChunkRenderingRange; ++Y)
+		{
+			for (int32 Z = 0; Z < 3; ++Z)
+			{
+				ChunkManager->LoadChunk(FVector(X, Y, Z));
+			}
+		}
 	}
 }
 
-void AWorldManager::Render()
+void AWorldManager::RenderChunks()
 {
-	for (auto Chunk : Chunks)
+	auto& ChunksMap = ChunkManager->_AllChunks;
+	for (auto& Elem : ChunksMap)
 	{
-		Chunk->Render();
+		Elem.Value->Render();
 	}
 }
 
-AChunk* AWorldManager::GetChunk(int32 Index)
+AChunk* AWorldManager::GetChunk(const FVector& ChunkVoxelPosition)
 {
-	return Chunks[Index];
+	return ChunkManager->GetChunk(ChunkVoxelPosition);
 }
