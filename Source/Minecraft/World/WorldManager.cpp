@@ -20,7 +20,7 @@ void AWorldManager::BeginPlay()
 
 	USimplexNoiseLibrary::SetNoiseSeed(234324);
 
-
+	InitialWorldChunkLoad();
 }
 
 void AWorldManager::Tick(float DeltaTime)
@@ -34,6 +34,22 @@ void AWorldManager::Tick(float DeltaTime)
 		RemoveChunk();
 		RenderChunks();
 	}
+}
+
+void AWorldManager::InitialWorldChunkLoad()
+{
+	for (int32 X = -ChunkRenderingRange; X <= ChunkRenderingRange; ++X)
+	{
+		for (int32 Y = -ChunkRenderingRange; Y <= ChunkRenderingRange; ++Y)
+		{
+			for (int32 Z = 0; Z < 3; ++Z)
+			{
+				ChunkManager->LoadChunk(FVector(X, Y, Z));
+			}
+		}
+	}
+
+	RenderChunks();
 }
 
 bool AWorldManager::UpdatePosition()
@@ -75,20 +91,6 @@ void AWorldManager::AddChunk()
 void AWorldManager::RemoveChunk()
 {
 
-}
-
-void AWorldManager::BuildChunks()
-{
-	for (int32 X = -ChunkRenderingRange; X <= ChunkRenderingRange; ++X)
-	{
-		for (int32 Y = -ChunkRenderingRange; Y <= ChunkRenderingRange; ++Y)
-		{
-			for (int32 Z = 0; Z < 3; ++Z)
-			{
-				ChunkManager->LoadChunk(FVector(X, Y, Z));
-			}
-		}
-	}
 }
 
 void AWorldManager::RenderChunks()

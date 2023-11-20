@@ -19,7 +19,7 @@ struct FBlockData
 	FVector ChunkVoexlWorldPosition;
 };
 
-class AMCPlayer;
+class AMCCharacter;
 /**
  * 
  */
@@ -54,7 +54,7 @@ private:
 	class AMinecraftHUD* MinecraftHUD;
 
 	UPROPERTY()
-	AMCPlayer* MCPlayer;
+	AMCCharacter* MCPlayer;
 
 	bool bIsDebug = false;
 
