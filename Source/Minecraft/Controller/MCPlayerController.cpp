@@ -1,7 +1,7 @@
 #include "MCPlayerController.h"
 #include "Minecraft/HUD/MinecraftHUD.h"
 #include "Blueprint/UserWidget.h"
-#include "Minecraft/Character/MCPlayer.h"
+#include "Minecraft/Character/MCCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Minecraft/World/WorldSettings.h"
 #include "Kismet/GameplayStatics.h"
@@ -27,7 +27,7 @@ void AMCPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	MCPlayer = Cast<AMCPlayer>(GetPawn());
+	MCPlayer = Cast<AMCCharacter>(GetPawn());
 }
 
 void AMCPlayerController::SetupInputComponent()

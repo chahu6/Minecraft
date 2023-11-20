@@ -25,6 +25,8 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual UPawnMovementComponent* GetMovementComponent() const override;
+
 private:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -33,6 +35,9 @@ private:
 
 	void AddBlock();
 	void RemoveBlock();
+
+	void Jump();
+	void StopJump();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
@@ -51,7 +56,7 @@ private:
 	class UBoxComponent* BoxCollision;
 
 	UPROPERTY(VisibleAnywhere)
-	class UFloatingPawnMovement* FloatingPawnMovement;
+	class UMinecraftPlayerMovement* MinecraftPlayerMovement;
 
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* Mesh;
@@ -64,7 +69,9 @@ private:
 		Free
 	};
 
-	EPerspective Perspective = EPerspective::Third;
+	EPerspective NextPerspective = EPerspective::Third;
+
+	bool bIsJumping = false;
 
 public:
 	FORCEINLINE UCameraComponent* GetCamera() const noexcept { return FirstCamera; };

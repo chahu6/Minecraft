@@ -25,13 +25,13 @@ public:
 	AChunk* GetChunk(const FVector& ChunkVoxelPosition);
 
 private:
+	void InitialWorldChunkLoad();
+
 	bool UpdatePosition();
 
 	void AddChunk();
 
 	void RemoveChunk();
-
-	void BuildChunks();
 
 	void RenderChunks();
 

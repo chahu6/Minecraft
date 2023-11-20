@@ -2,7 +2,7 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-#include "GameFramework/FloatingPawnMovement.h"
+#include "Minecraft/MovementComponent/MinecraftPlayerMovement.h"
 #include "Minecraft/Controller/MCPlayerController.h"
 
 
@@ -44,20 +44,25 @@ AMCPlayer::AMCPlayer()
 	// втсийс╫г
 	//FreeCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FreeCamera"));
 
-
-	FloatingPawnMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("FloatingPawnMovement"));
+	MinecraftPlayerMovement = CreateDefaultSubobject<UMinecraftPlayerMovement>(TEXT("MinecraftPlayerMovement"));
+	MinecraftPlayerMovement->UpdatedComponent = RootComponent;
 }
 
 void AMCPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	SetActorRotation(FRotator::ZeroRotator);
 }
 
 void AMCPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(1, 5.0f, FColor::Red, GetVelocity().ToString());
+	}
 }
 
 void AMCPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -70,9 +75,17 @@ void AMCPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("TurnRight", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMCPlayer::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMCPlayer::StopJump);
+
 	PlayerInputComponent->BindAction("Switch Perspectives", IE_Pressed, this, &AMCPlayer::SwitchPerspectives);
 	PlayerInputComponent->BindAction("Add Block", IE_Pressed, this, &AMCPlayer::AddBlock);
 	PlayerInputComponent->BindAction("Remove Block", IE_Pressed, this, &AMCPlayer::RemoveBlock);
+}
+
+UPawnMovementComponent* AMCPlayer::GetMovementComponent() const
+{
+	return MinecraftPlayerMovement;
 }
 
 void AMCPlayer::MoveForward(float Value)
@@ -101,13 +114,13 @@ void AMCPlayer::MoveRight(float Value)
 
 void AMCPlayer::SwitchPerspectives()
 {
-	switch (Perspective)
+	switch (NextPerspective)
 	{
 		case AMCPlayer::EPerspective::First:
 		{
 			FollowCamera->SetActive(false);
 			FirstCamera->SetActive(true);
-			Perspective = EPerspective::Third;
+			NextPerspective = EPerspective::Third;
 			Mesh->SetOwnerNoSee(true);
 			break;
 		}
@@ -115,7 +128,7 @@ void AMCPlayer::SwitchPerspectives()
 		{
 			FollowCamera->SetActive(true);
 			FirstCamera->SetActive(false);
-			Perspective = EPerspective::First;
+			NextPerspective = EPerspective::First;
 			Mesh->SetOwnerNoSee(false);
 			break;
 		}
@@ -141,5 +154,22 @@ void AMCPlayer::RemoveBlock()
 	if (PlayerController)
 	{
 		PlayerController->RemoveBlock();
+	}
+}
+
+void AMCPlayer::Jump()
+{
+	if (!bIsJumping)
+	{
+
+		bIsJumping = true;
+	}
+}
+
+void AMCPlayer::StopJump()
+{
+	if (bIsJumping)
+	{
+		bIsJumping = false;
 	}
 }
