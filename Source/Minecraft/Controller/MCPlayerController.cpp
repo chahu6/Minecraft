@@ -1,13 +1,17 @@
 #include "MCPlayerController.h"
 #include "Minecraft/HUD/MinecraftHUD.h"
 #include "Blueprint/UserWidget.h"
-#include "Minecraft/Character/MCCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Minecraft/World/WorldSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Minecraft/World/WorldManager.h"
 #include "Minecraft/Chunk/Chunk.h"
-#include "Minecraft/Utils/Utils.h"
+#include "MinecraftPlayerCameraManager.h"
+
+AMCPlayerController::AMCPlayerController()
+{
+	PlayerCameraManagerClass = AMinecraftPlayerCameraManager::StaticClass();
+}
 
 void AMCPlayerController::BeginPlay()
 {
@@ -19,7 +23,7 @@ void AMCPlayerController::BeginPlay()
 void AMCPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	RayCast();
 }
 
@@ -27,7 +31,6 @@ void AMCPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	MCPlayer = Cast<AMCCharacter>(GetPawn());
 }
 
 void AMCPlayerController::SetupInputComponent()
@@ -101,11 +104,12 @@ void AMCPlayerController::ShowDebugInfo()
 
 void AMCPlayerController::RayCast()
 {
-	UCameraComponent* Camera = MCPlayer->GetCamera();
+	const FVector& CameraLocation = PlayerCameraManager->ViewTarget.POV.Location;
+	const FRotator& CameraRotation = PlayerCameraManager->ViewTarget.POV.Rotation;
 
 	// 起点与终点
-	FVector Ray_Start = Camera->GetComponentLocation();
-	FVector Ray_End = Camera->GetComponentLocation() + Camera->GetComponentRotation().Vector() * MAX_RAY_DIST * BlockSize;
+	FVector Ray_Start = CameraLocation;
+	FVector Ray_End = CameraLocation + CameraRotation.Vector() * MAX_RAY_DIST * BlockSize;
 
 	// 起始体素位置
 	FVector Current_Voxel(FMath::Floor(Ray_Start.X / BlockSize),

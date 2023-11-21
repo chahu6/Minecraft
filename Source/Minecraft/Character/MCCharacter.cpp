@@ -1,7 +1,7 @@
 #include "MCCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Camera/CameraComponent.h"
 #include "Minecraft/Controller/MCPlayerController.h"
+#include "Camera/CameraComponent.h"
 
 AMCCharacter::AMCCharacter()
 {
@@ -50,10 +50,10 @@ void AMCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMCCharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ThisClass::StopJumping);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMCCharacter::StopJumping);
 
-	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ThisClass::MoveRight);
+	PlayerInputComponent->BindAxis("MoveForward", this, &AMCCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AMCCharacter::MoveRight);
 
 	PlayerInputComponent->BindAxis("TurnRight", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);

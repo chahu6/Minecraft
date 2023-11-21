@@ -33,10 +33,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	class USpringArmComponent* CameraBoom;
 
-	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstCamera;
 
 	//UPROPERTY(VisibleAnywhere, Category = "Camera")
@@ -51,9 +51,4 @@ private:
 	};
 
 	EPerspective NextPerspective = EPerspective::Third;
-
-public:
-
-	FORCEINLINE UCameraComponent* GetCamera() const noexcept { return FirstCamera; };
-
 };

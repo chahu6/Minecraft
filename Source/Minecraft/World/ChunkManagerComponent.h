@@ -4,8 +4,6 @@
 #include "Components/ActorComponent.h"
 #include "Minecraft/MinecraftType/BlockType.h"
 #include "Minecraft/Generation/TerrainGenerator.h"
-
-
 #include "ChunkManagerComponent.generated.h"
 
 class AWorldManager;
@@ -17,6 +15,7 @@ class MINECRAFT_API UChunkManagerComponent : public UActorComponent
 	GENERATED_BODY()
 
 	friend class AWorldManager;
+
 public:
 	UChunkManagerComponent();
 
