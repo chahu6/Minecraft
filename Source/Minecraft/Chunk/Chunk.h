@@ -57,9 +57,13 @@ private:
 	// 是否都是Air或None
 	bool bIsEmpty = true;
 
+	// Chunk在World中的体素位置的中心
+	FVector Center;
+
 public:
 	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }
 	FORCEINLINE void SetDirty(bool bNewDirty) { bIsDirty = bNewDirty; }
 	FORCEINLINE void SetEmpty(bool bNewEmpty) { bIsEmpty = bNewEmpty; }
 	FORCEINLINE bool IsEmpty() { return bIsEmpty; }
+	FORCEINLINE const FVector& GetCenter() const { return Center; }
 };

@@ -1,5 +1,4 @@
 #include "Chunk.h"
-#include "SimplexNoiseLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Minecraft/Save/ChunkSaveGame.h"
 #include "ChunkMeshComponent.h"
@@ -21,6 +20,8 @@ void AChunk::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
+	// GetActorLocation()函数不能在构造函数中用，因为构造函数中Actor的位置还没有赋值
+	Center = GetActorLocation() + ChunkSize_Half;
 }
 
 void AChunk::OnConstruction(const FTransform& Transform)

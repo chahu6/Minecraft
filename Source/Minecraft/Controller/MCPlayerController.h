@@ -27,6 +27,9 @@ UCLASS()
 class MINECRAFT_API AMCPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+
+public:
+	AMCPlayerController();
 	
 public:
 	virtual void BeginPlay() override;
@@ -52,9 +55,6 @@ private:
 private:
 	UPROPERTY()
 	class AMinecraftHUD* MinecraftHUD;
-
-	UPROPERTY()
-	AMCCharacter* MCPlayer;
 
 	bool bIsDebug = false;
 
