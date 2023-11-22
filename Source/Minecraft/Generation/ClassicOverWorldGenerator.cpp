@@ -128,7 +128,9 @@ void FClassicOverWorldGenerator::GenerateHeightMap()
 			int32 World_X = X * BlockSize + ChunkLocation.X;
 			int32 World_Y = Y * BlockSize + ChunkLocation.Y;
 
-			float World_Z = USimplexNoiseLibrary::SimplexNoiseInRange2D(World_X, World_Y, 0, 48, 0.0001f);
+			//float World_Z = USimplexNoiseLibrary::SimplexNoiseInRange2D(World_X, World_Y, 0, 48, 0.0001f);
+			float test = USimplexNoiseLibrary::SimplexNoise2D(World_X, World_Y, 0.00004f);
+			float World_Z = 100.0f + test * 20.0f;
 			float Local_Z = FMath::Min(World_Z - (ChunkLocation.Z / BlockSize), CHUNK_SIZE);
 			Local_Z = FMath::Floor(Local_Z);
 

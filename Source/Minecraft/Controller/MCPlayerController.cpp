@@ -82,6 +82,37 @@ void AMCPlayerController::RemoveBlock()
 	}
 }
 
+UTexture2D* AMCPlayerController::CreateTextureFromArray()
+{
+	int32 TextureHeight = 10;
+	int32 TextureWidth = 10;
+	UTexture2D* TheTexture2D = UTexture2D::CreateTransient(TextureHeight, TextureWidth, PF_B8G8R8A8);
+	uint8* Pixels = new uint8[TextureWidth * TextureHeight * 4];
+	for (int32 y = 0; y < TextureHeight; ++y)
+	{
+		for (int32 x = 0; x < TextureWidth; ++x)
+		{
+			int32 CurPixelIndex = ((y * TextureWidth) + x);
+			int32 Color = 0;
+
+			if (x <= 5)
+				Color = 255;
+
+			Pixels[4 * CurPixelIndex] = Color;
+			Pixels[4 * CurPixelIndex + 1] = Color;
+			Pixels[4 * CurPixelIndex + 2] = Color;
+			Pixels[4 * CurPixelIndex + 3] = 255;
+		}
+	}
+
+	void* TextureData = TheTexture2D->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+	FMemory::Memcpy(TextureData, Pixels, sizeof(uint8) * TextureWidth * TextureHeight * 4);
+	TheTexture2D->PlatformData->Mips[0].BulkData.Unlock();
+	TheTexture2D->UpdateResource();
+
+	return TheTexture2D;
+}
+
 void AMCPlayerController::ShowDebugInfo()
 {
 	if (bIsDebug)
