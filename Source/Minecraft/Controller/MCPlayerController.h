@@ -38,9 +38,11 @@ public:
 
 	virtual void SetupInputComponent() override;
 
-
 	void AddBlock();
 	void RemoveBlock();
+
+	UFUNCTION(BlueprintCallable)
+	UTexture2D* CreateTextureFromArray();
 private:
 	void ShowDebugInfo();
 

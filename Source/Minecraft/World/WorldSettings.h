@@ -25,7 +25,7 @@ constexpr int32 NearClipPlane	=	10;
 constexpr int32 WATER_LEVEL		=	64;
 
 // 世界高度
-constexpr int32 WORLD_HEIGHT	=	3;		// 高
+constexpr int32 WORLD_HEIGHT	=	16;		// 高
 
 // 一些工具宏函数
 #define GetLocationFromIndex(x)			((x) * BlockSize)
