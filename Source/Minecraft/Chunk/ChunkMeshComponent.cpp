@@ -32,28 +32,26 @@ void UChunkMeshComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 void UChunkMeshComponent::Render()
 {
-	if (MeshData.Vertices.IsEmpty()) return;
+	for (const auto& MeshData : MeshDatas)
+	{
+		if (MeshData.Value.Vertices.IsEmpty()) return;
 
-	ProduralMesh->ClearAllMeshSections();
-	ProduralMesh->CreateMeshSection_LinearColor(0, MeshData.Vertices, MeshData.Triangles, MeshData.Normals, MeshData.UV0, MeshData.VertexColors, MeshData.Tangents, true);
-	FBlockInfoTableRow* BlockInfo = GetBlockInfo(2);
-	if (BlockInfo)
-		ProduralMesh->SetMaterial(0, BlockInfo->Material);
+		//ProduralMesh->ClearAllMeshSections();
+		ProduralMesh->CreateMeshSection_LinearColor(MeshData.Key, MeshData.Value.Vertices, MeshData.Value.Triangles, MeshData.Value.Normals, MeshData.Value.UV0, MeshData.Value.VertexColors, MeshData.Value.Tangents, true);
+		FBlockInfoTableRow* BlockInfo = GetBlockInfo(MeshData.Key);
+		if (BlockInfo)
+			ProduralMesh->SetMaterial(MeshData.Key, BlockInfo->Material);
+	}
 }
 
 void UChunkMeshComponent::BuildMesh()
 {
-	FChunkMeshBuilder::BuildChunkMesh(Chunk, MeshData);
+	FChunkMeshBuilder::BuildChunkMesh(Chunk, MeshDatas);
 }
 
 void UChunkMeshComponent::ClearMeshData()
 {
-	MeshData.Normals.Empty();
-	MeshData.Vertices.Empty();
-	MeshData.VertexColors.Empty();
-	MeshData.Tangents.Empty();
-	MeshData.Triangles.Empty();
-	MeshData.UV0.Empty();
+	MeshDatas.Empty();
 }
 
 FBlockInfoTableRow* UChunkMeshComponent::GetBlockInfo(uint8 BlockID)

@@ -42,5 +42,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	int32 ChunkRenderingRange = 5;
 
+	UPROPERTY(EditAnywhere)
+	int32 Seed;
+
 	FVector2D CharacterPosition;
 };

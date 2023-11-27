@@ -18,7 +18,7 @@ void AWorldManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	USimplexNoiseLibrary::SetNoiseSeed(234324);
+	USimplexNoiseLibrary::SetNoiseSeed(Seed);
 
 	InitialWorldChunkLoad();
 }
