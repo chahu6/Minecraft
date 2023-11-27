@@ -7,5 +7,5 @@ class AChunk;
 class FChunkMeshBuilder
 {
 public:
-	static void BuildChunkMesh(AChunk* Chunk, FMeshData& OutMeshData);
+	static void BuildChunkMesh(AChunk* Chunk, TMap<uint8, FMeshData>& OutMeshDatas);
 };

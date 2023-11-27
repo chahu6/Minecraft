@@ -61,4 +61,16 @@ private:
 	bool bIsDebug = false;
 
 	FBlockData BlockData;
+
+	UPROPERTY(EditAnywhere, Category = "AAA")
+	float Factor = 0.05f;
+
+	UPROPERTY(EditAnywhere, Category = "AAA")
+	float FudgeFactor = 1.2f;
+
+	UPROPERTY(EditAnywhere, Category = "AAA")
+	float Exponent = 1.0f;
+
+	UPROPERTY(EditAnywhere, Category = "AAA")
+	int32 Seed;
 };

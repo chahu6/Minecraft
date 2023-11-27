@@ -54,5 +54,5 @@ private:
 private:
 	AChunk* Chunk = nullptr;
 
-	FMeshData MeshData;
+	TMap<uint8, FMeshData> MeshDatas;
 };

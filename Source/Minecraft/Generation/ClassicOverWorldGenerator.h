@@ -24,4 +24,5 @@ private:
 	TArray<uint8> HeightMap;
 
 	AChunk* CurrentChunk = nullptr;
+	FVector ChunkLocation;
 };
