@@ -55,7 +55,7 @@ void FClassicOverWorldGenerator::SetBlocksInChunk()
 		for (int32 X = 0; X < CHUNK_SIZE; ++X)
 		{
 			Height = HeightMap[GetHeightIndex(X, Y)];
-			for (int32 Z = 0; Z < MaxHeight; ++Z)
+			for (int32 Z = 0; Z < MaxHeight + 1; ++Z)
 			{
 				if (Z > Height)
 				{
@@ -68,11 +68,11 @@ void FClassicOverWorldGenerator::SetBlocksInChunk()
 				}
 				else if (Z > Height - 3)
 				{
-					//CurrentChunk->SetBlock(X, Y, Z, )
+					CurrentChunk->SetBlock(X, Y, Z, 2);
 				}
 				else if (Z == Height)
 				{
-
+					CurrentChunk->SetBlock(X, Y, Z, 2);
 				}
 				else
 				{

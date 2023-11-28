@@ -22,7 +22,7 @@ constexpr int32 ChunkSize		=	CHUNK_SIZE * BlockSize,
 constexpr int32 NearClipPlane	=	10;
 
 // 海平面
-constexpr int32 WATER_LEVEL		=	64;
+constexpr int32 WATER_LEVEL		=	90;
 
 // 世界高度
 constexpr int32 WORLD_HEIGHT	=	16;		// 高
