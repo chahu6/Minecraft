@@ -29,7 +29,7 @@ public:
 	void DrawCrosshairs();
 
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "DebugInfo")
 	TSubclassOf<UUserWidget> DebugInfoClass;
 
 	UPROPERTY()

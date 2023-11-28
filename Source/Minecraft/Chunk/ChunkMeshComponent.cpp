@@ -28,9 +28,9 @@ void UChunkMeshComponent::Render()
 {
 	for (const auto& MeshData : MeshDatas)
 	{
-		if (MeshData.Value.Vertices.IsEmpty()) return;
+		if (MeshData.Value.Vertices.IsEmpty()) continue;
 
-		ProduralMesh->ClearAllMeshSections();
+		//ProduralMesh->ClearAllMeshSections();
 		ProduralMesh->CreateMeshSection_LinearColor(MeshData.Key, MeshData.Value.Vertices, MeshData.Value.Triangles, MeshData.Value.Normals, MeshData.Value.UV0, MeshData.Value.VertexColors, MeshData.Value.Tangents, true);
 		FBlockInfoTableRow* BlockInfo = GetBlockInfo(MeshData.Key);
 
