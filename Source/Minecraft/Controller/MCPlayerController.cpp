@@ -5,7 +5,7 @@
 #include "Minecraft/World/WorldSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Minecraft/World/WorldManager.h"
-#include "Minecraft/Chunk/Chunk.h"
+#include "Minecraft/Chunk/ChunkSection.h"
 #include "MinecraftPlayerCameraManager.h"
 
 #include "SimplexNoiseLibrary.h"
@@ -49,7 +49,6 @@ void AMCPlayerController::AddBlock()
 {
 	if (BlockData.BlockID > 0)
 	{
-		FBlockData Temp;
 		uint8 BlockID = GetBlockID(BlockData.VoxelWorldPosition + BlockData.Normal, Temp);
 
 		if (BlockID == 0)
@@ -57,13 +56,16 @@ void AMCPlayerController::AddBlock()
 			AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 			if (WorldManager)
 			{
-				AChunk* Chunk = WorldManager->GetChunk(Temp.ChunkVoexlWorldPosition);
-				Chunk->SetBlock(Temp.BlockIndex, 2);
-				if (Chunk->IsEmpty())
+				AChunkSection* ChunkSection = WorldManager->GetChunkSection(Temp.ChunkVoexlWorldPosition);
+				if (ChunkSection)
 				{
-					Chunk->SetEmpty(false);
+					ChunkSection->SetBlock(Temp.BlockIndex, 2);
+					if (ChunkSection->IsEmpty())
+					{
+						ChunkSection->SetEmpty(false);
+					}
+					ChunkSection->Rebuild();
 				}
-				Chunk->Rebuild();
 			}
 		}
 	}
@@ -76,12 +78,12 @@ void AMCPlayerController::RemoveBlock()
 		AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 		if (WorldManager)
 		{
-			AChunk* Chunk = WorldManager->GetChunk(BlockData.ChunkVoexlWorldPosition);
-			Chunk->SetBlock(BlockData.BlockIndex, 0);
+			AChunkSection* ChunkSection = WorldManager->GetChunkSection(BlockData.ChunkVoexlWorldPosition);
+			ChunkSection->SetBlock(BlockData.BlockIndex, 0);
 
 			// 重新计算空值
-			Chunk->RecalculateEmpty();
-			Chunk->Rebuild();
+			ChunkSection->RecalculateEmpty();
+			ChunkSection->Rebuild();
 			Rebuild_Adjacent_Chunks();
 		}
 	}
@@ -276,10 +278,10 @@ uint8 AMCPlayerController::GetBlockID(const FVector& VoxelWorldPosition, FBlockD
 	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 	if (WorldManager)
 	{
-		AChunk* Chunk = WorldManager->GetChunk(ChunkVoexlWorldPosition);
+		AChunkSection* ChunkSection = WorldManager->GetChunkSection(ChunkVoexlWorldPosition);
 
 		// 在游玩时，因为地形一直是随着玩家的位置加载的所以完整游戏中，不因该为空
-		if (Chunk == nullptr) return 0;
+		if (ChunkSection == nullptr) return 0;
 
 		int32 Local_X = VoxelWorldPosition.X - ChunkWorld_X * CHUNK_SIZE;
 		int32 Local_Y = VoxelWorldPosition.Y - ChunkWorld_Y * CHUNK_SIZE;
@@ -287,7 +289,7 @@ uint8 AMCPlayerController::GetBlockID(const FVector& VoxelWorldPosition, FBlockD
 
 		int32 BlockIndex = Local_X + Local_Y * CHUNK_SIZE + Local_Z * CHUNK_AREA;
 
-		OutBlockData.BlockID = Chunk->GetBlock(BlockIndex);
+		OutBlockData.BlockID = ChunkSection->GetBlock(BlockIndex);
 		OutBlockData.BlockIndex = BlockIndex;
 		OutBlockData.VoxelLocalPosition = FVector(Local_X, Local_Y, Local_Z);
 		OutBlockData.VoxelWorldPosition = VoxelWorldPosition;
@@ -304,12 +306,12 @@ void AMCPlayerController::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_Wor
 	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 	if (WorldManager)
 	{
-		AChunk* Chunk = WorldManager->GetChunk(FVector(Chunk_World_X, Chunk_World_Y, Chunk_World_Z));
+		AChunkSection* ChunkSection = WorldManager->GetChunkSection(FVector(Chunk_World_X, Chunk_World_Y, Chunk_World_Z));
 	
-		if (Chunk == nullptr)
+		if (ChunkSection == nullptr)
 			return;
 
-		Chunk->Rebuild();
+		ChunkSection->Rebuild();
 	}
 }
 

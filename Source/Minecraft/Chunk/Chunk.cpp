@@ -4,34 +4,46 @@
 #include "ChunkMeshComponent.h"
 #include "Minecraft/World/WorldSettings.h"
 #include "Minecraft/Generation/TerrainGenerator.h"
+#include "ChunkSection.h"
 
 AChunk::AChunk()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
-	Blocks.Init(0, CHUNK_VOLUME);
+	PrimaryActorTick.bCanEverTick = false;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
-	ChunkMesh = CreateDefaultSubobject<UChunkMeshComponent>(TEXT("ChunkMesh"));
-}
-
-void AChunk::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	// GetActorLocation()函数不能在构造函数中用，因为构造函数中Actor的位置还没有赋值
-	Center = GetActorLocation() + ChunkSize_Half;
-}
-
-void AChunk::OnConstruction(const FTransform& Transform)
-{
+	ChunkSections.SetNum(WORLD_HEIGHT);
 }
 
 void AChunk::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		FVector ChunkSectionLocation = GetActorLocation();
+		for (int32 Z = 0; Z < WORLD_HEIGHT; ++Z)
+		{
+			ChunkSectionLocation.Z = Z * ChunkSize;
+			AChunkSection* ChunkSection = World->SpawnActor<AChunkSection>(AChunkSection::StaticClass(), ChunkSectionLocation, FRotator::ZeroRotator, SpawnParams);
+			ChunkSections[Z] = ChunkSection;
+		}
+	}
+}
+
+void AChunk::Destroyed()
+{
+	Super::Destroyed();
+
+	for (const auto ChunkSection : ChunkSections)
+	{
+		ChunkSection->Destroy();
+	}
+
+	ChunkSections.Empty();
 }
 
 void AChunk::Tick(float DeltaTime)
@@ -40,39 +52,43 @@ void AChunk::Tick(float DeltaTime)
 
 }
 
+AChunkSection* AChunk::GetChunkSection(double Voxel_Z)
+{
+	return ChunkSections.IsValidIndex(Voxel_Z) ? ChunkSections[Voxel_Z] : nullptr;
+}
+
+void AChunk::Dirty()
+{
+	for (const auto ChunkSection : ChunkSections)
+	{
+		ChunkSection->SetDirty(true);
+	}
+}
+
 uint8 AChunk::GetBlock(int32 X, int32 Y, int32 Z)
 {
-	return Blocks[GetBlocksIndex(X, Y, Z)];
+	return 0;
 }
 
 uint8 AChunk::GetBlock(int32 Index)
 {
-	return Blocks[Index];
+	return 0;
 }
 
 void AChunk::SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID)
 {
-	Blocks[GetBlocksIndex(X, Y, Z)] = BlockID;
-}
-
-void AChunk::SetBlock(int32 Index, uint8 BlockID)
-{
-	Blocks[Index] = BlockID;
+	int32 Index = Z / CHUNK_SIZE;
+	if (ChunkSections.IsValidIndex(Index))
+	{
+		ChunkSections[Index]->SetBlock(X, Y, Z % CHUNK_SIZE, BlockID);
+	}
 }
 
 void AChunk::Render()
 {
-	if (bIsDirty)
+	for (const auto ChunkSection : ChunkSections)
 	{
-		if (!bIsEmpty)
-		{
-			ChunkMesh->ClearMeshData();
-
-			ChunkMesh->BuildMesh();
-
-			ChunkMesh->Render();
-		}
-		bIsDirty = false;
+		ChunkSection->Render();
 	}
 }
 
@@ -80,26 +96,9 @@ void AChunk::Load(ITerrainGenerator* Generator)
 {
 	Generator->GenerateChunk(this);
 
-	for (uint8 Element : Blocks)
+	// 计算每个ChunkSection是否为空或Air
+	for (const auto ChunkSection : ChunkSections)
 	{
-		if (Element != 0)
-		{
-			bIsEmpty = false;
-			break;
-		}
+		ChunkSection->RecalculateEmpty();
 	}
-	// 也可以这么写
-	//bIsEmpty = Blocks.ContainsByPredicate([](uint8 Element) {return Element != 0; });
-}
-
-void AChunk::Rebuild()
-{
-	bIsDirty = true;
-
-	Render();
-}
-
-void AChunk::RecalculateEmpty()
-{
-	bIsDirty = !Blocks.ContainsByPredicate([](uint8 Element) {return Element != 0; });
 }

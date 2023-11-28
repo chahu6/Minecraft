@@ -9,7 +9,7 @@ UChunkManagerComponent::UChunkManagerComponent()
 	_TerrainGenerator = MakeUnique<FClassicOverWorldGenerator>();
 }
 
-AChunk* UChunkManagerComponent::GetChunk(const FVector& Key)
+AChunk* UChunkManagerComponent::GetChunk(const FVector2D& Key)
 {
 	if (_AllChunks.Contains(Key))
 	{
@@ -18,7 +18,7 @@ AChunk* UChunkManagerComponent::GetChunk(const FVector& Key)
 	return nullptr;
 }
 
-void UChunkManagerComponent::LoadChunk(const FVector& ChunkVoxelPosition)
+void UChunkManagerComponent::LoadChunk(const FVector2D& ChunkVoxelPosition)
 {
 	AChunk* Chunk = GetChunk(ChunkVoxelPosition);
 	if (Chunk == nullptr)
@@ -28,7 +28,7 @@ void UChunkManagerComponent::LoadChunk(const FVector& ChunkVoxelPosition)
 		{
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Owner = GetOwner();
-			Chunk = World->SpawnActor<AChunk>(AChunk::StaticClass(), ChunkVoxelPosition * ChunkSize, FRotator::ZeroRotator, SpawnParams);
+			Chunk = World->SpawnActor<AChunk>(AChunk::StaticClass(), { ChunkVoxelPosition.X * ChunkSize, ChunkVoxelPosition.Y * ChunkSize, 0.0 }, FRotator::ZeroRotator, SpawnParams);
 			Chunk->Load(_TerrainGenerator.Get());
 			_AllChunks.Add(ChunkVoxelPosition, Chunk);
 
@@ -38,26 +38,25 @@ void UChunkManagerComponent::LoadChunk(const FVector& ChunkVoxelPosition)
 	}
 }
 
-void UChunkManagerComponent::Rebuild_Adjacent_Chunks(const FVector& ChunkVoxelWorldPosition)
+void UChunkManagerComponent::Rebuild_Adjacent_Chunks(const FVector2D& ChunkVoxelWorldPosition)
 {
 	// X轴
-	Rebuild_Adj_Chunk(ChunkVoxelWorldPosition.X - 1, ChunkVoxelWorldPosition.Y, ChunkVoxelWorldPosition.Z);
-	Rebuild_Adj_Chunk(ChunkVoxelWorldPosition.X + 1, ChunkVoxelWorldPosition.Y, ChunkVoxelWorldPosition.Z);
+	Rebuild_Adj_Chunk(ChunkVoxelWorldPosition.X - 1, ChunkVoxelWorldPosition.Y);
+	Rebuild_Adj_Chunk(ChunkVoxelWorldPosition.X + 1, ChunkVoxelWorldPosition.Y);
 
 	// Y轴
-	Rebuild_Adj_Chunk(ChunkVoxelWorldPosition.X, ChunkVoxelWorldPosition.Y - 1, ChunkVoxelWorldPosition.Z);
-	Rebuild_Adj_Chunk(ChunkVoxelWorldPosition.X, ChunkVoxelWorldPosition.Y + 1, ChunkVoxelWorldPosition.Z);
+	Rebuild_Adj_Chunk(ChunkVoxelWorldPosition.X, ChunkVoxelWorldPosition.Y - 1);
+	Rebuild_Adj_Chunk(ChunkVoxelWorldPosition.X, ChunkVoxelWorldPosition.Y + 1);
 
-	// Z轴因为是新区块，所以z轴的不需要
+	//Z轴的不需要
 }
 
-void UChunkManagerComponent::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z)
+void UChunkManagerComponent::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y)
 {
-	AChunk* Chunk = GetChunk(FVector(Chunk_World_X, Chunk_World_Y, Chunk_World_Z));
+	AChunk* Chunk = GetChunk(FVector2D(Chunk_World_X, Chunk_World_Y));
 
 	if (Chunk == nullptr)
 		return;
 
-	if (!Chunk->IsEmpty())
-		Chunk->SetDirty(true);
+	Chunk->Dirty();
 }

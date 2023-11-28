@@ -1,10 +1,9 @@
 #include "ChunkMeshBuilder.h"
 #include "Minecraft/World/WorldSettings.h"
-#include "Chunk.h"
+#include "ChunkSection.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Minecraft/MinecraftType/FaceType.h"
 #include "Minecraft/World/WorldManager.h"
-#include "Minecraft/Utils/Utils.h"
 
 bool IsVoid(int32 X, int32 Y, int32 Z, const FVector& WorldLocation, AWorldManager* WorldManager)
 {
@@ -12,20 +11,20 @@ bool IsVoid(int32 X, int32 Y, int32 Z, const FVector& WorldLocation, AWorldManag
 	int32 ChunkVoxel_Y = FMath::Floor(WorldLocation.Y / ChunkSize);
 	int32 ChunkVoxel_Z = FMath::Floor(WorldLocation.Z / ChunkSize);
 
-	AChunk* Chunk = WorldManager->GetChunk(FVector(ChunkVoxel_X, ChunkVoxel_Y, ChunkVoxel_Z));
-	if (Chunk == nullptr) // 边界条件
+	AChunkSection* ChunkSection = WorldManager->GetChunkSection(FVector(ChunkVoxel_X, ChunkVoxel_Y, ChunkVoxel_Z));
+	if (ChunkSection == nullptr) // 边界条件
 		return false;
 
 	int32 Local_X = (X + CHUNK_SIZE) % CHUNK_SIZE;
 	int32 Local_Y = (Y + CHUNK_SIZE) % CHUNK_SIZE;
 	int32 Local_Z = (Z + CHUNK_SIZE) % CHUNK_SIZE;
-	if (Chunk->GetBlock(Local_X, Local_Y, Local_Z) > 1)
+	if (ChunkSection->GetBlock(Local_X, Local_Y, Local_Z) > 1)
 		return false;
 
 	return true;
 }
 
-void FChunkMeshBuilder::BuildChunkMesh(AChunk* Chunk, TMap<uint8, FMeshData>& OutMeshDatas)
+void FChunkMeshBuilder::BuildChunkMesh(const AChunkSection* ChunkSection, TMap<uint8, FMeshData>& OutMeshDatas)
 {
 	int32 Index = 0;
 
@@ -38,9 +37,9 @@ void FChunkMeshBuilder::BuildChunkMesh(AChunk* Chunk, TMap<uint8, FMeshData>& Ou
 	TArray<FLinearColor> VertexColors_Tmp;
 	VertexColors_Tmp.SetNum(4);
 
-	FVector ChunkLocation = Chunk->GetActorLocation();
+	FVector ChunkLocation = ChunkSection->GetActorLocation();
 
-	AWorldManager* WorldManager = Cast<AWorldManager>(Chunk->GetOwner());
+	AWorldManager* WorldManager = Cast<AWorldManager>(ChunkSection->GetOwner()->GetOwner());
 
 	for (int32 X = 0; X < CHUNK_SIZE; ++X)
 	{
@@ -48,7 +47,7 @@ void FChunkMeshBuilder::BuildChunkMesh(AChunk* Chunk, TMap<uint8, FMeshData>& Ou
 		{
 			for (int32 Z = 0; Z < CHUNK_SIZE; ++Z)
 			{
-				uint8 BlockID = Chunk->GetBlock(X, Y, Z);
+				uint8 BlockID = ChunkSection->GetBlock(X, Y, Z);
 
 				if (BlockID <= 1)
 					continue;
@@ -62,7 +61,7 @@ void FChunkMeshBuilder::BuildChunkMesh(AChunk* Chunk, TMap<uint8, FMeshData>& Ou
 
 				Index = TempMeshData.Vertices.Num();
 
-				// Voxel World Position
+				// World Position
 				int32 World_X = X * BlockSize + ChunkLocation.X;
 				int32 World_Y = Y * BlockSize + ChunkLocation.Y;
 				int32 World_Z = Z * BlockSize + ChunkLocation.Z;

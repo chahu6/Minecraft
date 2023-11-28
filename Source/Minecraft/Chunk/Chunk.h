@@ -2,12 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Engine/DataTable.h"
 #include "Minecraft/MinecraftType/FaceType.h"
 #include "Minecraft/MinecraftType/BlockType.h"
 #include "Chunk.generated.h"
 
 class ITerrainGenerator;
+class AChunkSection;
 
 UCLASS()
 class MINECRAFT_API AChunk : public AActor
@@ -20,50 +20,32 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void PostInitializeComponents() override;
-	virtual void OnConstruction(const FTransform& Transform) override;
+
+	virtual void Destroyed() override;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
+
+	AChunkSection* GetChunkSection(double Voxel_Z);
+
+	// 将所有的ChunkSection都设置为脏数据，Chunk是脏数据代表所属的ChunkSection也是脏数据
+	void Dirty();
 
 	uint8 GetBlock(int32 X, int32 Y, int32 Z);
 	uint8 GetBlock(int32 Index);
 
 	void SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID);
-	void SetBlock(int32 Index, uint8 BlockID);
 
 	void Render();
 
 	void Load(ITerrainGenerator* Generator);
 
-	void Rebuild();
-
-	void RecalculateEmpty();
 private:
-
-private:
-	UPROPERTY(VisibleAnywhere)
-	class UChunkMeshComponent* ChunkMesh;
-
-private:
-	TArray<uint8> Blocks;
-
 	int32 Seed = -1;
 	FString SlotName;
 
-	// 是否Blocks数据修改过
-	bool bIsDirty = true;
-
-	// 是否都是Air或None
-	bool bIsEmpty = true;
-
-	// Chunk在World中的体素位置的中心
-	FVector Center;
+	TArray<AChunkSection*> ChunkSections;
 
 public:
 	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }
-	FORCEINLINE void SetDirty(bool bNewDirty) { bIsDirty = bNewDirty; }
-	FORCEINLINE void SetEmpty(bool bNewEmpty) { bIsEmpty = bNewEmpty; }
-	FORCEINLINE bool IsEmpty() { return bIsEmpty; }
-	FORCEINLINE const FVector& GetCenter() const { return Center; }
 };

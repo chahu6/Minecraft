@@ -42,10 +42,7 @@ void AWorldManager::InitialWorldChunkLoad()
 	{
 		for (int32 Y = -ChunkRenderingRange; Y <= ChunkRenderingRange; ++Y)
 		{
-			for (int32 Z = 0; Z < WORLD_HEIGHT; ++Z)
-			{
-				ChunkManager->LoadChunk(FVector(X, Y, Z));
-			}
+			ChunkManager->LoadChunk(FVector2D(X, Y));
 		}
 	}
 
@@ -79,11 +76,8 @@ void AWorldManager::AddChunk()
 	{
 		for (int32 Y = MinRenderingRangeY; Y <= MaxRenderingRangeY; ++Y)
 		{
-			for (int32 Z = 0; Z < WORLD_HEIGHT; ++Z)
-			{
-				FVector ChunkPosition(X, Y, Z);
-				ChunkManager->LoadChunk(ChunkPosition);
-			}
+			FVector2D ChunkPosition(X, Y);
+			ChunkManager->LoadChunk(ChunkPosition);
 		}
 	}
 }
@@ -102,7 +96,7 @@ void AWorldManager::RemoveChunk()
 	auto& ChunksMap = ChunkManager->_AllChunks;
 	for (auto Itr = ChunksMap.CreateConstIterator(); Itr; ++Itr)
 	{
-		FVector ChunkLocation = Itr.Key();
+		FVector2D ChunkLocation = Itr.Key();
 		bool bIsRemove = MinRenderingRangeX <= ChunkLocation.X && ChunkLocation.X <= MaxRenderingRangeX && MinRenderingRangeY <= ChunkLocation.Y && ChunkLocation.Y <= MaxRenderingRangeY;
 		if (!bIsRemove)
 		{
@@ -114,14 +108,25 @@ void AWorldManager::RemoveChunk()
 
 void AWorldManager::RenderChunks()
 {
-	auto& ChunksMap = ChunkManager->_AllChunks;
-	for (auto& Elem : ChunksMap)
+	const auto& ChunksMap = ChunkManager->_AllChunks;
+	for (const auto& Elem : ChunksMap)
 	{
 		Elem.Value->Render();
 	}
 }
 
-AChunk* AWorldManager::GetChunk(const FVector& ChunkVoxelPosition)
+AChunk* AWorldManager::GetChunk(const FVector2D& ChunkVoxelPosition)
 {
 	return ChunkManager->GetChunk(ChunkVoxelPosition);
+}
+
+AChunkSection* AWorldManager::GetChunkSection(const FVector& ChunkVoxelPosition)
+{
+	AChunk* Chunk = GetChunk(FVector2D(ChunkVoxelPosition));
+	if (Chunk)
+	{
+		return Chunk->GetChunkSection(ChunkVoxelPosition.Z);
+	}
+
+	return nullptr;
 }
