@@ -37,9 +37,9 @@ void FClassicOverWorldGenerator::SetBlocksInChunk()
 	//GenerateBiomeMap();
 	GenerateHeightMap();
 
-#if 1
-
+	int32 Height = 0;
 	int32 MaxHeight = 0;
+
 	for (int32 i = 0; i < HeightMap.Num(); ++i)
 	{
 		if (HeightMap[i] > MaxHeight)
@@ -54,58 +54,33 @@ void FClassicOverWorldGenerator::SetBlocksInChunk()
 	{
 		for (int32 X = 0; X < CHUNK_SIZE; ++X)
 		{
-			int32 Height = HeightMap[GetHeightIndex(X, Y)];
-
-			int32 World_X = X + ChunkLocation.X / BlockSize;
-			int32 World_Y = Y + ChunkLocation.Y / BlockSize;
-
-			int32 Local_Z = FMath::Min(Height - (ChunkLocation.Z / BlockSize), CHUNK_SIZE);
-			for (int32 Z = 0; Z < Local_Z; ++Z)
+			Height = HeightMap[GetHeightIndex(X, Y)];
+			for (int32 Z = 0; Z < MaxHeight; ++Z)
 			{
-				CurrentChunk->SetBlock(X, Y, Z, 4);
+				if (Z > Height)
+				{
+					if (Z <= WATER_LEVEL)
+					{
+						CurrentChunk->SetBlock(X, Y, Z, 6);
+						continue;
+					}
+					break;
+				}
+				else if (Z > Height - 3)
+				{
+					//CurrentChunk->SetBlock(X, Y, Z, )
+				}
+				else if (Z == Height)
+				{
+
+				}
+				else
+				{
+					CurrentChunk->SetBlock(X, Y, Z, 2);
+				}
 			}
-
-			for (int32 Z = Height; Height < WATER_LEVEL; ++Height)
-			{
-
-			}
-
-			if (Height < WATER_LEVEL)
-			{
-
-			}
-
-			//float Local_Z = FMath::Min(Height - (ChunkLocation.Z / BlockSize), CHUNK_SIZE);
-			//Local_Z = FMath::Floor(Local_Z);
-
-			//if (Z > Height)
-			//{
-			//	if (Z <= WATER_LEVEL)
-			//	{
-			//		//CurrentChunk->SetBlock(X, Y, Z, EBlockType::Water);
-			//	}
-			//	continue;
-			//}
-			//else if (Z == Height)
-			//{
-			//	CurrentChunk->SetBlock(X, Y, Z, EBlockType::Grass);
-			//}
-			//else if (Z > Height - 3)
-			//{
-			//	CurrentChunk->SetBlock(X, Y, Z, EBlockType::Dirt);
-			//}
-			//else
-			//{
-			//	CurrentChunk->SetBlock(X, Y, Z, EBlockType::Stone);
-			//}
-			//if (Z <= Height)
-			//{
-				//CurrentChunk->SetBlock(X, Y, Z, 2);
-			//}
 		}
 	}
-
-#endif
 }
 
 void FClassicOverWorldGenerator::GenerateBiomeMap()

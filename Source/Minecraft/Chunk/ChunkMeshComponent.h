@@ -21,7 +21,7 @@ struct FBlockInfoTableRow : public FTableRowBase
 	UMaterialInterface* Material;
 };
 
-class AChunk;
+class AChunkSection;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MINECRAFT_API UChunkMeshComponent : public UActorComponent
@@ -52,7 +52,7 @@ private:
 	class UProceduralMeshComponent* ProduralMesh;
 
 private:
-	AChunk* Chunk = nullptr;
+	AChunkSection* ChunkSection = nullptr;
 
 	TMap<uint8, FMeshData> MeshDatas;
 };

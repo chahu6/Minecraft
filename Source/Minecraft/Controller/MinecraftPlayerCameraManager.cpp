@@ -1,5 +1,5 @@
 #include "MinecraftPlayerCameraManager.h"
-#include "Minecraft/Chunk/Chunk.h"
+#include "Minecraft/Chunk/ChunkSection.h"
 #include "Minecraft/World/WorldSettings.h"
 
 AMinecraftPlayerCameraManager::AMinecraftPlayerCameraManager()
@@ -13,10 +13,10 @@ AMinecraftPlayerCameraManager::AMinecraftPlayerCameraManager()
 	Tan_Z = FMath::Tan(H_FOV * 0.5f);
 }
 
-bool AMinecraftPlayerCameraManager::IsOnFrustum(const AChunk* Chunk)
+bool AMinecraftPlayerCameraManager::IsOnFrustum(const AChunkSection* ChunkSection)
 {
 	const FRotator& Rotation = ViewTarget.POV.Rotation;
-	FVector SpereVector = Chunk->GetCenter() - ViewTarget.POV.Location;
+	FVector SpereVector = ChunkSection->GetCenter() - ViewTarget.POV.Location;
 
 	// 超出这个近剪切平面
 	double SX = SpereVector.Dot(Rotation.Quaternion().GetRightVector());

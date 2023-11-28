@@ -1,13 +1,13 @@
 #include "ChunkMeshComponent.h"
 #include "ProceduralMeshComponent.h"
 #include "ChunkMeshBuilder.h"
-#include "Chunk.h"
+#include "ChunkSection.h"
 
 UChunkMeshComponent::UChunkMeshComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false; // False
 
-	Chunk = Cast<AChunk>(GetOwner());
+	ChunkSection = Cast<AChunkSection>(GetOwner());
 }
 
 void UChunkMeshComponent::BeginPlay()
@@ -21,7 +21,7 @@ void UChunkMeshComponent::BeginPlay()
 	ProduralMesh->SetCastShadow(false);
 	ProduralMesh->RegisterComponent();
 
-	Chunk = Chunk == nullptr ? Cast<AChunk>(GetOwner()) : Chunk;
+	ChunkSection = ChunkSection == nullptr ? Cast<AChunkSection>(GetOwner()) : ChunkSection;
 }
 
 void UChunkMeshComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -36,17 +36,20 @@ void UChunkMeshComponent::Render()
 	{
 		if (MeshData.Value.Vertices.IsEmpty()) return;
 
-		//ProduralMesh->ClearAllMeshSections();
+		ProduralMesh->ClearAllMeshSections();
 		ProduralMesh->CreateMeshSection_LinearColor(MeshData.Key, MeshData.Value.Vertices, MeshData.Value.Triangles, MeshData.Value.Normals, MeshData.Value.UV0, MeshData.Value.VertexColors, MeshData.Value.Tangents, true);
 		FBlockInfoTableRow* BlockInfo = GetBlockInfo(MeshData.Key);
+
 		if (BlockInfo)
+		{
 			ProduralMesh->SetMaterial(MeshData.Key, BlockInfo->Material);
+		}
 	}
 }
 
 void UChunkMeshComponent::BuildMesh()
 {
-	FChunkMeshBuilder::BuildChunkMesh(Chunk, MeshDatas);
+	FChunkMeshBuilder::BuildChunkMesh(ChunkSection, MeshDatas);
 }
 
 void UChunkMeshComponent::ClearMeshData()

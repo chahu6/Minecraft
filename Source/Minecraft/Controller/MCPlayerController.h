@@ -62,6 +62,8 @@ private:
 
 	FBlockData BlockData;
 
+	FBlockData Temp;
+
 	UPROPERTY(EditAnywhere, Category = "AAA")
 	float Factor = 0.05f;
 

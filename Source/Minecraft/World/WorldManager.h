@@ -5,6 +5,7 @@
 #include "WorldManager.generated.h"
 
 class AChunk;
+class AChunkSection;
 class UChunkManagerComponent;
 
 UCLASS()
@@ -22,8 +23,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Key是Chunk在Voxel World的位置，没有乘以ChunkSize的位置
-	AChunk* GetChunk(const FVector& ChunkVoxelPosition);
+	AChunk* GetChunk(const FVector2D& ChunkVoxelPosition);
 
+	AChunkSection* GetChunkSection(const FVector& ChunkVoxelPosition);
 private:
 	void InitialWorldChunkLoad();
 
