@@ -24,12 +24,6 @@ void UChunkMeshComponent::BeginPlay()
 	ChunkSection = ChunkSection == nullptr ? Cast<AChunkSection>(GetOwner()) : ChunkSection;
 }
 
-void UChunkMeshComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-}
-
 void UChunkMeshComponent::Render()
 {
 	for (const auto& MeshData : MeshDatas)

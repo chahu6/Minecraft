@@ -1,7 +1,6 @@
 #include "ChunkSection.h"
 #include "ChunkMeshComponent.h"
 #include "Minecraft/World/WorldSettings.h"
-#include "Minecraft/Generation/TerrainGenerator.h"
 
 AChunkSection::AChunkSection()
 {

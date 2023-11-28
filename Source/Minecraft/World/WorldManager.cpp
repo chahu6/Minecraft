@@ -1,7 +1,6 @@
 #include "WorldManager.h"
 #include "Minecraft/World/WorldSettings.h"
 #include "Minecraft/Chunk/Chunk.h"
-#include "Minecraft/Generation/ClassicOverWorldGenerator.h"
 #include "ChunkManagerComponent.h"
 #include "SimplexNoiseLibrary.h"
 #include "Kismet/GameplayStatics.h"

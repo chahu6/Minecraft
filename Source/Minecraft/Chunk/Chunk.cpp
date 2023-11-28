@@ -1,7 +1,5 @@
 #include "Chunk.h"
-#include "Kismet/GameplayStatics.h"
 #include "Minecraft/Save/ChunkSaveGame.h"
-#include "ChunkMeshComponent.h"
 #include "Minecraft/World/WorldSettings.h"
 #include "Minecraft/Generation/TerrainGenerator.h"
 #include "ChunkSection.h"
@@ -46,12 +44,6 @@ void AChunk::Destroyed()
 	ChunkSections.Empty();
 }
 
-void AChunk::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 AChunkSection* AChunk::GetChunkSection(double Voxel_Z)
 {
 	return ChunkSections.IsValidIndex(Voxel_Z) ? ChunkSections[Voxel_Z] : nullptr;
@@ -67,11 +59,12 @@ void AChunk::Dirty()
 
 uint8 AChunk::GetBlock(int32 X, int32 Y, int32 Z)
 {
-	return 0;
-}
+	int32 Index = Z / CHUNK_SIZE;
+	if (ChunkSections.IsValidIndex(Index))
+	{
+		return ChunkSections[Index]->GetBlock(X, Y, Z % CHUNK_SIZE);
+	}
 
-uint8 AChunk::GetBlock(int32 Index)
-{
 	return 0;
 }
 
