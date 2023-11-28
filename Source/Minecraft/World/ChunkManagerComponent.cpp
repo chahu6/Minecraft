@@ -1,7 +1,6 @@
 #include "ChunkManagerComponent.h"
 #include "Minecraft/Chunk/Chunk.h"
 #include "Minecraft/Generation/ClassicOverWorldGenerator.h"
-#include "WorldManager.h"
 #include "Minecraft/World/WorldSettings.h"
 
 UChunkManagerComponent::UChunkManagerComponent()

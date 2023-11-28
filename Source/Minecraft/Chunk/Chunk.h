@@ -2,8 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Minecraft/MinecraftType/FaceType.h"
-#include "Minecraft/MinecraftType/BlockType.h"
 #include "Chunk.generated.h"
 
 class ITerrainGenerator;
@@ -14,7 +12,6 @@ class MINECRAFT_API AChunk : public AActor
 {
 	GENERATED_BODY()
 	
-	friend class UChunkMeshComponent;
 public:	
 	AChunk();
 
@@ -24,15 +21,12 @@ protected:
 	virtual void Destroyed() override;
 
 public:	
-	virtual void Tick(float DeltaTime) override;
-
 	AChunkSection* GetChunkSection(double Voxel_Z);
 
 	// 将所有的ChunkSection都设置为脏数据，Chunk是脏数据代表所属的ChunkSection也是脏数据
 	void Dirty();
 
 	uint8 GetBlock(int32 X, int32 Y, int32 Z);
-	uint8 GetBlock(int32 Index);
 
 	void SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID);
 
