@@ -26,6 +26,8 @@ public:
 	AChunk* GetChunk(const FVector2D& ChunkVoxelPosition);
 
 	AChunkSection* GetChunkSection(const FVector& ChunkVoxelPosition);
+
+	void UpdateWorldAsync();
 private:
 	void InitialWorldChunkLoad();
 
@@ -45,7 +47,7 @@ private:
 	int32 ChunkRenderingRange = 5;
 
 	UPROPERTY(EditAnywhere)
-	int32 Seed;
+	int32 Seed = 0;
 
 	FVector2D CharacterPosition;
 };

@@ -6,9 +6,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
+#include "FWorldRunner.h"
+#include "FWorldGeneratorAsyncTask.h"
+
 AWorldManager::AWorldManager()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	ChunkManager = CreateDefaultSubobject<UChunkManagerComponent>(TEXT("ChunkManagerComponent"));
 }
@@ -128,4 +131,18 @@ AChunkSection* AWorldManager::GetChunkSection(const FVector& ChunkVoxelPosition)
 	}
 
 	return nullptr;
+}
+
+void AWorldManager::UpdateWorldAsync()
+{
+
+	//(new FAutoDeleteAsyncTask<FWorldGeneratorAsyncTask>(this))->StartBackgroundTask();
+
+	/*bool bIsUpdated = UpdatePosition();
+	if (bIsUpdated)
+	{
+		AddChunk();
+		RemoveChunk();
+		RenderChunks();
+	}*/
 }
