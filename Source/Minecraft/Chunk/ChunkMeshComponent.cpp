@@ -53,6 +53,6 @@ void UChunkMeshComponent::ClearMeshData()
 
 FBlockInfoTableRow* UChunkMeshComponent::GetBlockInfo(uint8 BlockID)
 {
-	UDataTable* DataTable = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/Blueprints/Datas/DataTable/DT_BlockDataTable.DT_BlockDataTable'"));
+	UDataTable* DataTable = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/Minecraft/Blueprints/Datas/DataTable/DT_BlockDataTable.DT_BlockDataTable'"));
 	return DataTable->FindRow<FBlockInfoTableRow>(FName(FString::FromInt(BlockID)), nullptr);
 }

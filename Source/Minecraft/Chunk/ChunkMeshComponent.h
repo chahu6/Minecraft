@@ -6,7 +6,6 @@
 #include "Minecraft/MinecraftType/MeshData.h"
 #include "ChunkMeshComponent.generated.h"
 
-
 USTRUCT(BlueprintType)
 struct FBlockInfoTableRow : public FTableRowBase
 {

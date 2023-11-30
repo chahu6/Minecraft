@@ -34,7 +34,7 @@ void FClassicOverWorldGenerator::Populate(int32 X, int32 Y)
 
 void FClassicOverWorldGenerator::SetBlocksInChunk()
 {
-	//GenerateBiomeMap();
+	GenerateBiomeMap();
 	GenerateHeightMap();
 
 	int32 Height = 0;

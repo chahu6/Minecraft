@@ -2,6 +2,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Minecraft/Controller/MCPlayerController.h"
 #include "Camera/CameraComponent.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 AMCCharacter::AMCCharacter()
 {
@@ -37,6 +39,14 @@ AMCCharacter::AMCCharacter()
 void AMCCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (AMCPlayerController* PlayerController = Cast<AMCPlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
 }
 
 void AMCCharacter::Tick(float DeltaTime)
@@ -49,42 +59,49 @@ void AMCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMCCharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMCCharacter::StopJumping);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &AMCCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AMCCharacter::MoveRight);
-
-	PlayerInputComponent->BindAxis("TurnRight", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-
 	PlayerInputComponent->BindAction("Switch Perspectives", IE_Pressed, this, &AMCCharacter::SwitchPerspectives);
 	PlayerInputComponent->BindAction("Add Block", IE_Pressed, this, &AMCCharacter::AddBlock);
 	PlayerInputComponent->BindAction("Remove Block", IE_Pressed, this, &AMCCharacter::RemoveBlock);
 
-}
-
-void AMCCharacter::MoveForward(float Value)
-{
-	if ((Controller != nullptr) && (Value != 0.0f))
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		// Jumping
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		AddMovementInput(Direction, Value);
+		// Moving
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMCCharacter::Move);
+
+		// Looking
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMCCharacter::Look);
 	}
 }
 
-void AMCCharacter::MoveRight(float Value)
+void AMCCharacter::Move(const FInputActionValue& Value)
 {
-	if ((Controller != nullptr) && (Value != 0.0f))
+	FVector2D MovementVector = Value.Get<FVector2D>();
+	if (Controller != nullptr)
 	{
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		AddMovementInput(Direction, Value);
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+
+void AMCCharacter::Look(const FInputActionValue& Value)
+{
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
+	{
+		AddControllerYawInput(LookAxisVector.X);
+		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
 
@@ -92,26 +109,26 @@ void AMCCharacter::SwitchPerspectives()
 {
 	switch (NextPerspective)
 	{
-	case AMCCharacter::EPerspective::First:
-	{
-		FollowCamera->SetActive(false);
-		FirstCamera->SetActive(true);
-		NextPerspective = EPerspective::Third;
-		GetMesh()->SetOwnerNoSee(true);
-		break;
-	}
-	case AMCCharacter::EPerspective::Third:
-	{
-		FollowCamera->SetActive(true);
-		FirstCamera->SetActive(false);
-		NextPerspective = EPerspective::First;
-		GetMesh()->SetOwnerNoSee(false);
-		break;
-	}
-	case AMCCharacter::EPerspective::Free:
-	{
-		break;
-	}
+		case AMCCharacter::EPerspective::First:
+		{
+			FollowCamera->SetActive(false);
+			FirstCamera->SetActive(true);
+			NextPerspective = EPerspective::Third;
+			GetMesh()->SetOwnerNoSee(true);
+			break;
+		}
+		case AMCCharacter::EPerspective::Third:
+		{
+			FollowCamera->SetActive(true);
+			FirstCamera->SetActive(false);
+			NextPerspective = EPerspective::First;
+			GetMesh()->SetOwnerNoSee(false);
+			break;
+		}
+		case AMCCharacter::EPerspective::Free:
+		{
+			break;
+		}
 	}
 }
 
