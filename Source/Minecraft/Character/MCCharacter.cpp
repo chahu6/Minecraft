@@ -1,13 +1,13 @@
 #include "MCCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Minecraft/Controller/MCPlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include"Minecraft/MinecraftComponents/InteractiveComponent.h"
 
 AMCCharacter::AMCCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	// 自身不转动
 	bUseControllerRotationYaw = false;
@@ -34,13 +34,26 @@ AMCCharacter::AMCCharacter()
 	FirstCamera->SetupAttachment(RootComponent);
 	FirstCamera->SetRelativeLocation(FVector(0.0f, 0.0f, BaseEyeHeight));
 	FirstCamera->bUsePawnControlRotation = true;
+
+	// 交互组件
+	InteractiveCmp = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
+}
+
+void AMCCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (InteractiveCmp)
+	{
+		InteractiveCmp->Character = this;
+	}
 }
 
 void AMCCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (AMCPlayerController* PlayerController = Cast<AMCPlayerController>(Controller))
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
@@ -49,19 +62,9 @@ void AMCCharacter::BeginPlay()
 	}
 }
 
-void AMCCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void AMCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAction("Switch Perspectives", IE_Pressed, this, &AMCCharacter::SwitchPerspectives);
-	PlayerInputComponent->BindAction("Add Block", IE_Pressed, this, &AMCCharacter::AddBlock);
-	PlayerInputComponent->BindAction("Remove Block", IE_Pressed, this, &AMCCharacter::RemoveBlock);
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
@@ -74,6 +77,11 @@ void AMCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMCCharacter::Look);
+
+		// 交互方块
+		EnhancedInputComponent->BindAction(AddBlockAction, ETriggerEvent::Started, this, &AMCCharacter::AddBlock);
+		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Started, this, &AMCCharacter::RemoveBlock);
+		EnhancedInputComponent->BindAction(SwitchPerspectivesAction, ETriggerEvent::Started, this, &AMCCharacter::SwitchPerspectives);
 	}
 }
 
@@ -134,18 +142,16 @@ void AMCCharacter::SwitchPerspectives()
 
 void AMCCharacter::AddBlock()
 {
-	AMCPlayerController* PlayerController = Cast<AMCPlayerController>(Controller);
-	if (PlayerController)
+	if (InteractiveCmp != nullptr)
 	{
-		PlayerController->AddBlock();
+		InteractiveCmp->AddBlock();
 	}
 }
 
 void AMCCharacter::RemoveBlock()
 {
-	AMCPlayerController* PlayerController = Cast<AMCPlayerController>(Controller);
-	if (PlayerController)
+	if (InteractiveCmp != nullptr)
 	{
-		PlayerController->RemoveBlock();
+		InteractiveCmp->RemoveBlock();
 	}
 }
