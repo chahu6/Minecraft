@@ -144,7 +144,7 @@ void AMCPlayer::AddBlock()
 	AMCPlayerController* PlayerController = Cast<AMCPlayerController>(Controller);
 	if (PlayerController)
 	{
-		PlayerController->AddBlock();
+		//PlayerController->AddBlock();
 	}
 }
 
@@ -153,7 +153,7 @@ void AMCPlayer::RemoveBlock()
 	AMCPlayerController* PlayerController = Cast<AMCPlayerController>(Controller);
 	if (PlayerController)
 	{
-		PlayerController->RemoveBlock();
+		//PlayerController->RemoveBlock();
 	}
 }
 

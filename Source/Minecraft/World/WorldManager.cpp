@@ -6,8 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
-#include "FWorldRunner.h"
-#include "FWorldGeneratorAsyncTask.h"
+#include "WorldRunner.h"
+#include "WorldGeneratorAsyncTask.h"
 
 AWorldManager::AWorldManager()
 {
