@@ -3,7 +3,9 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include"Minecraft/MinecraftComponents/InteractiveComponent.h"
+#include "Minecraft/MinecraftComponents/Interactive/InteractiveComponent.h"
+#include "Minecraft/MinecraftComponents/Inventory/InventoryComponent.h"
+#include "Minecraft/Controller/MCPlayerController.h"
 
 AMCCharacter::AMCCharacter()
 {
@@ -37,6 +39,9 @@ AMCCharacter::AMCCharacter()
 
 	// 交互组件
 	InteractiveCmp = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
+
+	// 背包
+	InventoryCmp = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 }
 
 void AMCCharacter::PostInitializeComponents()
@@ -82,6 +87,9 @@ void AMCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(AddBlockAction, ETriggerEvent::Started, this, &AMCCharacter::AddBlock);
 		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Started, this, &AMCCharacter::RemoveBlock);
 		EnhancedInputComponent->BindAction(SwitchPerspectivesAction, ETriggerEvent::Started, this, &AMCCharacter::SwitchPerspectives);
+
+		// 打开背包
+		EnhancedInputComponent->BindAction(OpenBackpackAction, ETriggerEvent::Started, this, &AMCCharacter::OpenBackpack);
 	}
 }
 
@@ -153,5 +161,14 @@ void AMCCharacter::RemoveBlock()
 	if (InteractiveCmp != nullptr)
 	{
 		InteractiveCmp->RemoveBlock();
+	}
+}
+
+void AMCCharacter::OpenBackpack()
+{
+	AMCPlayerController* PlayerController = Cast<AMCPlayerController>(Controller);
+	if (PlayerController != nullptr)
+	{
+		PlayerController->OpenBackpack();
 	}
 }

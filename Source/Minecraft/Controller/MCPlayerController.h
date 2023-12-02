@@ -23,6 +23,9 @@ public:
 
 	virtual void SetupInputComponent() override;
 
+public:
+	void OpenBackpack();
+
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* CreateTextureFromArray();
 

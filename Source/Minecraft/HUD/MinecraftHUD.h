@@ -26,14 +26,24 @@ public:
 
 	void RemoveDebugInfo();
 
+	void AddBackpack();
+
+	void RemoveBackpack();
+
 	void DrawCrosshairs();
 
 private:
-	UPROPERTY(EditAnywhere, Category = "DebugInfo")
+	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> DebugInfoClass;
 
 	UPROPERTY()
 	class UUserWidget* DebugInfoUI;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> BackpackClass;
+
+	UPROPERTY()
+	class UUserWidget* BackpackUI;
 
 	// Ê®×Ö×¼ÐÇ
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")

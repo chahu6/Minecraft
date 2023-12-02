@@ -35,6 +35,9 @@ class MINECRAFT_API AMCCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* SwitchPerspectivesAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* OpenBackpackAction;
+
 public:
 	AMCCharacter();
 
@@ -44,6 +47,7 @@ protected:
 
 public:	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 private:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
@@ -52,6 +56,7 @@ private:
 
 	void AddBlock();
 	void RemoveBlock();
+	void OpenBackpack();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
@@ -68,6 +73,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive", meta = (AllowPrivateAccess = "true"))
 	class UInteractiveComponent* InteractiveCmp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive", meta = (AllowPrivateAccess = "true"))
+	class UInventoryComponent* InventoryCmp;
 
 private:
 	enum class EPerspective : uint8

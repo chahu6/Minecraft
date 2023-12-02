@@ -1,7 +1,7 @@
 #include "MCPlayerController.h"
 #include "Minecraft/HUD/MinecraftHUD.h"
 #include "Blueprint/UserWidget.h"
-#include "MinecraftPlayerCameraManager.h"
+#include "CameraManager/MinecraftPlayerCameraManager.h"
 
 #include "SimplexNoiseLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -31,6 +31,14 @@ void AMCPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	InputComponent->BindAction("ShowDebugInfo", IE_Pressed, this, &AMCPlayerController::ShowDebugInfo);
+}
+
+void AMCPlayerController::OpenBackpack()
+{
+	if (MinecraftHUD)
+	{
+		MinecraftHUD->AddBackpack();
+	}
 }
 
 UTexture2D* AMCPlayerController::CreateTextureFromArray()
