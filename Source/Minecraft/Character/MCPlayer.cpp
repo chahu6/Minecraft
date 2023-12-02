@@ -2,7 +2,7 @@
 #include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Minecraft/MovementComponent/MinecraftPlayerMovement.h"
+#include "Minecraft/MinecraftComponents/Movement/MinecraftPlayerMovement.h"
 #include "Minecraft/Controller/MCPlayerController.h"
 
 

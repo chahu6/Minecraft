@@ -1,8 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MinecraftHUD.h"
 #include "Blueprint/UserWidget.h"
+#include "Inventory.h"
 
 void AMinecraftHUD::BeginPlay()
 {
@@ -32,6 +30,24 @@ void AMinecraftHUD::RemoveDebugInfo()
 	if (DebugInfoUI)
 	{
 		DebugInfoUI->RemoveFromParent();
+	}
+}
+
+void AMinecraftHUD::AddBackpack()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && BackpackClass)
+	{
+		BackpackUI = CreateWidget<UInventory>(PlayerController, BackpackClass);
+		BackpackUI->AddToViewport();
+	}
+}
+
+void AMinecraftHUD::RemoveBackpack()
+{
+	if (BackpackUI)
+	{
+		BackpackUI->RemoveFromParent();
 	}
 }
 
