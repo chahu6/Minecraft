@@ -1,11 +1,21 @@
 #include "Inventory.h"
 #include "Minecraft/Character/MCCharacter.h"
+#include "Minecraft/MinecraftComponents/Inventory/InventoryComponent.h"
 
 void UInventory::NativePreConstruct()
 {
 	Super::NativePreConstruct();
 
 	Player = Cast<AMCCharacter>(GetOwningPlayerPawn());
+	if (Player)
+	{
+		InventoryComp = Player->GetComponentByClass<UInventoryComponent>();
+	}
+
+	if (InventoryComp)
+	{
+		InventoryComp->OnInventoryUpdate.AddDynamic(this, &UInventory::FlushInventory);
+	}
 }
 
 void UInventory::NativeConstruct()
@@ -21,6 +31,8 @@ void UInventory::NativeConstruct()
 		PlayerController->SetInputMode(InputMode);
 		PlayerController->SetShowMouseCursor(true);
 	}
+
+	FlushInventory();
 }
 
 void UInventory::NativeDestruct()

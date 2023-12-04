@@ -1,4 +1,4 @@
-#include "MCCharacter.h"
+ï»¿#include "MCCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
@@ -7,11 +7,12 @@
 #include "Minecraft/MinecraftComponents/Inventory/InventoryComponent.h"
 #include "Minecraft/Controller/MCPlayerController.h"
 
+
 AMCCharacter::AMCCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	// ×ÔÉí²»×ª¶¯
+	// è‡ªèº«ä¸è½¬åŠ¨
 	bUseControllerRotationYaw = false;
 
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
@@ -25,22 +26,29 @@ AMCCharacter::AMCCharacter()
 	CameraBoom->SetRelativeRotation(FRotator(310.0, 0.0, 0.0));
 	CameraBoom->SetRelativeLocation(FVector(0, 0, BaseEyeHeight));
 
-	// µÚÈýÈË³ÆÊÓ½Ç
+	// ç¬¬ä¸‰äººç§°è§†è§’
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 	FollowCamera->bAutoActivate = false;
 
-	// µÚÒ»ÈË³ÆÊÓ½Ç
+	// ç¬¬ä¸€äººç§°è§†è§’
 	FirstCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstCamera"));
 	FirstCamera->SetupAttachment(RootComponent);
 	FirstCamera->SetRelativeLocation(FVector(0.0f, 0.0f, BaseEyeHeight));
 	FirstCamera->bUsePawnControlRotation = true;
 
-	// ½»»¥×é¼þ
+	ArmMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ArmMesh"));
+	ArmMesh->SetupAttachment(FirstCamera);
+	ArmMesh->SetRelativeRotation(FRotator(0.0, 90.0, 0.0));
+	ArmMesh->bOnlyOwnerSee = true;
+	ArmMesh->bCastDynamicShadow = false;
+	ArmMesh->CastShadow = false;
+
+	// äº¤äº’ç»„ä»¶
 	InteractiveCmp = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
 
-	// ±³°ü
+	// èƒŒåŒ…
 	InventoryCmp = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 }
 
@@ -83,14 +91,23 @@ void AMCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMCCharacter::Look);
 
-		// ½»»¥·½¿é
+		// äº¤äº’æ–¹å—
 		EnhancedInputComponent->BindAction(AddBlockAction, ETriggerEvent::Started, this, &AMCCharacter::AddBlock);
 		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Started, this, &AMCCharacter::RemoveBlock);
 		EnhancedInputComponent->BindAction(SwitchPerspectivesAction, ETriggerEvent::Started, this, &AMCCharacter::SwitchPerspectives);
 
-		// ´ò¿ª±³°ü
+		// æ‰“å¼€èƒŒåŒ…
 		EnhancedInputComponent->BindAction(OpenBackpackAction, ETriggerEvent::Started, this, &AMCCharacter::OpenBackpack);
 	}
+}
+
+bool AMCCharacter::AddItem(int32 ID, int32 Num)
+{
+	if (InventoryCmp != nullptr)
+	{
+		return InventoryCmp->AddItemToInventory(ID, Num);
+	}
+	return false;
 }
 
 void AMCCharacter::Move(const FInputActionValue& Value)
@@ -131,6 +148,7 @@ void AMCCharacter::SwitchPerspectives()
 			FirstCamera->SetActive(true);
 			NextPerspective = EPerspective::Third;
 			GetMesh()->SetOwnerNoSee(true);
+			ArmMesh->SetOwnerNoSee(false);
 			break;
 		}
 		case AMCCharacter::EPerspective::Third:
@@ -139,6 +157,7 @@ void AMCCharacter::SwitchPerspectives()
 			FirstCamera->SetActive(false);
 			NextPerspective = EPerspective::First;
 			GetMesh()->SetOwnerNoSee(false);
+			ArmMesh->SetOwnerNoSee(true);
 			break;
 		}
 		case AMCCharacter::EPerspective::Free:

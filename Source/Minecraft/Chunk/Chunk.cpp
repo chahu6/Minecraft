@@ -38,7 +38,10 @@ void AChunk::Destroyed()
 
 	for (const auto ChunkSection : ChunkSections)
 	{
-		ChunkSection->Destroy();
+		if (ChunkSection)
+		{
+			ChunkSection->Destroy();
+		}
 	}
 
 	ChunkSections.Empty();

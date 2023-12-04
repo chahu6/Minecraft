@@ -3,10 +3,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Minecraft/Interfaces/ItemInterface.h"
 #include "MCCharacter.generated.h"
 
 UCLASS()
-class MINECRAFT_API AMCCharacter : public ACharacter
+class MINECRAFT_API AMCCharacter : public ACharacter, public IItemInterface
 {
 	GENERATED_BODY()
 
@@ -47,6 +48,9 @@ protected:
 
 public:	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual bool AddItem(int32 ID, int32 Num) override;
+
+public:
 
 private:
 	void Move(const FInputActionValue& Value);
@@ -70,6 +74,9 @@ private:
 
 	//UPROPERTY(VisibleAnywhere, Category = "Camera")
 	//UCameraComponent* FreeCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* ArmMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive", meta = (AllowPrivateAccess = "true"))
 	class UInteractiveComponent* InteractiveCmp;

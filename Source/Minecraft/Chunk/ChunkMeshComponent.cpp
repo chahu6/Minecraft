@@ -2,6 +2,7 @@
 #include "ProceduralMeshComponent.h"
 #include "ChunkMeshBuilder.h"
 #include "ChunkSection.h"
+#include "Minecraft/Subsystem/MCGameInstanceSubsystem.h"
 
 UChunkMeshComponent::UChunkMeshComponent()
 {
@@ -53,6 +54,7 @@ void UChunkMeshComponent::ClearMeshData()
 
 FBlockInfoTableRow* UChunkMeshComponent::GetBlockInfo(uint8 BlockID)
 {
-	UDataTable* DataTable = LoadObject<UDataTable>(nullptr, TEXT("/Script/Engine.DataTable'/Game/Minecraft/Blueprints/Datas/DataTable/DT_BlockDataTable.DT_BlockDataTable'"));
-	return DataTable->FindRow<FBlockInfoTableRow>(FName(FString::FromInt(BlockID)), nullptr);
+	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
+	UMCGameInstanceSubsystem* MCGameInstance = GameInstance->GetSubsystem<UMCGameInstanceSubsystem>();
+	return MCGameInstance->GetBlockDataTable()->FindRow<FBlockInfoTableRow>(FName(FString::FromInt(BlockID)), nullptr);
 }

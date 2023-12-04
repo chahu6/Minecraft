@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -43,7 +41,7 @@ private:
 	TSubclassOf<UUserWidget> BackpackClass;
 
 	UPROPERTY()
-	class UUserWidget* BackpackUI;
+	class UInventory* BackpackUI;
 
 	// Ê®×Ö×¼ÐÇ
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
