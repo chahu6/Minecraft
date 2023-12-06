@@ -48,7 +48,7 @@ protected:
 
 public:	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	virtual bool AddItem(int32 ID, int32 Num) override;
+	virtual bool AddItem(const AItem* Item) override;
 
 public:
 
@@ -79,10 +79,13 @@ private:
 	USkeletalMeshComponent* ArmMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive", meta = (AllowPrivateAccess = "true"))
-	class UInteractiveComponent* InteractiveCmp;
+	class UInteractiveComponent* InteractiveComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive", meta = (AllowPrivateAccess = "true"))
-	class UInventoryComponent* InventoryCmp;
+	class UInventoryComponent* BackpackComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive", meta = (AllowPrivateAccess = "true"))
+	class UInventoryComponent* HotbarComp;
 
 private:
 	enum class EPerspective : uint8
@@ -93,4 +96,7 @@ private:
 	};
 
 	EPerspective NextPerspective = EPerspective::Third;
+
+public:
+	FORCEINLINE UInventoryComponent* GetHotbarComp() const { return HotbarComp; }
 };

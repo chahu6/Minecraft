@@ -54,7 +54,6 @@ void UChunkMeshComponent::ClearMeshData()
 
 FBlockInfoTableRow* UChunkMeshComponent::GetBlockInfo(uint8 BlockID)
 {
-	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
-	UMCGameInstanceSubsystem* MCGameInstance = GameInstance->GetSubsystem<UMCGameInstanceSubsystem>();
+	UMCGameInstanceSubsystem* MCGameInstance = UGameInstance::GetSubsystem<UMCGameInstanceSubsystem>(GetWorld()->GetGameInstance());
 	return MCGameInstance->GetBlockDataTable()->FindRow<FBlockInfoTableRow>(FName(FString::FromInt(BlockID)), nullptr);
 }

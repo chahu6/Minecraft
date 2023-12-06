@@ -6,6 +6,7 @@ void AMinecraftHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
+	AddMainUI();
 }
 
 void AMinecraftHUD::DrawHUD()
@@ -77,5 +78,15 @@ void AMinecraftHUD::DrawCrosshairs()
 				1.0f
 			);
 		}
+	}
+}
+
+void AMinecraftHUD::AddMainUI()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController && MainClass)
+	{
+		MainUI = CreateWidget<UUserWidget>(PlayerController, MainClass);
+		MainUI->AddToViewport();
 	}
 }

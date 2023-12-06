@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "Minecraft/Item/Item.h"
 #include "ItemInterface.generated.h"
 
 // This class does not need to be modified.
@@ -19,5 +20,5 @@ class MINECRAFT_API IItemInterface
 	GENERATED_BODY()
 
 public:
-	virtual bool AddItem(int32 ID, int32 Num) = 0;
+	virtual bool AddItem(const AItem* Item) = 0;
 };

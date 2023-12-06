@@ -18,6 +18,7 @@ AMCCharacter::AMCCharacter()
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0, -90.0f, 0.0f));
 	GetMesh()->bOwnerNoSee = true;
+	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -46,19 +47,24 @@ AMCCharacter::AMCCharacter()
 	ArmMesh->CastShadow = false;
 
 	// 交互组件
-	InteractiveCmp = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
+	InteractiveComp = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
 
 	// 背包
-	InventoryCmp = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+	BackpackComp = CreateDefaultSubobject<UInventoryComponent>(TEXT("BackpackComponent"));
+	BackpackComp->SetInventorySize(27);
+
+	// 快捷栏
+	HotbarComp = CreateDefaultSubobject<UInventoryComponent>(TEXT("HotComponent"));
+	HotbarComp->SetInventorySize(9);
 }
 
 void AMCCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	if (InteractiveCmp)
+	if (InteractiveComp)
 	{
-		InteractiveCmp->Character = this;
+		InteractiveComp->Character = this;
 	}
 }
 
@@ -101,11 +107,11 @@ void AMCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
-bool AMCCharacter::AddItem(int32 ID, int32 Num)
+bool AMCCharacter::AddItem(const AItem* Item)
 {
-	if (InventoryCmp != nullptr)
+	if (BackpackComp != nullptr)
 	{
-		return InventoryCmp->AddItemToInventory(ID, Num);
+		return BackpackComp->AddItemToInventory(Item);
 	}
 	return false;
 }
@@ -169,17 +175,17 @@ void AMCCharacter::SwitchPerspectives()
 
 void AMCCharacter::AddBlock()
 {
-	if (InteractiveCmp != nullptr)
+	if (InteractiveComp != nullptr)
 	{
-		InteractiveCmp->AddBlock();
+		InteractiveComp->AddBlock();
 	}
 }
 
 void AMCCharacter::RemoveBlock()
 {
-	if (InteractiveCmp != nullptr)
+	if (InteractiveComp != nullptr)
 	{
-		InteractiveCmp->RemoveBlock();
+		InteractiveComp->RemoveBlock();
 	}
 }
 

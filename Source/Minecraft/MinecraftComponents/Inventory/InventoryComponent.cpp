@@ -1,18 +1,19 @@
 ﻿#include "InventoryComponent.h"
 #include "Minecraft/HUD/Inventory.h"
 #include "Minecraft/Subsystem/MCGameInstanceSubsystem.h"
+#include "Minecraft/Item/Item.h"
 
 UInventoryComponent::UInventoryComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	Items.SetNum(InventorySize);
 }
 
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	ItemsData.SetNum(InventorySize);
 }
 
 void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -21,20 +22,23 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 }
 
-bool UInventoryComponent::AddItemToInventory(int32 ID, int32 Num)
+bool UInventoryComponent::AddItemToInventory(const AItem* Item)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("添加物品"));
 
 	int32 Index = -1;
-	if (FindItemIndex(ID, Index))
+	if (Item->GetItemData().MaxCount != 0)
 	{
-		Items[Index].Count += Num;
-		return true;
+		if (FindItemIndex(Item, Index))
+		{
+			ItemsData[Index].Count += Item->GetItemData().Count;
+			return true;
+		}
 	}
 	
 	if (AnyEmptySlots(Index))
 	{
-		Items[Index] = { ID, Num };
+		ItemsData[Index] = Item->GetItemData();
 		return true;
 	}
 
@@ -44,36 +48,55 @@ bool UInventoryComponent::AddItemToInventory(int32 ID, int32 Num)
 void UInventoryComponent::TransferSlots(int32 SourceIndex, UInventoryComponent* SourceInventory, int32 DestinationIndex)
 {
 	FItemSlot SlotItem = SourceInventory->GetItems()[SourceIndex];
-	if (Items.IsValidIndex(DestinationIndex))
+	if (ItemsData.IsValidIndex(DestinationIndex))
 	{
-		if (Items[DestinationIndex].ID == SlotItem.ID)
+		if (ItemsData[DestinationIndex].ID == SlotItem.ID)
 		{
 
 		}
 		else
 		{
-			SourceInventory->GetItems()[SourceIndex] = Items[DestinationIndex];
-			Items[DestinationIndex] = SlotItem;
+			SourceInventory->GetItems()[SourceIndex] = ItemsData[DestinationIndex];
+			ItemsData[DestinationIndex] = SlotItem;
 		}
 
 		OnInventoryUpdate.Broadcast();
 	}
 }
 
-bool UInventoryComponent::FindItemIndex(int32 ID, int32& Index)
+void UInventoryComponent::CreateItemToWorld(FName ID, int32 Quantity)
 {
-	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
-	UMCGameInstanceSubsystem* MCGameInstance = GameInstance->GetSubsystem<UMCGameInstanceSubsystem>();
-	FItemDetails* ItemDetails = MCGameInstance->GetItemDataTable()->FindRow<FItemDetails>(FName(*FString::FromInt(ID)), TEXT("UInventoryComponent"));
+	if (ItemDataTable == nullptr) return;
+	FItemDetails* ItemDetails = ItemDataTable->FindRow<FItemDetails>(ID, TEXT("UInventoryComponent::CreateItemToWorld"));
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		FVector Location = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 300;
+		AItem* Item = World->SpawnActor<AItem>(AItem::StaticClass(), Location, FRotator::ZeroRotator);
+		Item->SetItemData(ItemDetails, Quantity);
+	}
+}
+
+void UInventoryComponent::RemoveItemFromInventory(int32 Index)
+{
+	if (ItemsData.IsValidIndex(Index))
+	{
+		ItemsData[Index].Empty();
+
+		OnInventoryUpdate.Broadcast();
+	}
+}
+
+bool UInventoryComponent::FindItemIndex(const AItem* Item, int32& Index)
+{
+	const FItemSlot& ItemData = Item->GetItemData();
 
 	Index = -1;
-	if (!ItemDetails->bIsStack) return false;
-
-	for (auto Itr = Items.CreateConstIterator(); Itr; ++Itr)
+	for (auto Itr = ItemsData.CreateConstIterator(); Itr; ++Itr)
 	{
-		if (Itr->ID == ID)
+		if (Itr->ID == ItemData.ID)
 		{
-			if (Itr->Count < ItemDetails->MaxCount)
+			if (Itr->Count < ItemData.MaxCount)
 			{
 				Index = Itr.GetIndex();
 				return true;
@@ -86,7 +109,9 @@ bool UInventoryComponent::FindItemIndex(int32 ID, int32& Index)
 
 bool UInventoryComponent::AnyEmptySlots(int32& Index)
 {
-	for (auto Itr = Items.CreateConstIterator(); Itr; ++Itr)
+	Index = -1;
+
+	for (auto Itr = ItemsData.CreateConstIterator(); Itr; ++Itr)
 	{
 		if (Itr->ID == -1)
 		{
@@ -95,6 +120,5 @@ bool UInventoryComponent::AnyEmptySlots(int32& Index)
 		}
 	}
 
-	Index = -1;
 	return false;
 }

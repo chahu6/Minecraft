@@ -1,12 +1,11 @@
 #include "Inventory.h"
-#include "Minecraft/Character/MCCharacter.h"
 #include "Minecraft/MinecraftComponents/Inventory/InventoryComponent.h"
 
 void UInventory::NativePreConstruct()
 {
 	Super::NativePreConstruct();
 
-	Player = Cast<AMCCharacter>(GetOwningPlayerPawn());
+	Player = GetOwningPlayerPawn();
 	if (Player)
 	{
 		InventoryComp = Player->GetComponentByClass<UInventoryComponent>();
@@ -14,7 +13,7 @@ void UInventory::NativePreConstruct()
 
 	if (InventoryComp)
 	{
-		InventoryComp->OnInventoryUpdate.AddDynamic(this, &UInventory::FlushInventory);
+		InventoryComp->OnInventoryUpdate.AddUObject(this, &UInventory::FlushInventory);
 	}
 }
 
@@ -46,17 +45,4 @@ void UInventory::NativeDestruct()
 		PlayerController->SetInputMode(InputMode);
 		PlayerController->SetShowMouseCursor(false);
 	}
-}
-
-FReply UInventory::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
-{
-	Super::NativeOnKeyDown(InGeometry, InKeyEvent);
-
-	FKey Key = InKeyEvent.GetKey();
-	if (Key == EKeys::E || Key == EKeys::Escape)
-	{
-		RemoveFromParent();
-	}
-
-	return FReply::Handled();
 }
