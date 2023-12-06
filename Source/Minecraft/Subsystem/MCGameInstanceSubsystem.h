@@ -19,10 +19,6 @@ private:
 	UPROPERTY()
 	class UDataTable* BlockDataTable;
 
-	UPROPERTY()
-	class UDataTable* ItemDataTable;
-
 public:
 	FORCEINLINE UDataTable* GetBlockDataTable() const { return BlockDataTable; }
-	FORCEINLINE UDataTable* GetItemDataTable() const { return ItemDataTable; }
 };

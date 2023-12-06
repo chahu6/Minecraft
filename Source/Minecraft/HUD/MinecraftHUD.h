@@ -30,6 +30,7 @@ public:
 
 	void DrawCrosshairs();
 
+	void AddMainUI();
 private:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> DebugInfoClass;
@@ -42,6 +43,12 @@ private:
 
 	UPROPERTY()
 	class UInventory* BackpackUI;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> MainClass;
+
+	UPROPERTY()
+	class UUserWidget* MainUI;
 
 	// Ê®×Ö×¼ÐÇ
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")

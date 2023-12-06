@@ -17,16 +17,14 @@ protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-	
-	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void FlushInventory();
 
-private:
+protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	class AMCCharacter* Player;
+	class APawn* Player;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	class UInventoryComponent* InventoryComp;

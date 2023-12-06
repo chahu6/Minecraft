@@ -15,6 +15,12 @@ AItem::AItem()
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+	static ConstructorHelpers::FObjectFinder<USoundCue> SoundCueObject(TEXT("/Script/Engine.SoundCue'/Game/Minecraft/Assets/Sound/Pickup_Cue.Pickup_Cue'"));
+	if (SoundCueObject.Succeeded())
+	{
+		PickupSound = SoundCueObject.Object;
+	}
 }
 
 void AItem::PostInitializeComponents()
@@ -41,19 +47,12 @@ void AItem::Tick(float DeltaTime)
 	MeshComponent->AddRelativeRotation(FRotator(0.0, DeltaTime * RotationSpeed, 0.0));
 }
 
-void AItem::SetItemDetails(const FItemDetails& NewItemDetails)
+void AItem::SetItemData(const FItemDetails* ItemDetails, int32 Quantity)
 {
-	this->ID = NewItemDetails.ID;
-	MeshComponent->SetStaticMesh(NewItemDetails.Mesh);
-}
-
-FItemDetails AItem::GetItemDetails() const
-{
-	FItemDetails ItemDetails;
-	ItemDetails.ID = this->ID;
-	ItemDetails.Mesh = MeshComponent->GetStaticMesh();
-
-	return ItemDetails;
+	ItemData.ID = ItemDetails->ID;
+	ItemData.MaxCount = ItemDetails->MaxCount;
+	ItemData.Count = Quantity;
+	MeshComponent->SetStaticMesh(ItemDetails->Mesh);
 }
 
 void AItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -64,7 +63,7 @@ void AItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 	{
 		IItemInterface* InterfaceIns = CastChecked<IItemInterface>(OtherActor);
 
-		if (InterfaceIns->AddItem(ID, Count))
+		if (InterfaceIns->AddItem(this))
 		{
 			if (PickupSound)
 			{
@@ -73,6 +72,5 @@ void AItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 			Destroy();
 		}
 	}
-
 }
 

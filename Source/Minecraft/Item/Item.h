@@ -21,8 +21,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	void SetItemDetails(const FItemDetails& NewItemDetails);
-	FItemDetails GetItemDetails() const;
+	void SetItemData(const FItemDetails* ItemDetails, int32 Quantity);
 
 protected:
 	UFUNCTION()
@@ -40,10 +39,7 @@ protected:
 	class USoundCue* PickupSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties")
-	int32 ID = -1;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties")
-	int32 Count = 0;
+	FItemSlot ItemData;
 
 	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
 	float FloatSpeed = 100.0f;
@@ -53,4 +49,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
 	float RotationSpeed = 45.0f;
+
+public:
+	FORCEINLINE const FItemSlot& GetItemData() const { return ItemData; }
 };
