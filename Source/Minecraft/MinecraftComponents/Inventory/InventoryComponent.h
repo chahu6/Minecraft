@@ -5,7 +5,7 @@
 #include "Minecraft/Item/Info/ItemInfo.h"
 #include "InventoryComponent.generated.h"
 
-class AItem;
+class ADroppedItem;
 
 DECLARE_MULTICAST_DELEGATE(FOnInventoryUpdate);
 
@@ -24,7 +24,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-	bool AddItemToInventory(const AItem* Item);
+	bool AddItemToInventory(const ADroppedItem* Item);
 
 	UFUNCTION(BlueprintCallable)
 	void TransferSlots(int32 SourceIndex, UInventoryComponent* SourceInventory, int32 DestinationIndex);
@@ -35,7 +35,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveItemFromInventory(int32 Index);
 private:
-	bool FindItemIndex(const AItem* Item, int32& Index);
+	bool FindItemIndex(const ADroppedItem* Item, int32& Index);
 	bool AnyEmptySlots(int32& Index);
 
 public:

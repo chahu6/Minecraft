@@ -1,7 +1,7 @@
 ﻿#include "InventoryComponent.h"
 #include "Minecraft/HUD/Inventory.h"
 #include "Minecraft/Subsystem/MCGameInstanceSubsystem.h"
-#include "Minecraft/Item/Item.h"
+#include "Minecraft/Item/DroppedItem.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -22,7 +22,7 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 }
 
-bool UInventoryComponent::AddItemToInventory(const AItem* Item)
+bool UInventoryComponent::AddItemToInventory(const ADroppedItem* Item)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("添加物品"));
 
@@ -72,7 +72,7 @@ void UInventoryComponent::CreateItemToWorld(FName ID, int32 Quantity)
 	if (World)
 	{
 		FVector Location = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 300;
-		AItem* Item = World->SpawnActor<AItem>(AItem::StaticClass(), Location, FRotator::ZeroRotator);
+		ADroppedItem* Item = World->SpawnActor<ADroppedItem>(ADroppedItem::StaticClass(), Location, FRotator::ZeroRotator);
 		Item->SetItemData(ItemDetails, Quantity);
 	}
 }
@@ -87,7 +87,7 @@ void UInventoryComponent::RemoveItemFromInventory(int32 Index)
 	}
 }
 
-bool UInventoryComponent::FindItemIndex(const AItem* Item, int32& Index)
+bool UInventoryComponent::FindItemIndex(const ADroppedItem* Item, int32& Index)
 {
 	const FItemSlot& ItemData = Item->GetItemData();
 

@@ -48,7 +48,7 @@ protected:
 
 public:	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	virtual bool AddItem(const AItem* Item) override;
+	virtual bool AddItem(const ADroppedItem* Item) override;
 
 public:
 
