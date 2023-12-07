@@ -107,7 +107,7 @@ void AMCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
-bool AMCCharacter::AddItem(const AItem* Item)
+bool AMCCharacter::AddItem(const ADroppedItem* Item)
 {
 	if (BackpackComp != nullptr)
 	{

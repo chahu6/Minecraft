@@ -1,55 +1,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Info/ItemInfo.h"
-#include "Item.generated.h"
 
-UCLASS()
-class MINECRAFT_API AItem : public AActor
+/**
+ * 
+ */
+struct Properties
 {
-	GENERATED_BODY()
-	
-public:	
-	AItem();
 
-protected:
-	virtual void PostInitializeComponents() override;
-	virtual void BeginPlay() override;
+};
 
-public:	
-	virtual void Tick(float DeltaTime) override;
-
+class MINECRAFT_API Item
+{
 public:
-	void SetItemData(const FItemDetails* ItemDetails, int32 Quantity);
-
-protected:
-	UFUNCTION()
-	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	Item();
+	~Item();
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* MeshComponent;
+	// 最大耐久度
+	int32 MaxDamage; 
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
-	class UBoxComponent* Box;
-
-protected:
-	UPROPERTY(EditAnywhere)
-	class USoundCue* PickupSound;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties")
-	FItemSlot ItemData;
-
-	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
-	float FloatSpeed = 100.0f;
-
-	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
-	float FloatAmplitude = 10.0f;
-
-	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
-	float RotationSpeed = 45.0f;
-
-public:
-	FORCEINLINE const FItemSlot& GetItemData() const { return ItemData; }
+	// 最大堆叠数量 0：不可堆叠
+	int32 MaxStackSize;
 };
