@@ -1,12 +1,10 @@
 #include "MinecraftHUD.h"
 #include "Blueprint/UserWidget.h"
-#include "Inventory.h"
+#include "StorageUI/Inventory.h"
 
 void AMinecraftHUD::BeginPlay()
 {
 	Super::BeginPlay();
-
-	AddMainUI();
 }
 
 void AMinecraftHUD::DrawHUD()

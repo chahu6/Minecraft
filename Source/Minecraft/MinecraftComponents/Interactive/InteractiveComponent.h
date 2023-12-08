@@ -22,7 +22,7 @@ class MINECRAFT_API UInteractiveComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	friend class AMCCharacter;
+	friend class AMCPlayer;
 public:	
 	UInteractiveComponent();
 
@@ -46,7 +46,7 @@ private:
 
 private:
 	UPROPERTY()
-	APawn* Character;
+	APawn* Player;
 
 	UPROPERTY()
 	APlayerController* PlayerController;
