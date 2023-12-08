@@ -14,7 +14,7 @@ void UInteractiveComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerController = Cast<APlayerController>(Character->Controller);
+	PlayerController = Cast<APlayerController>(Player->Controller);
 }
 
 void UInteractiveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
