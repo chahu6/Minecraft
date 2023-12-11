@@ -9,7 +9,7 @@
 
 AMCPlayer::AMCPlayer()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	// 自身不转动
 	bUseControllerRotationYaw = false;
@@ -47,6 +47,14 @@ AMCPlayer::AMCPlayer()
 	ArmMesh->CastShadow = false;
 	*/
 
+	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
+	ItemMesh->SetupAttachment(GetMesh());
+
+	// 辅助标记方块
+	//Marker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Marker"));
+	//Marker->SetupAttachment(RootComponent);
+	//Marker->SetVisibility(true);
+
 	// 交互组件
 	InteractiveComponent = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
 
@@ -73,6 +81,12 @@ void AMCPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	Initial();
+}
+
+void AMCPlayer::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void AMCPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -83,7 +97,11 @@ void AMCPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	{
 		// 交互方块
 		EnhancedInputComponent->BindAction(AddBlockAction, ETriggerEvent::Started, this, &AMCPlayer::AddBlock);
-		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Started, this, &AMCPlayer::RemoveBlock);
+
+		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Started, this, &AMCPlayer::OnClickAction);
+		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Triggered, this, &AMCPlayer::OngoinAction);
+		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Completed, this, &AMCPlayer::OnResetAction);
+
 		EnhancedInputComponent->BindAction(SwitchPerspectivesAction, ETriggerEvent::Started, this, &AMCPlayer::SwitchPerspectives);
 
 		// 打开背包
@@ -91,6 +109,9 @@ void AMCPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 		// 鼠标滚轮
 		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Triggered, this, &AMCPlayer::SwitchingItem);
+
+		// DropItem
+		EnhancedInputComponent->BindAction(DropItemAction, ETriggerEvent::Started, this, &AMCPlayer::DropItem);
 	}
 }
 
@@ -140,11 +161,19 @@ void AMCPlayer::AddBlock()
 	}
 }
 
-void AMCPlayer::RemoveBlock()
+void AMCPlayer::OnClickAction()
 {
 	if (InteractiveComponent != nullptr)
 	{
-		InteractiveComponent->RemoveBlock();
+		InteractiveComponent->ClickBlock();
+	}
+}
+
+void AMCPlayer::OngoinAction()
+{
+	if (InteractiveComponent != nullptr)
+	{
+		InteractiveComponent->OngoingClick();
 	}
 }
 
@@ -166,6 +195,19 @@ void AMCPlayer::SwitchingItem(const FInputActionValue& Value)
 	OnSwitchMainHand.Broadcast(MainHandIndex);
 }
 
+void AMCPlayer::DropItem()
+{
+
+}
+
+void AMCPlayer::OnResetAction()
+{
+	if (InteractiveComponent != nullptr)
+	{
+		InteractiveComponent->ResetBlockRemoving();
+	}
+}
+
 FItemStack AMCPlayer::GetMainHandItem()
 {
 	if (BackpackComponent)
@@ -174,4 +216,9 @@ FItemStack AMCPlayer::GetMainHandItem()
 	}
 
 	return FItemStack();
+}
+
+void AMCPlayer::Initial()
+{
+	GetMainHandItem();
 }

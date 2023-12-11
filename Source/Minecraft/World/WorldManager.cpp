@@ -8,6 +8,7 @@
 
 #include "WorldRunner.h"
 #include "WorldGeneratorAsyncTask.h"
+#include "Minecraft/Core/BlockPos.h"
 
 AWorldManager::AWorldManager()
 {
@@ -128,6 +129,21 @@ AChunkSection* AWorldManager::GetChunkSection(const FVector& ChunkVoxelPosition)
 	if (Chunk)
 	{
 		return Chunk->GetChunkSection(ChunkVoxelPosition.Z);
+	}
+
+	return nullptr;
+}
+
+AChunkSection* AWorldManager::GetChunkSection(const FBlockPos& BlockPos)
+{
+	int32 ChunkWorld_X = FMath::Floor(BlockPos.X_VOXEL_WORLD / CHUNK_SIZE);
+	int32 ChunkWorld_Y = FMath::Floor(BlockPos.Y_VOXEL_WORLD / CHUNK_SIZE);
+	int32 ChunkWorld_Z = FMath::Floor(BlockPos.Z_VOXEL_WORLD / CHUNK_SIZE);
+
+	AChunk* Chunk = GetChunk(FVector2D(ChunkWorld_X, ChunkWorld_Y));
+	if (Chunk)
+	{
+		return Chunk->GetChunkSection(ChunkWorld_Z);
 	}
 
 	return nullptr;

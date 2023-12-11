@@ -42,6 +42,8 @@ public:
 	void ClearMeshData();
 
 private:
+	bool InitProduralMeshComponent(USceneComponent* Parent);
+
 	FBlockInfoTableRow* GetBlockInfo(uint8 BlockID);
 
 private:
@@ -49,6 +51,7 @@ private:
 	class UProceduralMeshComponent* ProduralMesh;
 
 private:
+	UPROPERTY()
 	AChunkSection* ChunkSection = nullptr;
 
 	TMap<uint8, FMeshData> MeshDatas;

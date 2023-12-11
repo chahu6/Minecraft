@@ -29,6 +29,9 @@ class MINECRAFT_API AMCPlayer : public AMCEntity, public IItemInterface
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* WheelAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* DropItemAction;
+
 public:
 	AMCPlayer();
 
@@ -37,6 +40,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	virtual void Tick(float DeltaTime) override;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual bool AddItem(const ADroppedItem* Item) override;
 
@@ -44,11 +49,20 @@ private:
 	void SwitchPerspectives();
 
 	void AddBlock();
-	void RemoveBlock();
+
+	void OnClickAction();
+
+	void OngoinAction();
+
+	void OnResetAction();
+
 	void OpenBackpack();
 	void SwitchingItem(const FInputActionValue& Value);
+	void DropItem();
 
 	FItemStack GetMainHandItem();
+
+	void Initial();
 
 public:
 	FOnSwitchMainHand OnSwitchMainHand;
@@ -68,6 +82,9 @@ private:
 
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 	//USkeletalMeshComponent* ArmMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* ItemMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive", meta = (AllowPrivateAccess = "true"))
 	class UInteractiveComponent* InteractiveComponent;
