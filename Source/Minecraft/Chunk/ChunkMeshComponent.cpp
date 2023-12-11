@@ -15,12 +15,7 @@ void UChunkMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	ProduralMesh = NewObject<UProceduralMeshComponent>(this, TEXT("ProduralMesh"));
-	ProduralMesh->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-
-	// 是否投射阴影
-	ProduralMesh->SetCastShadow(false);
-	ProduralMesh->RegisterComponent();
+	InitProduralMeshComponent(GetOwner()->GetRootComponent());
 
 	ChunkSection = ChunkSection == nullptr ? Cast<AChunkSection>(GetOwner()) : ChunkSection;
 }
@@ -50,6 +45,18 @@ void UChunkMeshComponent::BuildMesh()
 void UChunkMeshComponent::ClearMeshData()
 {
 	MeshDatas.Empty();
+}
+
+bool UChunkMeshComponent::InitProduralMeshComponent(USceneComponent* Parent)
+{
+	ProduralMesh = NewObject<UProceduralMeshComponent>(this, TEXT("ProduralMesh"));
+	ProduralMesh->AttachToComponent(Parent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	// 是否投射阴影
+	ProduralMesh->SetCastShadow(false);
+	ProduralMesh->RegisterComponent();
+
+	return ProduralMesh->IsRegistered();
 }
 
 FBlockInfoTableRow* UChunkMeshComponent::GetBlockInfo(uint8 BlockID)

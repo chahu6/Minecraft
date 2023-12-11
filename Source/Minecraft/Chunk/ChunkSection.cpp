@@ -41,6 +41,11 @@ void AChunkSection::SetBlock(int32 Index, uint8 BlockID)
 	Blocks[Index] = BlockID;
 }
 
+void AChunkSection::SetBlock(const FVector& OffsetLocation, uint8 BlockID)
+{
+	Blocks[GetBlocksIndex(OffsetLocation.X, OffsetLocation.Y, OffsetLocation.Z)] = BlockID;
+}
+
 void AChunkSection::Render()
 {
 	if (bIsDirty)

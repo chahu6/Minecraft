@@ -7,6 +7,7 @@
 class AChunk;
 class AChunkSection;
 class UChunkManagerComponent;
+struct FBlockPos;
 
 UCLASS()
 class MINECRAFT_API AWorldManager : public AActor
@@ -27,7 +28,10 @@ public:
 
 	AChunkSection* GetChunkSection(const FVector& ChunkVoxelPosition);
 
+	AChunkSection* GetChunkSection(const FBlockPos& BlockPos);
+
 	void UpdateWorldAsync();
+
 private:
 	void InitialWorldChunkLoad();
 

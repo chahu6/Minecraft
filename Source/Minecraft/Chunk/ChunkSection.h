@@ -21,6 +21,7 @@ public:
 
 	void SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID);
 	void SetBlock(int32 Index, uint8 BlockID);
+	void SetBlock(const FVector& OffsetLocation, uint8 BlockID);
 
 	void Render();
 
@@ -46,9 +47,6 @@ private:
 	// Chunk在World中的体素位置的中心,用于视锥剔除，但是虚幻引擎默认自带，所以已经没用了
 	FVector Center;
 
-
-	bool test1 = false;
-	bool test2 = false;
 public:
 	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }
 	FORCEINLINE void SetDirty(bool bNewDirty) { bIsDirty = bNewDirty; }

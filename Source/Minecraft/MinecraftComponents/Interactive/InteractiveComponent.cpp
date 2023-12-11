@@ -1,18 +1,34 @@
-#include "InteractiveComponent.h"
+Ôªø#include "InteractiveComponent.h"
 #include "Minecraft/World/WorldSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Minecraft/World/WorldManager.h"
 #include "Minecraft/Chunk/ChunkSection.h"
+#include "Minecraft/Block/Blocks.h"
+#include "Minecraft/Entity/Player/MCPlayer.h"
+
+#include "Minecraft/Core/Factory.h"
 
 UInteractiveComponent::UInteractiveComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
 }
 
 void UInteractiveComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (InitMarkComponent(GetOwner()->GetRootComponent()))
+	{
+		Marker->SetWorldRotation(FRotator::ZeroRotator);
+		Marker->SetWorldScale3D(FVector(1.01f));
+		Marker->SetCastShadow(false);
+		UMaterialInstance* Instance = LoadObject<UMaterialInstance>(this, TEXT("/Script/Engine.MaterialInstanceConstant'/Game/Minecraft/Assets/Materials/Minecraft/MI_Mark.MI_Mark'"));
+		if (Instance)
+		{
+			DestroyMaterial = Marker->CreateDynamicMaterialInstance(0, Instance);
+			UpdateDestroyProgress(0.0f);
+		}
+	}
 
 	PlayerController = Cast<APlayerController>(Player->Controller);
 }
@@ -21,24 +37,53 @@ void UInteractiveComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	RayCast();
+	if (RayCast(BlockHitResult))
+	{
+		Marker->SetVisibility(true);
+		Marker->SetWorldLocation(BlockHitResult.BlockPos.WorldLocation() + BlockSize / 2.0f);
+	}
+	else
+	{
+		Marker->SetVisibility(false);
+	}
+}
+
+bool UInteractiveComponent::InitMarkComponent(USceneComponent* Parent)
+{
+	Marker = NewObject<UStaticMeshComponent>(this, TEXT("MarkerComponent"));
+	Marker->AttachToComponent(Parent, FAttachmentTransformRules::KeepRelativeTransform);
+	Marker->RegisterComponent();
+
+	UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(this, TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
+	if (CubeMesh)
+	{
+		Marker->SetStaticMesh(CubeMesh);
+	}
+	Marker->SetCollisionProfileName(TEXT("NoCollision"));
+	return Marker->IsRegistered();
+}
+
+void UInteractiveComponent::UpdateDestroyProgress(float Value)
+{
+	DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), Value);
 }
 
 void UInteractiveComponent::AddBlock()
 {
-	if (BlockData.BlockID > 0)
+	if (BlockHitResult.BlockID > 0)
 	{
-		uint8 BlockID = GetBlockID(BlockData.VoxelWorldPosition + BlockData.Normal, Temp);
+		FBlockHitResult Temp;
+		uint8 BlockID = GetBlockID(BlockHitResult.BlockPos.VoxelWorldLocation() + BlockHitResult.Direction, Temp);
 
 		if (BlockID == 0)
 		{
 			AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 			if (WorldManager)
 			{
-				AChunkSection* ChunkSection = WorldManager->GetChunkSection(Temp.ChunkVoexlWorldPosition);
+				AChunkSection* ChunkSection = WorldManager->GetChunkSection(Temp.BlockPos);
 				if (ChunkSection)
 				{
-					ChunkSection->SetBlock(Temp.BlockIndex, 2);
+					ChunkSection->SetBlock(Temp.BlockPos.OffsetLocation(), 2);
 					if (ChunkSection->IsEmpty())
 					{
 						ChunkSection->SetEmpty(false);
@@ -50,53 +95,141 @@ void UInteractiveComponent::AddBlock()
 	}
 }
 
-void UInteractiveComponent::RemoveBlock()
+bool UInteractiveComponent::RemoveBlockFromWorld(const FBlockPos& BlockPos)
 {
-	if (BlockData.BlockID > 0)
+	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
+	if (WorldManager)
 	{
-		AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
-		if (WorldManager)
-		{
-			AChunkSection* ChunkSection = WorldManager->GetChunkSection(BlockData.ChunkVoexlWorldPosition);
-			ChunkSection->SetBlock(BlockData.BlockIndex, 0);
+		AChunkSection* ChunkSection = WorldManager->GetChunkSection(BlockPos);
+		ChunkSection->SetBlock(BlockPos.OffsetLocation(), 0);
 
-			// ÷ÿ–¬º∆À„ø’÷µ
-			ChunkSection->RecalculateEmpty();
-			ChunkSection->Rebuild();
-			Rebuild_Adjacent_Chunks();
-		}
+		// ÈáçÊñ∞ËÆ°ÁÆóÁ©∫ÂÄº
+		ChunkSection->RecalculateEmpty();
+		ChunkSection->Rebuild();
+		Rebuild_Adjacent_Chunks(BlockPos);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool UInteractiveComponent::ClickBlock()
+{
+	if (!bIsHittingBlock)
+	{
+		bIsHittingBlock = true;
+		CurrentHitResult = GetBlockHitResult();
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("ÁÇπÂáªBlock")));
+		return true;
+	}
+
+	return false;
+}
+
+void UInteractiveComponent::ResetBlockRemoving()
+{
+	if (bIsHittingBlock)
+	{
+		bIsHittingBlock = false;
+		CurBlockDamageMP = 0.0f;
+		BlockHitDelay = 0.0;
+		UpdateDestroyProgress(CurBlockDamageMP);
 	}
 }
 
-void UInteractiveComponent::RayCast()
+void UInteractiveComponent::OngoingClick()
 {
-	if (PlayerController == nullptr) return;
+	if (OnPlayerDamageBlock(GetBlockHitResult()))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Black, TEXT("Êí≠ÊîæÊå•ÊâãÂä®ÁîªÂíåÁâπÊïà"));
+	}
+}
+
+bool UInteractiveComponent::OnPlayerDamageBlock(const FBlockHitResult& HitResult)
+{
+	if (!HitResult.bIsHit) return false;
+
+	if (BlockHitDelay > 0)
+	{
+		--BlockHitDelay;
+		return true;
+	}
+	//else if()// ÂàõÂª∫Ê®°Âºè‰ª•ÂêéÂÜçËØ¥
+	else if (IsHittingPosition(HitResult))
+	{
+		//Block* HitBlock = Blocks::BlocksMap[HitResult.BlockID].Get();
+		Block* HitBlock = nullptr;
+
+		if (HitBlock == nullptr) return false;
+
+
+		if (HitBlock->IsAir())
+		{
+			check(false);
+
+			bIsHittingBlock = false;
+			return false;
+		}
+		else
+		{
+			CurBlockDamageMP += HitBlock->GetPlayerRelativeBlockHardness(Player) * GetWorld()->GetDeltaSeconds();
+
+
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Êí≠ÊîæÈü≥‰πê"));
+
+			if (CurBlockDamageMP >= 1.0f)
+			{
+				DestroyBlock(HitBlock, HitResult.BlockPos);
+				bIsHittingBlock = false;
+				CurBlockDamageMP = 0.0f;
+				BlockHitDelay = 5.0f;
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Á†¥ÂùèÊñπÂùó"));
+			}
+
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Êõ¥Êñ∞Á†¥ÂùèËøõÂ∫¶"));
+			DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), CurBlockDamageMP);
+			return true;
+		}
+	}
+	else
+	{
+		ResetBlockRemoving();
+		return ClickBlock();
+	}
+
+	return false;
+}
+
+bool UInteractiveComponent::RayCast(FBlockHitResult& HitResult)
+{
+	if (PlayerController == nullptr) return false;
 
 	const FVector& CameraLocation = PlayerController->PlayerCameraManager->ViewTarget.POV.Location;
 	const FRotator& CameraRotation = PlayerController->PlayerCameraManager->ViewTarget.POV.Rotation;
 
-	// ∆µ„”Î÷’µ„
+	// Ëµ∑ÁÇπ‰∏éÁªàÁÇπ
 	FVector Ray_Start = CameraLocation;
 	FVector Ray_End = CameraLocation + CameraRotation.Vector() * MAX_RAY_DIST * BlockSize;
 
-	// ∆ ºÃÂÀÿŒª÷√
+	// Ëµ∑Âßã‰ΩìÁ¥†‰ΩçÁΩÆ
 	FVector Current_Voxel(FMath::Floor(Ray_Start.X / BlockSize),
 						  FMath::Floor(Ray_Start.Y / BlockSize),
 						  FMath::Floor(Ray_Start.Z / BlockSize));
 
-	// ÷’µ„ÃÂÀÿŒª÷√
+	// ÁªàÁÇπ‰ΩìÁ¥†‰ΩçÁΩÆ
 	FVector Last_Voxel(FMath::Floor(Ray_End.X / BlockSize),
 					   FMath::Floor(Ray_End.Y / BlockSize),
 					   FMath::Floor(Ray_End.Z / BlockSize));
 
-	// …‰œﬂ∑ΩœÚœÚ¡ø
+	// Â∞ÑÁ∫øÊñπÂêëÂêëÈáè
 	FVector Ray = Ray_End - Ray_Start;
 
-	// …‰œﬂ∑ΩœÚ±Í ∂∑˚: 0 X, 1 Y, 2 Z
+	// Â∞ÑÁ∫øÊñπÂêëÊ†áËØÜÁ¨¶: 0 X, 1 Y, 2 Z
 	int32 Step_Dir = -1;
 
-	// «Â≥˝¿˙ ∑º«¬º
-	BlockData.Normal = FVector::ZeroVector;
+	// Ê∏ÖÈô§ÂéÜÂè≤ËÆ∞ÂΩï
+	HitResult.Direction = FVector::ZeroVector;
 
 	float tMaxX, tMaxY, tMaxZ, tDeltaX, tDeltaY, tDeltaZ;
 
@@ -112,7 +245,7 @@ void UInteractiveComponent::RayCast()
 	if (dz != 0) tDeltaZ = FMath::Min(BlockSize / (Ray_End.Z - Ray_Start.Z) * dz, 10000000.0f); else tDeltaZ = 10000000.0f;
 	if (dz > 0) tMaxZ = tDeltaZ * (1 - FMath::Frac(Ray_Start.Z / BlockSize)); else tMaxZ = tDeltaZ * FMath::Frac(Ray_Start.Z / BlockSize);
 
-	// µ˜ ‘œ‡πÿ
+	// Ë∞ÉËØïÁõ∏ÂÖ≥
 	if (bIsDebug)
 	{
 		DrawDebugLine(GetWorld(), Ray_Start, Ray_End, FColor::Red, false, -1.0f, 0U, 5);
@@ -121,21 +254,22 @@ void UInteractiveComponent::RayCast()
 
 	while (true)
 	{
-		if (GetBlockID(Current_Voxel, BlockData) > 0)
+		if (GetBlockID(Current_Voxel, HitResult) > 0)
 		{
+			HitResult.bIsHit = true;
 			if (Step_Dir == 0)
 			{
-				BlockData.Normal.X = -dx;
+				HitResult.Direction.X = -dx;
 			}
 			else if (Step_Dir == 1)
 			{
-				BlockData.Normal.Y = -dy;
+				HitResult.Direction.Y = -dy;
 			}
 			else if (Step_Dir == 2)
 			{
-				BlockData.Normal.Z = -dz;
+				HitResult.Direction.Z = -dz;
 			}
-			return;
+			return true;
 		}
 
 		if (bIsDebug)
@@ -175,9 +309,30 @@ void UInteractiveComponent::RayCast()
 		}
 		if (tMaxX > 1 && tMaxY > 1 && tMaxZ > 1) break;
 	}
+
+	HitResult.bIsHit = false;
+	return false;
 }
 
-uint8 UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBlockData& OutBlockData)
+bool UInteractiveComponent::IsHittingPosition(const FBlockHitResult& HitResult)
+{
+	return CurrentHitResult == HitResult;
+}
+
+bool UInteractiveComponent::DestroyBlock(const Block* block, const FBlockPos& BlockPos)
+{
+	bool bIsDestroyed = RemoveBlockFromWorld(BlockPos);
+
+	if (bIsDestroyed)
+	{
+		block->DropItem(GetWorld());
+		block->Destroyed();
+	}
+
+	return false;
+}
+
+uint8 UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult)
 {
 	int32 ChunkWorld_X = FMath::Floor(VoxelWorldPosition.X / CHUNK_SIZE);
 	int32 ChunkWorld_Y = FMath::Floor(VoxelWorldPosition.Y / CHUNK_SIZE);
@@ -190,7 +345,7 @@ uint8 UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBloc
 	{
 		AChunkSection* ChunkSection = WorldManager->GetChunkSection(ChunkVoexlWorldPosition);
 
-		// ‘⁄”ŒÕÊ ±£¨“ÚŒ™µÿ–Œ“ª÷± «ÀÊ◊≈ÕÊº“µƒŒª÷√º”‘ÿµƒÀ˘“‘ÕÍ’˚”Œœ∑÷–£¨≤ª“Ú∏√Œ™ø’
+		// Âú®Ê∏∏Áé©Êó∂ÔºåÂõ†‰∏∫Âú∞ÂΩ¢‰∏ÄÁõ¥ÊòØÈöèÁùÄÁé©ÂÆ∂ÁöÑ‰ΩçÁΩÆÂä†ËΩΩÁöÑÊâÄ‰ª•ÂÆåÊï¥Ê∏∏Êàè‰∏≠Ôºå‰∏çÂõ†ËØ•‰∏∫Á©∫
 		if (ChunkSection == nullptr) return 0;
 
 		int32 Local_X = VoxelWorldPosition.X - ChunkWorld_X * CHUNK_SIZE;
@@ -199,13 +354,11 @@ uint8 UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBloc
 
 		int32 BlockIndex = Local_X + Local_Y * CHUNK_SIZE + Local_Z * CHUNK_AREA;
 
-		OutBlockData.BlockID = ChunkSection->GetBlock(BlockIndex);
-		OutBlockData.BlockIndex = BlockIndex;
-		OutBlockData.VoxelLocalPosition = FVector(Local_X, Local_Y, Local_Z);
-		OutBlockData.VoxelWorldPosition = VoxelWorldPosition;
-		OutBlockData.ChunkVoexlWorldPosition = ChunkVoexlWorldPosition;
+		OutHitResult.BlockID = ChunkSection->GetBlock(BlockIndex);
+		OutHitResult.BlockPos.SetOffsetLocation(Local_X, Local_Y, Local_Z);
+		OutHitResult.BlockPos.SetVoxelWorldLocation(VoxelWorldPosition.X, VoxelWorldPosition.Y, VoxelWorldPosition.Z);
 
-		return OutBlockData.BlockID;
+		return OutHitResult.BlockID;
 	}
 
 	return 0;
@@ -225,19 +378,19 @@ void UInteractiveComponent::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_W
 	}
 }
 
-void UInteractiveComponent::Rebuild_Adjacent_Chunks()
+void UInteractiveComponent::Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos)
 {
-	// ªÒ»°VoxelŒª÷√
-	int32 Voxel_Local_X = BlockData.VoxelLocalPosition.X;
-	int32 Voxel_Local_Y = BlockData.VoxelLocalPosition.Y;
-	int32 Voxel_Local_Z = BlockData.VoxelLocalPosition.Z;
+	// Ëé∑ÂèñVoxel‰ΩçÁΩÆ
+	int32 Voxel_Local_X = BlockPos.X_OFFSET;
+	int32 Voxel_Local_Y = BlockPos.Y_OFFSET;
+	int32 Voxel_Local_Z = BlockPos.Z_OFFSET;
 
-	// ªÒ»°ChunkÀ˘‘⁄VoxelŒª÷√
-	int32 Chunk_World_X = FMath::Floor(BlockData.VoxelWorldPosition.X / CHUNK_SIZE);
-	int32 Chunk_World_Y = FMath::Floor(BlockData.VoxelWorldPosition.Y / CHUNK_SIZE);
-	int32 Chunk_World_Z = FMath::Floor(BlockData.VoxelWorldPosition.Z / CHUNK_SIZE);
+	// Ëé∑ÂèñChunkÊâÄÂú®Voxel‰ΩçÁΩÆ
+	int32 Chunk_World_X = FMath::Floor(BlockPos.X_VOXEL_WORLD / CHUNK_SIZE);
+	int32 Chunk_World_Y = FMath::Floor(BlockPos.Y_VOXEL_WORLD / CHUNK_SIZE);
+	int32 Chunk_World_Z = FMath::Floor(BlockPos.Z_VOXEL_WORLD / CHUNK_SIZE);
 
-	// X÷·
+	// XËΩ¥
 	if (Voxel_Local_X == 0)
 	{
 		Rebuild_Adj_Chunk(Chunk_World_X - 1, Chunk_World_Y, Chunk_World_Z);
@@ -247,7 +400,7 @@ void UInteractiveComponent::Rebuild_Adjacent_Chunks()
 		Rebuild_Adj_Chunk(Chunk_World_X + 1, Chunk_World_Y, Chunk_World_Z);
 	}
 
-	// Y÷·
+	// YËΩ¥
 	if (Voxel_Local_Y == 0)
 	{
 		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y - 1, Chunk_World_Z);
@@ -257,7 +410,7 @@ void UInteractiveComponent::Rebuild_Adjacent_Chunks()
 		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y + 1, Chunk_World_Z);
 	}
 
-	// Z÷·
+	// ZËΩ¥
 	if (Voxel_Local_Z == 0)
 	{
 		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y, Chunk_World_Z - 1);

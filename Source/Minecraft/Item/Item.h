@@ -50,6 +50,9 @@ public:
 	Item(Properties properties);
 	virtual ~Item();
 
+public:
+	static TMap<uint8, Item> BLOCK_ITEM;
+
 private:
 	// ×î´óÄÍ¾Ã¶È
 	int32 maxDamage; 
