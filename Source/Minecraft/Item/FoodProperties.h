@@ -19,7 +19,4 @@ private:
 	bool bCanAlwaysEat;
 
 	bool bFastFood;
-
-
-
 };

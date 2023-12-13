@@ -6,9 +6,9 @@
 /**
  * 
  */
-class MINECRAFT_API TieredItem : public Item
+class MINECRAFT_API FTieredItem : public FItem
 {
 public:
-	TieredItem();
-	~TieredItem();
+	FTieredItem();
+	~FTieredItem();
 };

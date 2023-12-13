@@ -22,9 +22,6 @@ struct FItemDetails : public FTableRowBase
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	int32 ID = -1;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
 	FText Name = FText::FromString(TEXT("None"));
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")

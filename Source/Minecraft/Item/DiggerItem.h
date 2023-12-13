@@ -6,9 +6,9 @@
 /**
  * 
  */
-class MINECRAFT_API DiggerItem : public TieredItem
+class MINECRAFT_API FDiggerItem : public FTieredItem
 {
 public:
-	DiggerItem();
-	~DiggerItem();
+	FDiggerItem();
+	~FDiggerItem();
 };

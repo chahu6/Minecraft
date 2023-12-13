@@ -1,9 +1,9 @@
 #include "TieredItem.h"
 
-TieredItem::TieredItem()
+FTieredItem::FTieredItem()
 {
 }
 
-TieredItem::~TieredItem()
+FTieredItem::~FTieredItem()
 {
 }

@@ -1,9 +1,9 @@
 #include "DiggerItem.h"
 
-DiggerItem::DiggerItem()
+FDiggerItem::FDiggerItem()
 {
 }
 
-DiggerItem::~DiggerItem()
+FDiggerItem::~FDiggerItem()
 {
 }

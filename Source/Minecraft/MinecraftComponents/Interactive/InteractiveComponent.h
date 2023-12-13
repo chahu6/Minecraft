@@ -6,7 +6,7 @@
 #include "InteractiveComponent.generated.h"
 
 class AMCPlayer;
-class Block;
+class FBlock;
 
 UENUM(BlueprintType)
 enum class Action : uint8
@@ -52,7 +52,7 @@ private:
 
 	bool IsHittingPosition(const FBlockHitResult& HitResult);
 
-	bool DestroyBlock(const Block* block, const FBlockPos& BlockPos);
+	bool DestroyBlock(const FBlock* Block, const FBlockHitResult& HitResult);
 
 	uint8 GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult);
 

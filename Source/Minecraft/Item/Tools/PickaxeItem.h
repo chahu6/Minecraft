@@ -6,9 +6,9 @@
 /**
  * 
  */
-class MINECRAFT_API PickaxeItem : public DiggerItem
+class MINECRAFT_API FPickaxeItem : public FDiggerItem
 {
 public:
-	PickaxeItem();
-	~PickaxeItem();
+	FPickaxeItem();
+	~FPickaxeItem();
 };
