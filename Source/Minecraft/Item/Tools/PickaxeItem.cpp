@@ -1,9 +1,9 @@
 #include "PickaxeItem.h"
 
-PickaxeItem::PickaxeItem()
+FPickaxeItem::FPickaxeItem()
 {
 }
 
-PickaxeItem::~PickaxeItem()
+FPickaxeItem::~FPickaxeItem()
 {
 }

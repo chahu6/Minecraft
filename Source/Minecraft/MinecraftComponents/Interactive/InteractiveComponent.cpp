@@ -6,7 +6,7 @@
 #include "Minecraft/Block/Blocks.h"
 #include "Minecraft/Entity/Player/MCPlayer.h"
 
-#include "Minecraft/Core/Factory.h"
+#include "Minecraft/Item/Items.h"
 
 UInteractiveComponent::UInteractiveComponent()
 {
@@ -22,6 +22,7 @@ void UInteractiveComponent::BeginPlay()
 		Marker->SetWorldRotation(FRotator::ZeroRotator);
 		Marker->SetWorldScale3D(FVector(1.01f));
 		Marker->SetCastShadow(false);
+		Marker->SetVisibility(false);
 		UMaterialInstance* Instance = LoadObject<UMaterialInstance>(this, TEXT("/Script/Engine.MaterialInstanceConstant'/Game/Minecraft/Assets/Materials/Minecraft/MI_Mark.MI_Mark'"));
 		if (Instance)
 		{
@@ -158,11 +159,9 @@ bool UInteractiveComponent::OnPlayerDamageBlock(const FBlockHitResult& HitResult
 	//else if()// 创建模式以后再说
 	else if (IsHittingPosition(HitResult))
 	{
-		//Block* HitBlock = Blocks::BlocksMap[HitResult.BlockID].Get();
-		Block* HitBlock = nullptr;
+		FBlock* HitBlock = FBlock::GetBlock(HitResult.BlockID).Get();
 
-		if (HitBlock == nullptr) return false;
-
+		ensure(HitBlock != nullptr);
 
 		if (HitBlock->IsAir())
 		{
@@ -175,12 +174,11 @@ bool UInteractiveComponent::OnPlayerDamageBlock(const FBlockHitResult& HitResult
 		{
 			CurBlockDamageMP += HitBlock->GetPlayerRelativeBlockHardness(Player) * GetWorld()->GetDeltaSeconds();
 
-
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("播放音乐"));
 
 			if (CurBlockDamageMP >= 1.0f)
 			{
-				DestroyBlock(HitBlock, HitResult.BlockPos);
+				DestroyBlock(HitBlock, HitResult);
 				bIsHittingBlock = false;
 				CurBlockDamageMP = 0.0f;
 				BlockHitDelay = 5.0f;
@@ -319,14 +317,15 @@ bool UInteractiveComponent::IsHittingPosition(const FBlockHitResult& HitResult)
 	return CurrentHitResult == HitResult;
 }
 
-bool UInteractiveComponent::DestroyBlock(const Block* block, const FBlockPos& BlockPos)
+bool UInteractiveComponent::DestroyBlock(const FBlock* Block, const FBlockHitResult& HitResult)
 {
-	bool bIsDestroyed = RemoveBlockFromWorld(BlockPos);
+	bool bIsDestroyed = RemoveBlockFromWorld(HitResult.BlockPos);
 
 	if (bIsDestroyed)
 	{
-		block->DropItem(GetWorld());
-		block->Destroyed();
+		Block->DropBlockAsItem(GetWorld(), HitResult.BlockPos, HitResult.BlockID);
+		Block->Destroyed();
+		return true;
 	}
 
 	return false;

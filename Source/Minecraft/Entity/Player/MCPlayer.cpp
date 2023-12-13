@@ -6,7 +6,6 @@
 #include "Minecraft/Controller/MCPlayerController.h"
 #include "Minecraft/MinecraftComponents/Storage/BackpackComponent.h"
 
-
 AMCPlayer::AMCPlayer()
 {
 	PrimaryActorTick.bCanEverTick = true;

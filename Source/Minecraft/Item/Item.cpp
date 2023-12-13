@@ -1,14 +1,10 @@
 #include "Item.h"
 
-TMap<uint8, Item> Item::BLOCK_ITEM;
+TMap<TSharedPtr<FBlock>, TSharedPtr<FItem>> FItem::BLOCK_ITEM;
 
-Item::Item(Properties properties)
+FItem::FItem(Properties properties)
 {
 	this->maxDamage = properties.maxDamage;
 	this->maxStackSize = properties.maxStackSize;
 	this->foodProperties = properties.foodProperties;
-}
-
-Item::~Item()
-{
 }

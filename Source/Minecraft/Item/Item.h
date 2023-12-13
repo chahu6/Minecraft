@@ -2,15 +2,18 @@
 
 #include "CoreMinimal.h"
 #include "FoodProperties.h"
+#include "IItemType.h"
 
+class FBlock;
 /**
  * 
  */
-class MINECRAFT_API Item
+class MINECRAFT_API FItem : public IItemType
 {
+public:
 	class Properties
 	{
-		friend class Item;
+		friend class FItem;
 
 	public:
 		Properties* food(const TSharedPtr<FoodProperties>& newFoodProperties)
@@ -41,18 +44,20 @@ class MINECRAFT_API Item
 
 	private:
 		int32 maxStackSize = 64;
-		int32 maxDamage;
-		TSharedPtr<FoodProperties> foodProperties;
+		int32 maxDamage = 0;
+		TSharedPtr<FoodProperties> foodProperties = nullptr;
 	};
 
 public:
-	Item() = default;
-	Item(Properties properties);
-	virtual ~Item();
+	FItem() = default;
+	FItem(Properties properties);
 
 public:
-	static TMap<uint8, Item> BLOCK_ITEM;
+	static TMap<TSharedPtr<FBlock>, TSharedPtr<FItem>> BLOCK_ITEM;
 
+	//static GetItemFromBlock(Block* blockIn);
+
+	virtual EType GetItemType() const override { return EType::Item; }
 private:
 	// ×î´óÄÍ¾Ã¶È
 	int32 maxDamage; 

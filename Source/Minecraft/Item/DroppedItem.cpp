@@ -21,6 +21,12 @@ ADroppedItem::ADroppedItem()
 	{
 		PickupSound = SoundCueObject.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> ItemDataTableObject(TEXT("/Script/Engine.DataTable'/Game/Minecraft/Blueprints/Datas/DataTable/DT_ItemDetails.DT_ItemDetails'"));
+	if (ItemDataTableObject.Succeeded())
+	{
+		ItemDataTable = ItemDataTableObject.Object;
+	}	
 }
 
 void ADroppedItem::PostInitializeComponents()
@@ -47,12 +53,17 @@ void ADroppedItem::Tick(float DeltaTime)
 	MeshComponent->AddRelativeRotation(FRotator(0.0, DeltaTime * RotationSpeed, 0.0));
 }
 
-void ADroppedItem::SetItemData(const FItemDetails* ItemDetails, int32 Quantity)
+void ADroppedItem::SetItemStack(const FItemStack& NewItemStack)
 {
-	ItemData.ID = ItemDetails->ID;
-	ItemData.MaxCount = ItemDetails->MaxCount;
-	ItemData.Count = Quantity;
-	MeshComponent->SetStaticMesh(ItemDetails->Mesh);
+	ItemStack = NewItemStack;
+	if (ItemDataTable)
+	{
+		FItemDetails* ItemDetails = ItemDataTable->FindRow<FItemDetails>(FName(FString::FromInt(0)), TEXT("ADroppedItem"));
+		if (ItemDetails)
+		{
+			MeshComponent->SetStaticMesh(ItemDetails->Mesh);
+		}
+	}
 }
 
 void ADroppedItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

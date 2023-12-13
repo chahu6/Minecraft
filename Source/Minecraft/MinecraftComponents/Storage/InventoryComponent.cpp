@@ -27,18 +27,18 @@ bool UInventoryComponent::AddItemToInventory(const ADroppedItem* Item)
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("添加物品"));
 
 	int32 Index = -1;
-	if (Item->GetItemData().MaxCount != 0)
+	//if (Item->GetItemData().MaxCount != 0)
 	{
 		if (FindItemIndex(Item, Index))
 		{
-			ItemsData[Index].Count += Item->GetItemData().Count;
+			//ItemsData[Index].Count += Item->GetItemData().Count;
 			return true;
 		}
 	}
 	
 	if (AnyEmptySlots(Index))
 	{
-		ItemsData[Index] = Item->GetItemData();
+		//ItemsData[Index] = Item->GetItemData();
 		return true;
 	}
 
@@ -72,8 +72,8 @@ void UInventoryComponent::CreateItemToWorld(FName ID, int32 Quantity)
 	if (World)
 	{
 		FVector Location = GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 300;
-		ADroppedItem* Item = World->SpawnActor<ADroppedItem>(ADroppedItem::StaticClass(), Location, FRotator::ZeroRotator);
-		Item->SetItemData(ItemDetails, Quantity);
+		ADroppedItem* DroppedItem = World->SpawnActor<ADroppedItem>(ADroppedItem::StaticClass(), Location, FRotator::ZeroRotator);
+		//Item->SetItemData(ItemDetails, Quantity);
 	}
 }
 
@@ -89,6 +89,9 @@ void UInventoryComponent::RemoveItemFromInventory(int32 Index)
 
 bool UInventoryComponent::FindItemIndex(const ADroppedItem* Item, int32& Index)
 {
+	return true;
+
+#if 0
 	const FItemSlot& ItemData = Item->GetItemData();
 
 	Index = -1;
@@ -105,6 +108,8 @@ bool UInventoryComponent::FindItemIndex(const ADroppedItem* Item, int32& Index)
 	}
 
 	return false;
+
+#endif
 }
 
 bool UInventoryComponent::AnyEmptySlots(int32& Index)
