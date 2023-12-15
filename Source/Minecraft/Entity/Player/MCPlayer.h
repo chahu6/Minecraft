@@ -43,7 +43,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	virtual bool AddItem(const ADroppedItem* Item) override;
+	virtual bool AddItem(const ADroppedItem* DroppedItem) override;
 
 private:
 	void SwitchPerspectives();
@@ -85,6 +85,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* ItemMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* SphereOverlap;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive", meta = (AllowPrivateAccess = "true"))
 	class UInteractiveComponent* InteractiveComponent;

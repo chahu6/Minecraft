@@ -17,10 +17,11 @@ void UInteractiveComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 辅助标记方块
 	if (InitMarkComponent(GetOwner()->GetRootComponent()))
 	{
 		Marker->SetWorldRotation(FRotator::ZeroRotator);
-		Marker->SetWorldScale3D(FVector(1.01f));
+		Marker->SetWorldScale3D(FVector(1.0001f));
 		Marker->SetCastShadow(false);
 		Marker->SetVisibility(false);
 		UMaterialInstance* Instance = LoadObject<UMaterialInstance>(this, TEXT("/Script/Engine.MaterialInstanceConstant'/Game/Minecraft/Assets/Materials/Minecraft/MI_Mark.MI_Mark'"));

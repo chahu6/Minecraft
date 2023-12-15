@@ -12,6 +12,9 @@ class MINECRAFT_API UBackpack : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
+	UBackpack(const FObjectInitializer& ObjectInitializer);
+
 protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;

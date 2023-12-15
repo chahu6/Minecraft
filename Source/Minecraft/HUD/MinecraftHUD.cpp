@@ -1,6 +1,6 @@
 #include "MinecraftHUD.h"
 #include "Blueprint/UserWidget.h"
-#include "StorageUI/Inventory.h"
+#include "StorageUI/Backpack.h"
 
 void AMinecraftHUD::BeginPlay()
 {
@@ -37,7 +37,7 @@ void AMinecraftHUD::AddBackpack()
 	APlayerController* PlayerController = GetOwningPlayerController();
 	if (PlayerController && BackpackClass)
 	{
-		BackpackUI = CreateWidget<UInventory>(PlayerController, BackpackClass);
+		BackpackUI = CreateWidget<UBackpack>(PlayerController, BackpackClass);
 		BackpackUI->AddToViewport();
 	}
 }

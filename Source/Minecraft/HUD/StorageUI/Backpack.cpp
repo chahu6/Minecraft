@@ -1,6 +1,12 @@
 #include "Backpack.h"
 #include "Minecraft/MinecraftComponents/Storage/BackpackComponent.h"
 
+UBackpack::UBackpack(const FObjectInitializer& ObjectInitializer)
+	:UUserWidget(ObjectInitializer)
+{
+	bIsFocusable = true;
+}
+
 void UBackpack::NativePreConstruct()
 {
 	Super::NativePreConstruct();

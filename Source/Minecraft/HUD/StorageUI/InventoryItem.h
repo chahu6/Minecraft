@@ -11,7 +11,6 @@ UCLASS()
 class MINECRAFT_API UInventoryItem : public UUserWidget
 {
 	GENERATED_BODY()
-
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UImage* ItemIcon;
