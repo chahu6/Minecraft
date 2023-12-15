@@ -96,6 +96,9 @@ private:
 	class UBackpackComponent* BackpackComponent;
 
 private:
+	UPROPERTY(EditAnywhere, Category = "Data")
+	UDataTable* ItemsDataTable;
+
 	enum class EPerspective : uint8
 	{
 		First,
