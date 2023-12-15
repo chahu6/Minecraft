@@ -48,7 +48,7 @@ AMCPlayer::AMCPlayer()
 	*/
 
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
-	ItemMesh->SetupAttachment(GetMesh());
+	ItemMesh->SetupAttachment(FirstCamera);
 
 	SphereOverlap = CreateDefaultSubobject<USphereComponent>(TEXT("SphereOverlap"));
 	SphereOverlap->SetupAttachment(RootComponent);
@@ -188,7 +188,7 @@ void AMCPlayer::OpenBackpack()
 
 void AMCPlayer::SwitchingItem(const FInputActionValue& Value)
 {
-	int32 WheelValue = Value.Get<float>();
+	int32 WheelValue = -Value.Get<float>();
 
 	MainHandIndex = (MainHandIndex + WheelValue + 9) % 9;
 
@@ -212,7 +212,7 @@ FItemStack AMCPlayer::GetMainHandItem()
 {
 	if (BackpackComponent)
 	{
-		return BackpackComponent->GetSelected();
+		return BackpackComponent->GetSelected(MainHandIndex);
 	}
 
 	return FItemStack();
@@ -220,5 +220,13 @@ FItemStack AMCPlayer::GetMainHandItem()
 
 void AMCPlayer::Initial()
 {
-	GetMainHandItem();
+	int32 ID = GetMainHandItem().ID;
+	if (ItemsDataTable)
+	{
+		FItemDetails* ItemDetails = ItemsDataTable->FindRow<FItemDetails>(FName(FString::FromInt(ID)), TEXT("AMCPlayer"));
+		if (ItemDetails)
+		{
+			ItemMesh->SetStaticMesh(ItemDetails->Mesh);
+		}
+	}
 }

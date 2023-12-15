@@ -42,7 +42,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties")
 	FItemStack ItemStack;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties")
+	UPROPERTY(EditAnywhere, Category = "Data")
 	UDataTable* ItemDataTable;
 
 	UPROPERTY(EditAnywhere, Category = "DefaultProperties")

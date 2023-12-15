@@ -27,7 +27,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-	FItemStack GetSelected();
+	FItemStack GetSelected(int32 SelectedIndex);
 
 	bool AddItemToInventory(const ADroppedItem* DroppedItem);
 
@@ -36,6 +36,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool RemoveItemFromInventory(int32 Index);
+
+	static bool IsHotbarSlot(int32 Index);
+
+private:
+	void NotifyAndUpdateUI(int32 Index);
 
 public:
 	FOnInventoryUpdate OnInventoryUpdate;
@@ -46,8 +51,8 @@ private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemStack> Items;
 	
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TArray<FItemStack> HotbarItems;
+	/*UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TArray<FItemStack> HotbarItems;*/
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemStack> ArmorItems;
@@ -56,8 +61,6 @@ private:
 	
 	UPROPERTY()
 	AMCPlayer* Player;
-
-	int32 SelectedIndex = 0;
 
 public:
 	FORCEINLINE const TArray<FItemStack>& GetItems() const { return Items; }
