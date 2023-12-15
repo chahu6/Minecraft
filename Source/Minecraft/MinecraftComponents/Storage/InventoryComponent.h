@@ -30,7 +30,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void TransferSlots(int32 SourceIndex, UInventoryComponent* SourceInventory, int32 DestinationIndex);
 
-
 	UFUNCTION(BlueprintCallable)
 	void CreateItemToWorld(FName ID, int32 Quantity);
 

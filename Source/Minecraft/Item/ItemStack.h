@@ -11,15 +11,20 @@ USTRUCT(BlueprintType)
 struct FItemStack
 {
 	GENERATED_USTRUCT_BODY()
-public:
+
 	FItemStack() = default;
 	FItemStack(int32 ID, TSharedPtr<FItem> NewItem, int32 Amount);
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
 	int32 ID = -1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
+	int32 Amount = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
+	int32 MaxCount = 64;
 
 	TSharedPtr<FItem> Item = nullptr;
 
-	UPROPERTY()
-	int32 Amount = 1;
+	void Empty();
 };

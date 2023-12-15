@@ -8,6 +8,8 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnInventoryUpdate);
 
+class ADroppedItem;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MINECRAFT_API UBackpackComponent : public UActorComponent, public IInventoryInterface
 {
@@ -26,6 +28,14 @@ public:
 
 public:
 	FItemStack GetSelected();
+
+	bool AddItemToInventory(const ADroppedItem* DroppedItem);
+
+	UFUNCTION(BlueprintCallable)
+	bool TransferSlots(int32 SourceIndex, UBackpackComponent* SourceInventory, int32 DestinationIndex);
+
+	UFUNCTION(BlueprintCallable)
+	bool RemoveItemFromInventory(int32 Index);
 
 public:
 	FOnInventoryUpdate OnInventoryUpdate;
@@ -48,4 +58,8 @@ private:
 	AMCPlayer* Player;
 
 	int32 SelectedIndex = 0;
+
+public:
+	FORCEINLINE const TArray<FItemStack>& GetItems() const { return Items; }
+	FORCEINLINE bool SetItemStack(int32 Index, const FItemStack& NewItemStack);
 };

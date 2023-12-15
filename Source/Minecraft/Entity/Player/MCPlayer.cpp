@@ -5,6 +5,7 @@
 #include "Minecraft/MinecraftComponents/Interactive/InteractiveComponent.h"
 #include "Minecraft/Controller/MCPlayerController.h"
 #include "Minecraft/MinecraftComponents/Storage/BackpackComponent.h"
+#include "Components/SphereComponent.h"
 
 AMCPlayer::AMCPlayer()
 {
@@ -49,10 +50,10 @@ AMCPlayer::AMCPlayer()
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
 	ItemMesh->SetupAttachment(GetMesh());
 
-	// 辅助标记方块
-	//Marker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Marker"));
-	//Marker->SetupAttachment(RootComponent);
-	//Marker->SetVisibility(true);
+	SphereOverlap = CreateDefaultSubobject<USphereComponent>(TEXT("SphereOverlap"));
+	SphereOverlap->SetupAttachment(RootComponent);
+	SphereOverlap->SetSphereRadius(145.0f);
+	SphereOverlap->SetCollisionProfileName(TEXT("Player"));
 
 	// 交互组件
 	InteractiveComponent = CreateDefaultSubobject<UInteractiveComponent>(TEXT("InteractiveComponent"));
@@ -114,11 +115,11 @@ void AMCPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	}
 }
 
-bool AMCPlayer::AddItem(const ADroppedItem* Item)
+bool AMCPlayer::AddItem(const ADroppedItem* DroppedItem)
 {
-	//if (BackpackComp != nullptr)
+	if (BackpackComponent != nullptr)
 	{
-		//return BackpackComp->AddItemToInventory(Item);
+		return BackpackComponent->AddItemToInventory(DroppedItem);
 	}
 	return false;
 }

@@ -42,7 +42,7 @@ private:
 	TSubclassOf<UUserWidget> BackpackClass;
 
 	UPROPERTY()
-	class UInventory* BackpackUI;
+	class UBackpack* BackpackUI;
 
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> MainClass;

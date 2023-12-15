@@ -10,11 +10,12 @@ ADroppedItem::ADroppedItem()
 
 	Box = CreateDefaultSubobject<UBoxComponent>(TEXT("Box"));
 	RootComponent = Box;
+	Box->SetCollisionProfileName(TEXT("Item"));
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
 	MeshComponent->SetupAttachment(RootComponent);
-	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	MeshComponent->SetCollisionProfileName(TEXT("NoCollision"));
+	MeshComponent->SetRelativeScale3D(FVector(0.4f));
 
 	static ConstructorHelpers::FObjectFinder<USoundCue> SoundCueObject(TEXT("/Script/Engine.SoundCue'/Game/Minecraft/Assets/Sound/Pickup_Cue.Pickup_Cue'"));
 	if (SoundCueObject.Succeeded())
@@ -22,7 +23,7 @@ ADroppedItem::ADroppedItem()
 		PickupSound = SoundCueObject.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UDataTable> ItemDataTableObject(TEXT("/Script/Engine.DataTable'/Game/Minecraft/Blueprints/Datas/DataTable/DT_ItemDetails.DT_ItemDetails'"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> ItemDataTableObject(TEXT("/Script/Engine.DataTable'/Game/Minecraft/Datas/DataTable/DT_ItemDetails.DT_ItemDetails'"));
 	if (ItemDataTableObject.Succeeded())
 	{
 		ItemDataTable = ItemDataTableObject.Object;
@@ -51,6 +52,30 @@ void ADroppedItem::Tick(float DeltaTime)
 
 	MeshComponent->SetRelativeLocation(DeltaLocation);
 	MeshComponent->AddRelativeRotation(FRotator(0.0, DeltaTime * RotationSpeed, 0.0));
+
+	// 拾取相关
+	if (bIsPickingUp)
+	{
+		SetActorLocation(FMath::VInterpTo(GetActorLocation(), Player->GetActorLocation(), DeltaTime, InterpSeepd));
+		if (GetActorLocation().Equals(Player->GetActorLocation(), 10.0f))
+		{
+			UClass* ActorClass = Player->GetClass();
+
+			if (ActorClass->ImplementsInterface(UItemInterface::StaticClass()))
+			{
+				IItemInterface* InterfaceIns = CastChecked<IItemInterface>(Player);
+
+				if (InterfaceIns->AddItem(this))
+				{
+					if (PickupSound)
+					{
+						UGameplayStatics::PlaySound2D(this, PickupSound);
+					}
+					Destroy();
+				}
+			}
+		}
+	}
 }
 
 void ADroppedItem::SetItemStack(const FItemStack& NewItemStack)
@@ -58,9 +83,10 @@ void ADroppedItem::SetItemStack(const FItemStack& NewItemStack)
 	ItemStack = NewItemStack;
 	if (ItemDataTable)
 	{
-		FItemDetails* ItemDetails = ItemDataTable->FindRow<FItemDetails>(FName(FString::FromInt(0)), TEXT("ADroppedItem"));
+		FItemDetails* ItemDetails = ItemDataTable->FindRow<FItemDetails>(FName(FString::FromInt(ItemStack.ID)), TEXT("ADroppedItem"));
 		if (ItemDetails)
 		{
+			ItemStack.MaxCount = ItemDetails->MaxCount;
 			MeshComponent->SetStaticMesh(ItemDetails->Mesh);
 		}
 	}
@@ -68,20 +94,11 @@ void ADroppedItem::SetItemStack(const FItemStack& NewItemStack)
 
 void ADroppedItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UClass* ActorClass = OtherActor->GetClass();
-
-	if (ActorClass->ImplementsInterface(UItemInterface::StaticClass()))
+	// 吸附移动相关
+	if (IsValid(OtherActor))
 	{
-		IItemInterface* InterfaceIns = CastChecked<IItemInterface>(OtherActor);
-
-		if (InterfaceIns->AddItem(this))
-		{
-			if (PickupSound)
-			{
-				UGameplayStatics::PlaySound2D(this, PickupSound);
-			}
-			Destroy();
-		}
+		Player = OtherActor;
+		bIsPickingUp = true;
 	}
 }
 

@@ -54,4 +54,16 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
 	float RotationSpeed = 45.0f;
 
+private:
+	UPROPERTY()
+	bool bIsPickingUp = false;
+
+	UPROPERTY()
+	AActor* Player;
+
+	UPROPERTY(EditAnywhere, Category = "Properties")
+	float InterpSeepd = 5.0f;
+
+public:
+	FORCEINLINE const FItemStack& GetItemStack() const { return ItemStack; }
 };
