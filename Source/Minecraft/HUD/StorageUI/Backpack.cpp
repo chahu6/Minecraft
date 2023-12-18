@@ -1,5 +1,6 @@
 #include "Backpack.h"
 #include "Minecraft/MinecraftComponents/Storage/BackpackComponent.h"
+#include "Minecraft/Entity/Player/MCPlayer.h"
 
 UBackpack::UBackpack(const FObjectInitializer& ObjectInitializer)
 	:UUserWidget(ObjectInitializer)
@@ -19,6 +20,7 @@ void UBackpack::NativePreConstruct()
 
 	if (Backpack)
 	{
+		Backpack->OnHotbarUpdate.AddUObject(this, &UBackpack::FlushHotbar);
 		Backpack->OnInventoryUpdate.AddUObject(this, &UBackpack::FlushBackpack);
 	}
 }
@@ -37,7 +39,7 @@ void UBackpack::NativeConstruct()
 		PlayerController->SetShowMouseCursor(true);
 	}
 
-	FlushBackpack();
+	InitUI();
 }
 
 void UBackpack::NativeDestruct()
@@ -64,4 +66,20 @@ FReply UBackpack::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& 
 	}
 
 	return FReply::Handled();
+}
+
+void UBackpack::InitUI()
+{
+	FlushHotbar();
+	FlushBackpack();
+}
+
+void UBackpack::HangItemStackToMouse(int32 Index)
+{
+	AMCPlayer* MCCharacter = Cast<AMCPlayer>(Player);
+	if (MCCharacter)
+	{
+		const UBackpackComponent* BackpackComponent = MCCharacter->GetBackpackComponent();
+		HangItemStack = BackpackComponent->GetItemStack(Index);
+	}
 }

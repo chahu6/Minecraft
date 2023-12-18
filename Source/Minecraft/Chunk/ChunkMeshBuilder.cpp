@@ -18,7 +18,7 @@ bool IsVoid(int32 X, int32 Y, int32 Z, const FVector& WorldLocation, AWorldManag
 	int32 Local_X = (X + CHUNK_SIZE) % CHUNK_SIZE;
 	int32 Local_Y = (Y + CHUNK_SIZE) % CHUNK_SIZE;
 	int32 Local_Z = (Z + CHUNK_SIZE) % CHUNK_SIZE;
-	if (ChunkSection->GetBlock(Local_X, Local_Y, Local_Z) > 1)
+	if (ChunkSection->GetBlock(Local_X, Local_Y, Local_Z) > 0)
 		return false;
 
 	return true;
@@ -49,7 +49,7 @@ void FChunkMeshBuilder::BuildChunkMesh(const AChunkSection* ChunkSection, TMap<u
 			{
 				uint8 BlockID = ChunkSection->GetBlock(X, Y, Z);
 
-				if (BlockID <= 1)
+				if (BlockID < 1)
 					continue;
 
 				FMeshData TempMeshData;
@@ -294,6 +294,7 @@ void FChunkMeshBuilder::BuildChunkMesh(const AChunkSection* ChunkSection, TMap<u
 					Index += 4;
 				}
 
+				check(BlockID != 0);
 				OutMeshDatas.Add(BlockID, TempMeshData);
 			}
 		}

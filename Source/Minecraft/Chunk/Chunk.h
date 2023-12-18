@@ -6,6 +6,7 @@
 
 class ITerrainGenerator;
 class AChunkSection;
+class FWorldGeneratorAsyncTask;
 
 UCLASS()
 class MINECRAFT_API AChunk : public AActor
@@ -17,6 +18,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void PostInitializeComponents() override;
 
 	virtual void Destroyed() override;
 
@@ -30,16 +33,28 @@ public:
 
 	void SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID);
 
-	void Render();
+	void BuildAndRenderAsync();
+
+	bool IsDone();
 
 	void Load(ITerrainGenerator* Generator);
 
-private:
-	int32 Seed = -1;
-	FString SlotName;
+	void Render();
 
+public:
+	FCriticalSection BuildDataMutex;
+
+private:
+	UPROPERTY()
 	TArray<AChunkSection*> ChunkSections;
+
+	FAsyncTask<FWorldGeneratorAsyncTask>* WorldGeneratorTask = nullptr;
+
+	int32 Seed = -1;
+
+	FString SlotName;
 
 public:
 	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }
+	FORCEINLINE const TArray<AChunkSection*>& GetChunkSections() const { return ChunkSections; }
 };

@@ -39,7 +39,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	void AddBlock();
+	void UseItem();
+
 	bool RemoveBlockFromWorld(const FBlockPos& BlockPos);
 
 	void OngoingClick();

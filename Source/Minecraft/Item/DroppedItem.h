@@ -62,7 +62,7 @@ private:
 	AActor* Player;
 
 	UPROPERTY(EditAnywhere, Category = "Properties")
-	float InterpSeepd = 5.0f;
+	float InterpSeepd = 8.0f;
 
 public:
 	FORCEINLINE const FItemStack& GetItemStack() const { return ItemStack; }

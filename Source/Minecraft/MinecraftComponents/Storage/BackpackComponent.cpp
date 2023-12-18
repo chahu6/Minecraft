@@ -1,5 +1,6 @@
 #include "BackpackComponent.h"
 #include "Minecraft/Item/DroppedItem.h"
+#include "Minecraft/Entity/Player/MCPlayer.h"
 
 UBackpackComponent::UBackpackComponent()
 {
@@ -23,9 +24,11 @@ void UBackpackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 FItemStack UBackpackComponent::GetSelected(int32 SelectedIndex)
 {
-	if (SelectedIndex >= 0 && SelectedIndex < 9)
+	HotbarSelectedIndex = SelectedIndex;
+
+	if (IsHotbarSlot(HotbarSelectedIndex))
 	{
-		return Items[SelectedIndex];
+		return Items[HotbarSelectedIndex];
 	}
 
 	return FItemStack();
@@ -45,15 +48,16 @@ bool UBackpackComponent::AddItemToInventory(const ADroppedItem* DroppedItem)
 			if (Sum <= ItemStack.MaxCount)
 			{
 				Itr->Amount = Sum;
-
-				NotifyAndUpdateUI(Itr.GetIndex());
-				return true;
 			}
 			else
 			{
+				Itr->Amount = Itr->MaxCount;
 				int32 Remain = Sum - ItemStack.MaxCount;
 				ItemStack.Amount = Remain;
 			}
+
+			AfterDataUpdate(Itr.GetIndex());
+			return true;
 		}
 	}
 
@@ -64,7 +68,7 @@ bool UBackpackComponent::AddItemToInventory(const ADroppedItem* DroppedItem)
 			bFlags = true;
 			*Itr = ItemStack;
 
-			NotifyAndUpdateUI(Itr.GetIndex());
+			AfterDataUpdate(Itr.GetIndex());
 			break;
 		}
 	}
@@ -72,29 +76,37 @@ bool UBackpackComponent::AddItemToInventory(const ADroppedItem* DroppedItem)
 	return bFlags;
 }
 
-bool UBackpackComponent::TransferSlots(int32 SourceIndex, UBackpackComponent* SourceInventory, int32 DestinationIndex)
+bool UBackpackComponent::TransferSlots(FItemStack HangItemStack, FItemStack& NewHangItemStack, UBackpackComponent* DestinationInventory, int32 DestinationIndex)
 {
-	if (Items.IsValidIndex(DestinationIndex))
+	if (DestinationInventory->GetItems().IsValidIndex(DestinationIndex))
 	{
-		FItemStack DestItemStack = Items[DestinationIndex];
+		FItemStack DestItemStack = DestinationInventory->GetItemStack(DestinationIndex);
+		FItemStack ItemStack_Temp;
 
-		const auto& SourceItems = SourceInventory->GetItems();
-		if (SourceItems.IsValidIndex(SourceIndex))
+		if (DestItemStack.ID == HangItemStack.ID)
 		{
-			FItemStack SourceItemStack =  SourceItems[SourceIndex];
-			//if (SourceItemStack.ID == DestItemStack.ID)
+			int32 Sum = DestItemStack.Amount + HangItemStack.Amount;
+			if (Sum <= DestItemStack.MaxCount)
 			{
-
+				ItemStack_Temp.Amount = Sum;
 			}
-			//else
+			else
 			{
-				Items[DestinationIndex] = SourceItemStack;
-				SourceInventory->SetItemStack(DestinationIndex, DestItemStack);
+				ItemStack_Temp.Amount = DestItemStack.MaxCount;
+				int32 Remain = Sum - DestItemStack.MaxCount;
+				HangItemStack.Amount = Remain;
 			}
-
-			NotifyAndUpdateUI(DestinationIndex);
-			return true;
 		}
+		else
+		{
+			ItemStack_Temp = HangItemStack;
+			HangItemStack = DestItemStack;
+		}
+
+		DestinationInventory->SetItemStack(DestinationIndex, ItemStack_Temp);
+		NewHangItemStack = HangItemStack;
+		AfterDataUpdate(DestinationIndex);
+		return true;
 	}
 
 	return false;
@@ -104,13 +116,24 @@ bool UBackpackComponent::RemoveItemFromInventory(int32 Index)
 {
 	if (Items.IsValidIndex(Index))
 	{
-		Items[Index].Empty();
+		Items[Index].Clear();
 
-		NotifyAndUpdateUI(Index);
+		AfterDataUpdate(Index);
 		return true;
 	}
 
 	return false;
+}
+
+void UBackpackComponent::ConsumeItemStack()
+{
+	Items[HotbarSelectedIndex].Amount--;
+	if (Items[HotbarSelectedIndex].Amount <= 0)
+	{
+		Items[HotbarSelectedIndex].Clear();
+	}
+
+	OnHotbarUpdate.Broadcast();
 }
 
 bool UBackpackComponent::IsHotbarSlot(int32 Index)
@@ -128,6 +151,19 @@ void UBackpackComponent::NotifyAndUpdateUI(int32 Index)
 	{
 		OnInventoryUpdate.Broadcast();
 	}
+}
+
+void UBackpackComponent::AfterDataUpdate(int32 Index)
+{
+	if (IsHotbarSlot(Index))
+	{
+		if (Player)
+		{
+			Player->UpdateMainHandItem();
+		}
+	}
+
+	NotifyAndUpdateUI(Index);
 }
 
 bool UBackpackComponent::SetItemStack(int32 Index, const FItemStack& NewItemStack)

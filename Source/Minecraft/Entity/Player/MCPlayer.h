@@ -15,7 +15,7 @@ class MINECRAFT_API AMCPlayer : public AMCEntity, public IItemInterface
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* AddBlockAction;
+	class UInputAction* UseItemAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* RemoveBlockAction;
@@ -44,11 +44,16 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual bool AddItem(const ADroppedItem* DroppedItem) override;
+	void UpdateMainHandItem();
+
+	FItemStack GetMainHandItem();
+
+	void ConsumeItemStack();
 
 private:
 	void SwitchPerspectives();
 
-	void AddBlock();
+	void UseItem();
 
 	void OnClickAction();
 
@@ -60,10 +65,7 @@ private:
 	void SwitchingItem(const FInputActionValue& Value);
 	void DropItem();
 
-	FItemStack GetMainHandItem();
-
 	void Initial();
-
 public:
 	FOnSwitchMainHand OnSwitchMainHand;
 
@@ -75,7 +77,7 @@ private:
 	class UCameraComponent* FollowCamera;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FirstCamera;
+	class UCameraComponent* FirstCamera;
 
 	//UPROPERTY(VisibleAnywhere, Category = "Camera")
 	//UCameraComponent* FreeCamera;
@@ -84,7 +86,7 @@ private:
 	//USkeletalMeshComponent* ArmMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* ItemMesh;
+	class UStaticMeshComponent* ItemMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* SphereOverlap;
@@ -109,4 +111,7 @@ private:
 	EPerspective NextPerspective = EPerspective::Third;
 
 	int32 MainHandIndex = 0;
+
+public:
+	FORCEINLINE const UBackpackComponent* GetBackpackComponent() const { return BackpackComponent; }
 };

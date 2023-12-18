@@ -96,7 +96,7 @@ void AMCPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// 交互方块
-		EnhancedInputComponent->BindAction(AddBlockAction, ETriggerEvent::Started, this, &AMCPlayer::AddBlock);
+		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Started, this, &AMCPlayer::UseItem);
 
 		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Started, this, &AMCPlayer::OnClickAction);
 		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Triggered, this, &AMCPlayer::OngoinAction);
@@ -153,11 +153,11 @@ void AMCPlayer::SwitchPerspectives()
 	}
 }
 
-void AMCPlayer::AddBlock()
+void AMCPlayer::UseItem()
 {
 	if (InteractiveComponent != nullptr)
 	{
-		InteractiveComponent->AddBlock();
+		InteractiveComponent->UseItem();
 	}
 }
 
@@ -192,6 +192,8 @@ void AMCPlayer::SwitchingItem(const FInputActionValue& Value)
 
 	MainHandIndex = (MainHandIndex + WheelValue + 9) % 9;
 
+	UpdateMainHandItem();
+
 	OnSwitchMainHand.Broadcast(MainHandIndex);
 }
 
@@ -218,7 +220,20 @@ FItemStack AMCPlayer::GetMainHandItem()
 	return FItemStack();
 }
 
+void AMCPlayer::ConsumeItemStack()
+{
+	if (BackpackComponent)
+	{
+		BackpackComponent->ConsumeItemStack();
+	}
+}
+
 void AMCPlayer::Initial()
+{
+	UpdateMainHandItem();
+}
+
+void AMCPlayer::UpdateMainHandItem()
 {
 	int32 ID = GetMainHandItem().ID;
 	if (ItemsDataTable)
@@ -227,6 +242,10 @@ void AMCPlayer::Initial()
 		if (ItemDetails)
 		{
 			ItemMesh->SetStaticMesh(ItemDetails->Mesh);
+		}
+		else
+		{
+			ItemMesh->SetStaticMesh(nullptr);
 		}
 	}
 }

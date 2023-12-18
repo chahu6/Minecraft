@@ -68,15 +68,15 @@ void FClassicOverWorldGenerator::SetBlocksInChunk()
 				}
 				else if (Z > Height - 3)
 				{
-					CurrentChunk->SetBlock(X, Y, Z, 2);
+					CurrentChunk->SetBlock(X, Y, Z, 1);
 				}
 				else if (Z == Height)
 				{
-					CurrentChunk->SetBlock(X, Y, Z, 2);
+					CurrentChunk->SetBlock(X, Y, Z, 1);
 				}
 				else
 				{
-					CurrentChunk->SetBlock(X, Y, Z, 2);
+					CurrentChunk->SetBlock(X, Y, Z, 1);
 				}
 			}
 		}
