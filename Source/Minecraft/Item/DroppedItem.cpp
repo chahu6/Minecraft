@@ -87,6 +87,7 @@ void ADroppedItem::SetItemStack(const FItemStack& NewItemStack)
 		if (ItemDetails)
 		{
 			ItemStack.MaxCount = ItemDetails->MaxCount;
+			ItemStack.Type = ItemDetails->Type;
 			MeshComponent->SetStaticMesh(ItemDetails->Mesh);
 		}
 	}

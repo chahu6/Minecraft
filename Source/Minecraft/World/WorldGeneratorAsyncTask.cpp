@@ -1,13 +1,15 @@
 #include "WorldGeneratorAsyncTask.h"
-#include "WorldManager.h"
+#include "Minecraft/Chunk/Chunk.h"
+#include "Minecraft/Chunk/ChunkSection.h"
 
-FWorldGeneratorAsyncTask::FWorldGeneratorAsyncTask(AWorldManager* WorldManager)
+FWorldGeneratorAsyncTask::FWorldGeneratorAsyncTask(AChunk* Chunk)
 {
-	this->WorldManager = WorldManager;
+	this->Chunk = Chunk;
 }
 
 void FWorldGeneratorAsyncTask::DoWork()
 {
+#if 0
 	//WorldManager->UpdateWorldAsync();
 	double OldTime = FPlatformTime::Seconds();
 	double Result = 0;
@@ -19,5 +21,27 @@ void FWorldGeneratorAsyncTask::DoWork()
 	UE_LOG(LogTemp, Warning, TEXT("%f"), Result);
 	double End = FPlatformTime::Seconds();
 	UE_LOG(LogTemp, Warning, TEXT("%u Second: %fms end"), __LINE__, (End - OldTime) * 1000);
+#endif
 
+	if (!IsValid(Chunk))
+	{
+		return;
+	}
+
+	FScopeLock RefreshLock(&Chunk->BuildDataMutex);
+
+	const TArray<AChunkSection*>& ChunkSections = Chunk->GetChunkSections();
+
+	for (const auto ChunkSection : ChunkSections)
+	{
+		ChunkSection->BuildMesh();
+	}
+
+	AsyncTask(ENamedThreads::GameThread, [Chunk = this->Chunk]()
+	{
+		if (Chunk)
+		{
+			Chunk->Render();
+		}
+	});
 }

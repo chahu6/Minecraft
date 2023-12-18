@@ -4,6 +4,8 @@
 #include "Minecraft/Generation/TerrainGenerator.h"
 #include "ChunkSection.h"
 
+#include "Minecraft/World/WorldGeneratorAsyncTask.h"
+
 AChunk::AChunk()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -32,9 +34,22 @@ void AChunk::BeginPlay()
 	}
 }
 
+void AChunk::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+}
+
 void AChunk::Destroyed()
 {
 	Super::Destroyed();
+
+	// É¾³ýÈÎÎñ
+	if (WorldGeneratorTask)
+	{
+		WorldGeneratorTask->EnsureCompletion();
+		delete WorldGeneratorTask;
+		WorldGeneratorTask = nullptr;
+	}
 
 	for (const auto ChunkSection : ChunkSections)
 	{
@@ -80,12 +95,20 @@ void AChunk::SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID)
 	}
 }
 
-void AChunk::Render()
+void AChunk::BuildAndRenderAsync()
 {
-	for (const auto ChunkSection : ChunkSections)
+	WorldGeneratorTask = new FAsyncTask<FWorldGeneratorAsyncTask>(this);
+	WorldGeneratorTask->StartBackgroundTask();
+}
+
+bool AChunk::IsDone()
+{
+	if (WorldGeneratorTask)
 	{
-		ChunkSection->Render();
+		return WorldGeneratorTask->IsDone();
 	}
+
+	return false;
 }
 
 void AChunk::Load(ITerrainGenerator* Generator)
@@ -96,5 +119,13 @@ void AChunk::Load(ITerrainGenerator* Generator)
 	for (const auto ChunkSection : ChunkSections)
 	{
 		ChunkSection->RecalculateEmpty();
+	}
+}
+
+void AChunk::Render()
+{
+	for (const auto ChunkSection : ChunkSections)
+	{
+		ChunkSection->Render();
 	}
 }

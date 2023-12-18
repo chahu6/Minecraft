@@ -70,27 +70,33 @@ void UInteractiveComponent::UpdateDestroyProgress(float Value)
 	DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), Value);
 }
 
-void UInteractiveComponent::AddBlock()
+void UInteractiveComponent::UseItem()
 {
-	if (BlockHitResult.BlockID > 0)
+	FBlockHitResult HitResult;
+	if (RayCast(HitResult))
 	{
-		FBlockHitResult Temp;
-		uint8 BlockID = GetBlockID(BlockHitResult.BlockPos.VoxelWorldLocation() + BlockHitResult.Direction, Temp);
-
-		if (BlockID == 0)
+		FItemStack MainHandItemStack = Player->GetMainHandItem();
+		if (!MainHandItemStack.IsEmpty() && (MainHandItemStack.Type == EItemType::NaturalBlock || MainHandItemStack.Type == EItemType::BuildingBlock))
 		{
-			AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
-			if (WorldManager)
+			FBlockHitResult Temp;
+			uint8 BlockID = GetBlockID(HitResult.BlockPos.VoxelWorldLocation() + HitResult.Direction, Temp);
+
+			if (BlockID == 0)
 			{
-				AChunkSection* ChunkSection = WorldManager->GetChunkSection(Temp.BlockPos);
-				if (ChunkSection)
+				AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
+				if (WorldManager)
 				{
-					ChunkSection->SetBlock(Temp.BlockPos.OffsetLocation(), 2);
-					if (ChunkSection->IsEmpty())
+					AChunkSection* ChunkSection = WorldManager->GetChunkSection(Temp.BlockPos);
+					if (ChunkSection)
 					{
-						ChunkSection->SetEmpty(false);
+						ChunkSection->SetBlock(Temp.BlockPos.OffsetLocation(), MainHandItemStack.ID);
+						Player->ConsumeItemStack();
+						if (ChunkSection->IsEmpty())
+						{
+							ChunkSection->SetEmpty(false);
+						}
+						ChunkSection->Rebuild();
 					}
-					ChunkSection->Rebuild();
 				}
 			}
 		}

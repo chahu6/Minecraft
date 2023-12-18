@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Minecraft/Item/ItemStack.h"
 #include "Backpack.generated.h"
 
 /**
@@ -24,8 +25,16 @@ protected:
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
 protected:
+	void InitUI();
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void FlushBackpack();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void FlushHotbar();
+
+	UFUNCTION(BlueprintCallable)
+	void HangItemStackToMouse(int32 Index);
 
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -49,4 +58,7 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	class APawn* Player;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Player", meta = (AllowPrivateAccess = "true"))
+	FItemStack HangItemStack;
 };

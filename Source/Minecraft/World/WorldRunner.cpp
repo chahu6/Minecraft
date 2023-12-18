@@ -21,8 +21,6 @@ bool FWorldRunner::Init()
 
 uint32 FWorldRunner::Run()
 {
-	WorldManager->UpdateWorldAsync();
-
 	return 0;
 }
 

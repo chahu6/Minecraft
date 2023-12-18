@@ -23,6 +23,7 @@ public:
 	void SetBlock(int32 Index, uint8 BlockID);
 	void SetBlock(const FVector& OffsetLocation, uint8 BlockID);
 
+	void BuildMesh();
 	void Render();
 
 	void Rebuild();
@@ -43,6 +44,8 @@ private:
 
 	// 是否都是Air或None
 	bool bIsEmpty = true;
+
+	bool bIsReady = false;
 
 	// Chunk在World中的体素位置的中心,用于视锥剔除，但是虚幻引擎默认自带，所以已经没用了
 	FVector Center;

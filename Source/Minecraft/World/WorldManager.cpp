@@ -5,14 +5,11 @@
 #include "SimplexNoiseLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-
-#include "WorldRunner.h"
-#include "WorldGeneratorAsyncTask.h"
 #include "Minecraft/Core/BlockPos.h"
 
 AWorldManager::AWorldManager()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	ChunkManager = CreateDefaultSubobject<UChunkManagerComponent>(TEXT("ChunkManagerComponent"));
 }
@@ -103,8 +100,11 @@ void AWorldManager::RemoveChunk()
 		bool bIsRemove = MinRenderingRangeX <= ChunkLocation.X && ChunkLocation.X <= MaxRenderingRangeX && MinRenderingRangeY <= ChunkLocation.Y && ChunkLocation.Y <= MaxRenderingRangeY;
 		if (!bIsRemove)
 		{
-			Itr.Value()->Destroy();
-			ChunksMap.Remove(ChunkLocation);
+			if (Itr.Value()->IsDone())
+			{
+				Itr.Value()->Destroy();
+				ChunksMap.Remove(ChunkLocation);
+			}
 		}
 	}
 }
@@ -114,7 +114,7 @@ void AWorldManager::RenderChunks()
 	const auto& ChunksMap = ChunkManager->_AllChunks;
 	for (const auto& Elem : ChunksMap)
 	{
-		Elem.Value->Render();
+		Elem.Value->BuildAndRenderAsync();
 	}
 }
 
@@ -147,18 +147,4 @@ AChunkSection* AWorldManager::GetChunkSection(const FBlockPos& BlockPos)
 	}
 
 	return nullptr;
-}
-
-void AWorldManager::UpdateWorldAsync()
-{
-
-	//(new FAutoDeleteAsyncTask<FWorldGeneratorAsyncTask>(this))->StartBackgroundTask();
-
-	/*bool bIsUpdated = UpdatePosition();
-	if (bIsUpdated)
-	{
-		AddChunk();
-		RemoveChunk();
-		RenderChunks();
-	}*/
 }

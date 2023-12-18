@@ -9,6 +9,8 @@
 DECLARE_MULTICAST_DELEGATE(FOnInventoryUpdate);
 
 class ADroppedItem;
+struct FItemStack;
+class UBackpack;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MINECRAFT_API UBackpackComponent : public UActorComponent, public IInventoryInterface
@@ -32,15 +34,26 @@ public:
 	bool AddItemToInventory(const ADroppedItem* DroppedItem);
 
 	UFUNCTION(BlueprintCallable)
-	bool TransferSlots(int32 SourceIndex, UBackpackComponent* SourceInventory, int32 DestinationIndex);
+	bool TransferSlots(FItemStack HangItemStack, FItemStack& NewHangItemStack, UBackpackComponent* DestinationInventory, int32 DestinationIndex);
 
 	UFUNCTION(BlueprintCallable)
 	bool RemoveItemFromInventory(int32 Index);
 
+	void ConsumeItemStack();
+
 	static bool IsHotbarSlot(int32 Index);
 
 private:
+
+	/*
+	* 通知UI更新
+	*/
 	void NotifyAndUpdateUI(int32 Index);
+
+	/*
+	* 背包数据更新后所作的事情
+	*/
+	void AfterDataUpdate(int32 Index);
 
 public:
 	FOnInventoryUpdate OnInventoryUpdate;
@@ -50,9 +63,6 @@ public:
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemStack> Items;
-	
-	/*UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TArray<FItemStack> HotbarItems;*/
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemStack> ArmorItems;
@@ -60,9 +70,12 @@ private:
 	FItemStack OffHand;
 	
 	UPROPERTY()
-	AMCPlayer* Player;
+	AMCPlayer* Player = nullptr;
+
+	int32 HotbarSelectedIndex = 0;
 
 public:
 	FORCEINLINE const TArray<FItemStack>& GetItems() const { return Items; }
+	FORCEINLINE FItemStack GetItemStack(int32 Index) const { return Items.IsValidIndex(Index) ? Items[Index] : FItemStack(); }
 	FORCEINLINE bool SetItemStack(int32 Index, const FItemStack& NewItemStack);
 };

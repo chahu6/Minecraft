@@ -30,8 +30,6 @@ public:
 
 	AChunkSection* GetChunkSection(const FBlockPos& BlockPos);
 
-	void UpdateWorldAsync();
-
 private:
 	void InitialWorldChunkLoad();
 
@@ -54,4 +52,5 @@ private:
 	int32 Seed = 0;
 
 	FVector2D CharacterPosition;
+
 };
