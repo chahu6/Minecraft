@@ -2,8 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Minecraft/Item/DroppedItem.h"
 #include "ItemInterface.generated.h"
+
+class ADroppedItem;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)

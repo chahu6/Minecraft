@@ -256,6 +256,21 @@ double USimplexNoiseLibrary::ImprovedNoise(double x, double y, double z, double 
 	return _improvedNoise(x * inFactor, y * inFactor, z * inFactor);
 }
 
+double USimplexNoiseLibrary::FBM(int32 X, int32 Y, int32 Octaves, double Lacunarity, double Persistance, double Factor)
+{
+	double NoiseSum = 0.0;
+	double Amplitude = 1;
+	double Frequency = Factor;
+	for (int32 i = 0; i < Octaves; ++i)
+	{
+		NoiseSum += PerlinNoise2D(X, Y, Frequency) * Amplitude;
+		Amplitude *= Persistance;
+		Frequency *= Lacunarity;
+	}
+
+	return NoiseSum;
+}
+
 double USimplexNoiseLibrary::Dot2D(int hash, double x, double y)
 {
 	switch (hash & 3)

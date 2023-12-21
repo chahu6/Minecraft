@@ -4,20 +4,20 @@
 #include "Minecraft/MinecraftType/BlockType.h"
 #include "Minecraft/World/WorldSettings.h"
 
-FClassicOverWorldGenerator::FClassicOverWorldGenerator()
+UClassicOverWorldGenerator::UClassicOverWorldGenerator()
 	:Seed(FMath::Rand())
 {
 	HeightMap.SetNum(256);
-}
 
-FClassicOverWorldGenerator::FClassicOverWorldGenerator(int32 NewSeed)
-	:Seed(NewSeed)
-{
-	HeightMap.SetNum(256);
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveObject(TEXT("/Script/Engine.CurveFloat'/Game/Test/NewCurveBase.NewCurveBase'"));
+	if (CurveObject.Succeeded())
+	{
+		HeightRemap = CurveObject.Object;
+	}
 }
 
 // 基本地形生成，生物群落特有方块覆盖，以及skylight计算。
-void FClassicOverWorldGenerator::GenerateChunk(AChunk* Chunk)
+void UClassicOverWorldGenerator::GenerateChunk(AChunk* Chunk)
 {
 	CurrentChunk = Chunk;
 
@@ -27,12 +27,12 @@ void FClassicOverWorldGenerator::GenerateChunk(AChunk* Chunk)
 }
 
 // 建筑生成，植物生成，动物生成等地形附加结构。例如矿道，神庙，湖泊等。
-void FClassicOverWorldGenerator::Populate(int32 X, int32 Y)
+void UClassicOverWorldGenerator::Populate(int32 X, int32 Y)
 {
 
 }
 
-void FClassicOverWorldGenerator::SetBlocksInChunk()
+void UClassicOverWorldGenerator::SetBlocksInChunk()
 {
 	GenerateBiomeMap();
 	GenerateHeightMap();
@@ -66,13 +66,13 @@ void FClassicOverWorldGenerator::SetBlocksInChunk()
 					}
 					break;
 				}
-				else if (Z > Height - 3)
-				{
-					CurrentChunk->SetBlock(X, Y, Z, 1);
-				}
 				else if (Z == Height)
 				{
-					CurrentChunk->SetBlock(X, Y, Z, 1);
+					CurrentChunk->SetBlock(X, Y, Z, 3);
+				}
+				else if (Z > Height - 3)
+				{
+					CurrentChunk->SetBlock(X, Y, Z, 2);
 				}
 				else
 				{
@@ -83,7 +83,7 @@ void FClassicOverWorldGenerator::SetBlocksInChunk()
 	}
 }
 
-void FClassicOverWorldGenerator::GenerateBiomeMap()
+void UClassicOverWorldGenerator::GenerateBiomeMap()
 {
 	for (int32 X = 0; X < CHUNK_SIZE + 1; ++X)
 	{
@@ -94,7 +94,7 @@ void FClassicOverWorldGenerator::GenerateBiomeMap()
 	}
 }
 
-void FClassicOverWorldGenerator::GenerateHeightMap()
+void UClassicOverWorldGenerator::GenerateHeightMap()
 {
 	for (int32 X = 0; X < CHUNK_SIZE; ++X)
 	{
@@ -105,15 +105,21 @@ void FClassicOverWorldGenerator::GenerateHeightMap()
 
 			//float World_Z = USimplexNoiseLibrary::SimplexNoiseInRange2D(World_X, World_Y, 0, 48, );
 
-			float Height = USimplexNoiseLibrary::PerlinNoise2D(World_X, World_Y, 0.0001f)
+			/*float Height = USimplexNoiseLibrary::PerlinNoise2D(World_X, World_Y, 0.0001f)
 				+ 0.5 * USimplexNoiseLibrary::PerlinNoise2D(World_X, World_Y, 0.0001f * 2)
-				+ 0.25 * USimplexNoiseLibrary::PerlinNoise2D(World_X, World_Y, 0.0001f * 4);
+				+ 0.25 * USimplexNoiseLibrary::PerlinNoise2D(World_X, World_Y, 0.0001f * 4)
+				+ 0.125 * USimplexNoiseLibrary::PerlinNoise2D(World_X, World_Y, 0.0001f * 8)
+				+ 0.0625 * USimplexNoiseLibrary::PerlinNoise2D(World_X, World_Y, 0.0001f * 16);*/
 
-			Height /= 1.75f;
+			float Height = USimplexNoiseLibrary::FBM(World_X, World_Y);
+
+			Height /= 1.9375f;
 
 			//Height = FMath::Pow(Height * 1.2f, 0.8f);
+			//Height = HeightRemap->GetFloatValue(Height);
 
 			float World_Z = 100.0f + Height * 40.0f;
+			//float World_Z = Height;
 
 			HeightMap[GetHeightIndex(X, Y)] = FMath::Floor(World_Z);
 		}

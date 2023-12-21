@@ -6,6 +6,8 @@
 #include "Minecraft/Controller/MCPlayerController.h"
 #include "Minecraft/MinecraftComponents/Storage/BackpackComponent.h"
 #include "Components/SphereComponent.h"
+#include "Minecraft/MinecraftComponents/Crafting/CraftingComponent.h"
+#include "Minecraft/Item/Info/ItemInfo.h"
 
 AMCPlayer::AMCPlayer()
 {
@@ -60,6 +62,9 @@ AMCPlayer::AMCPlayer()
 
 	// 背包
 	BackpackComponent = CreateDefaultSubobject<UBackpackComponent>(TEXT("BackpackComponent"));
+
+	// 合成组件
+	CraftingComponent = CreateDefaultSubobject<UCraftingComponent>(TEXT("CraftingComponent"));
 }
 
 void AMCPlayer::PostInitializeComponents()

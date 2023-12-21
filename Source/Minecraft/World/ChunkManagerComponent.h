@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Minecraft/MinecraftType/BlockType.h"
-#include "Minecraft/Generation/TerrainGenerator.h"
 #include "ChunkManagerComponent.generated.h"
 
 class AWorldManager;
@@ -29,6 +28,9 @@ private:
 	void Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y);
 
 private:
+	UPROPERTY()
 	TMap<FVector2D, AChunk*> _AllChunks;
-	TUniquePtr<ITerrainGenerator> _TerrainGenerator;
+
+	UPROPERTY()
+	class UClassicOverWorldGenerator* _TerrainGenerator;
 };
