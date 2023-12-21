@@ -46,7 +46,7 @@ private:
 	UChunkManagerComponent* ChunkManager;
 
 	UPROPERTY(EditAnywhere)
-	int32 ChunkRenderingRange = 5;
+	int32 ChunkRenderingRange = 8;
 
 	UPROPERTY(EditAnywhere)
 	int32 Seed = 0;

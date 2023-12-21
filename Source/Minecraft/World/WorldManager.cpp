@@ -38,11 +38,17 @@ void AWorldManager::Tick(float DeltaTime)
 
 void AWorldManager::InitialWorldChunkLoad()
 {
+	FVector2D NewLocation2D(UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation());
+	
+	CharacterPosition.X = FMath::Floor(NewLocation2D.X / ChunkSize);
+	CharacterPosition.Y = FMath::Floor(NewLocation2D.Y / ChunkSize);
+
 	for (int32 X = -ChunkRenderingRange; X <= ChunkRenderingRange; ++X)
 	{
 		for (int32 Y = -ChunkRenderingRange; Y <= ChunkRenderingRange; ++Y)
 		{
-			ChunkManager->LoadChunk(FVector2D(X, Y));
+			FVector2D Temp = CharacterPosition + FVector2D(X, Y);
+			ChunkManager->LoadChunk(Temp);
 		}
 	}
 

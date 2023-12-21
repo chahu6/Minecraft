@@ -97,9 +97,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive", meta = (AllowPrivateAccess = "true"))
 	class UBackpackComponent* BackpackComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive", meta = (AllowPrivateAccess = "true"))
+	class UCraftingComponent* CraftingComponent;
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Data")
-	UDataTable* ItemsDataTable;
+	class UDataTable* ItemsDataTable;
 
 	enum class EPerspective : uint8
 	{

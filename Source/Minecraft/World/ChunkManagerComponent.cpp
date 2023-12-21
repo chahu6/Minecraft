@@ -5,7 +5,7 @@
 
 UChunkManagerComponent::UChunkManagerComponent()
 {
-	_TerrainGenerator = MakeUnique<FClassicOverWorldGenerator>();
+	_TerrainGenerator = NewObject<UClassicOverWorldGenerator>(this, TEXT("TerrainGenerator"));
 }
 
 AChunk* UChunkManagerComponent::GetChunk(const FVector2D& Key)
@@ -28,7 +28,7 @@ void UChunkManagerComponent::LoadChunk(const FVector2D& ChunkVoxelPosition)
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Owner = GetOwner();
 			Chunk = World->SpawnActor<AChunk>(AChunk::StaticClass(), { ChunkVoxelPosition.X * ChunkSize, ChunkVoxelPosition.Y * ChunkSize, 0.0 }, FRotator::ZeroRotator, SpawnParams);
-			Chunk->Load(_TerrainGenerator.Get());
+			Chunk->Load(_TerrainGenerator);
 			_AllChunks.Add(ChunkVoxelPosition, Chunk);
 
 			// 加载新的区块时，让新区块的四个面的区块也加载
