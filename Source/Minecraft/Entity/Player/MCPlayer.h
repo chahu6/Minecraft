@@ -117,4 +117,5 @@ private:
 
 public:
 	FORCEINLINE const UBackpackComponent* GetBackpackComponent() const { return BackpackComponent; }
+	FORCEINLINE UCraftingComponent* GetCraftingComponent() const { return CraftingComponent; }
 };

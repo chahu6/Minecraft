@@ -36,6 +36,19 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void HangItemStackToMouse(int32 Index);
 
+	UFUNCTION(BlueprintCallable)
+	void HangItemStackToCrafting(int32 Index);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void FlushCrafting();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void CraftingCompleted();
+
+private:
+	UFUNCTION(BlueprintCallable)
+	void UpdateHangItemStack(const FItemStack& NewItemStack);
+
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UInventoryItem* Armor_Helmet;
@@ -57,7 +70,10 @@ private:
 	class UBackpackComponent* Backpack;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	class APawn* Player;
+	class UCraftingComponent* CraftingSystem;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
+	class AMCPlayer* Player;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	FItemStack HangItemStack;
