@@ -1,5 +1,6 @@
 #include "Backpack.h"
 #include "Minecraft/MinecraftComponents/Storage/BackpackComponent.h"
+#include "Minecraft/MinecraftComponents/Crafting/CraftingComponent.h"
 #include "Minecraft/Entity/Player/MCPlayer.h"
 
 UBackpack::UBackpack(const FObjectInitializer& ObjectInitializer)
@@ -12,16 +13,23 @@ void UBackpack::NativePreConstruct()
 {
 	Super::NativePreConstruct();
 
-	Player = GetOwningPlayerPawn();
+	Player = Cast<AMCPlayer>(GetOwningPlayerPawn());
 	if (Player)
 	{
 		Backpack = Player->GetComponentByClass<UBackpackComponent>();
+		CraftingSystem = Player->GetComponentByClass<UCraftingComponent>();
 	}
 
 	if (Backpack)
 	{
 		Backpack->OnHotbarUpdate.AddUObject(this, &UBackpack::FlushHotbar);
 		Backpack->OnInventoryUpdate.AddUObject(this, &UBackpack::FlushBackpack);
+	}
+
+	if (CraftingSystem)
+	{
+		CraftingSystem->OnCraftingItemStart.AddUObject(this, &UBackpack::FlushCrafting);
+		CraftingSystem->OnCraftingItemCompleted.AddUObject(this, &UBackpack::CraftingCompleted);
 	}
 }
 
@@ -72,14 +80,28 @@ void UBackpack::InitUI()
 {
 	FlushHotbar();
 	FlushBackpack();
+	FlushCrafting();
 }
 
 void UBackpack::HangItemStackToMouse(int32 Index)
 {
-	AMCPlayer* MCCharacter = Cast<AMCPlayer>(Player);
-	if (MCCharacter)
+	if (Player)
 	{
-		const UBackpackComponent* BackpackComponent = MCCharacter->GetBackpackComponent();
+		const UBackpackComponent* BackpackComponent = Player->GetBackpackComponent();
 		HangItemStack = BackpackComponent->GetItemStack(Index);
 	}
+}
+
+void UBackpack::HangItemStackToCrafting(int32 Index)
+{
+	if (Player)
+	{
+		UCraftingComponent* CraftingComponent = Player->GetCraftingComponent();
+		HangItemStack = CraftingComponent->GetItem(Index);
+	}
+}
+
+void UBackpack::UpdateHangItemStack(const FItemStack& NewItemStack)
+{
+	HangItemStack = NewItemStack;
 }

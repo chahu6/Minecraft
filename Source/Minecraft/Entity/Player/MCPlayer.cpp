@@ -65,6 +65,7 @@ AMCPlayer::AMCPlayer()
 
 	// 合成组件
 	CraftingComponent = CreateDefaultSubobject<UCraftingComponent>(TEXT("CraftingComponent"));
+	CraftingComponent->SetSize(2);
 }
 
 void AMCPlayer::PostInitializeComponents()
