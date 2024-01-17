@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Minecraft/MinecraftType/BlockType.h"
 #include "ChunkManagerComponent.generated.h"
 
 class AWorldManager;

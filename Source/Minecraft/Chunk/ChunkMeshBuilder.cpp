@@ -2,7 +2,7 @@
 #include "Minecraft/World/WorldSettings.h"
 #include "ChunkSection.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Minecraft/MinecraftType/FaceType.h"
+#include "Minecraft/Types/FaceType.h"
 #include "Minecraft/World/WorldManager.h"
 
 bool IsVoid(int32 X, int32 Y, int32 Z, const FVector& WorldLocation, AWorldManager* WorldManager)

@@ -1,6 +1,6 @@
 #include "Backpack.h"
-#include "Minecraft/MinecraftComponents/Storage/BackpackComponent.h"
-#include "Minecraft/MinecraftComponents/Crafting/CraftingComponent.h"
+#include "Minecraft/Components/Storage/BackpackComponent.h"
+#include "Minecraft/Components/Crafting/CraftingComponent.h"
 #include "Minecraft/Entity/Player/MCPlayer.h"
 
 UBackpack::UBackpack(const FObjectInitializer& ObjectInitializer)

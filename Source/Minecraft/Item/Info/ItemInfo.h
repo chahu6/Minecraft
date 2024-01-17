@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "Minecraft/MinecraftType/ItemType.h"
+#include "Minecraft/Types/ItemType.h"
 #include "ItemInfo.generated.h"
 
 USTRUCT(BlueprintType)

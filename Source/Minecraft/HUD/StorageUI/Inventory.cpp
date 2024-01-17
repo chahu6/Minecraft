@@ -1,5 +1,5 @@
 #include "Inventory.h"
-#include "Minecraft/MinecraftComponents/Storage/InventoryComponent.h"
+#include "Minecraft/Components/Storage/InventoryComponent.h"
 
 void UInventory::NativePreConstruct()
 {
