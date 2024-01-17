@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Minecraft/MinecraftType/MeshData.h"
+#include "Minecraft/Types/MeshData.h"
 
 class AChunkSection;
 

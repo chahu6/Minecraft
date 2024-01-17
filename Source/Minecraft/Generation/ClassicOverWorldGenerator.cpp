@@ -1,7 +1,6 @@
 #include "ClassicOverWorldGenerator.h"
 #include "SimplexNoiseLibrary.h"
 #include "Minecraft/Chunk/Chunk.h"
-#include "Minecraft/MinecraftType/BlockType.h"
 #include "Minecraft/World/WorldSettings.h"
 
 UClassicOverWorldGenerator::UClassicOverWorldGenerator()

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
-#include "Minecraft/MinecraftType/BlockType.h"
+#include "Minecraft/Types/BlockType.h"
 #include "ChunkSaveGame.generated.h"
 
 /**

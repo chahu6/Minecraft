@@ -2,11 +2,11 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
-#include "Minecraft/MinecraftComponents/Interactive/InteractiveComponent.h"
+#include "Minecraft/Components/Interactive/InteractiveComponent.h"
 #include "Minecraft/Controller/MCPlayerController.h"
-#include "Minecraft/MinecraftComponents/Storage/BackpackComponent.h"
+#include "Minecraft/Components/Storage/BackpackComponent.h"
 #include "Components/SphereComponent.h"
-#include "Minecraft/MinecraftComponents/Crafting/CraftingComponent.h"
+#include "Minecraft/Components/Crafting/CraftingComponent.h"
 #include "Minecraft/Item/Info/ItemInfo.h"
 
 AMCPlayer::AMCPlayer()

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Minecraft/MinecraftType/ItemType.h"
+#include "Minecraft/Types/ItemType.h"
 #include "ItemStack.generated.h"
 
 class FItem;

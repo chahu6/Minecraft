@@ -1,6 +1,6 @@
 #include "Hotbar.h"
 #include "Minecraft/Entity/Player/MCPlayer.h"
-#include "Minecraft/MinecraftComponents/Storage/BackpackComponent.h"
+#include "Minecraft/Components/Storage/BackpackComponent.h"
 
 void UHotbar::NativePreConstruct()
 {

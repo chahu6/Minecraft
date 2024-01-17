@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Engine/DataTable.h"
-#include "Minecraft/MinecraftType/MeshData.h"
+#include "Minecraft/Types/MeshData.h"
 #include "ChunkMeshComponent.generated.h"
 
 USTRUCT(BlueprintType)
