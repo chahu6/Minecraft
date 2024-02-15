@@ -40,6 +40,8 @@ private:
 	void RemoveChunk();
 
 	void RenderChunks();
+public:
+	TQueue<AChunk*, EQueueMode::Mpsc> TaskQueue;
 
 private:
 	UPROPERTY(VisibleAnywhere)

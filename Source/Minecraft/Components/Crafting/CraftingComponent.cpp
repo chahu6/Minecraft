@@ -5,6 +5,8 @@ UCraftingComponent::UCraftingComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	Items.SetNum(Dimension * Dimension);
+
+	Recipes.Emplace()
 }
 
 void UCraftingComponent::BeginPlay()

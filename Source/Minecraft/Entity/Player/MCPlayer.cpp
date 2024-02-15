@@ -242,6 +242,13 @@ void AMCPlayer::Initial()
 void AMCPlayer::UpdateMainHandItem()
 {
 	int32 ID = GetMainHandItem().ID;
+
+	if (ID < 0)
+	{
+		ItemMesh->SetStaticMesh(nullptr);
+		return;
+	}
+
 	if (ItemsDataTable)
 	{
 		FItemDetails* ItemDetails = ItemsDataTable->FindRow<FItemDetails>(FName(FString::FromInt(ID)), TEXT("AMCPlayer"));
