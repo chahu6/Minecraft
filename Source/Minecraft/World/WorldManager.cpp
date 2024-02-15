@@ -34,6 +34,21 @@ void AWorldManager::Tick(float DeltaTime)
 		RemoveChunk();
 		RenderChunks();
 	}
+
+	if (!TaskQueue.IsEmpty())
+	{
+		for (int32 i = 0; i < MAX_QUEUE_SIZE; ++i)
+		{
+			AChunk* Chunk = nullptr;
+
+			if (!TaskQueue.Dequeue(Chunk)) break;
+
+			if (Chunk)
+			{
+				Chunk->Render();
+			}
+		}
+	}
 }
 
 void AWorldManager::InitialWorldChunkLoad()

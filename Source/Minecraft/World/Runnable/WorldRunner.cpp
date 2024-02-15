@@ -1,6 +1,6 @@
 #include "WorldRunner.h"
 #include "Engine/Engine.h"
-#include "WorldManager.h"
+#include "../WorldManager.h"
 
 FWorldRunner::FWorldRunner(AWorldManager* WorldManager)
 {

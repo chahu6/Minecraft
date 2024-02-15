@@ -17,6 +17,8 @@ class MINECRAFT_API UChunkManagerComponent : public UActorComponent
 public:
 	UChunkManagerComponent();
 
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	AChunk* GetChunk(const FVector2D& Key);
 
 	void LoadChunk(const FVector2D& ChunkVoxelPosition);
@@ -32,4 +34,5 @@ private:
 
 	UPROPERTY()
 	class UClassicOverWorldGenerator* _TerrainGenerator;
+
 };

@@ -4,7 +4,7 @@
 #include "Minecraft/Generation/TerrainGenerator.h"
 #include "ChunkSection.h"
 
-#include "Minecraft/World/WorldGeneratorAsyncTask.h"
+#include "Minecraft/World/Runnable/WorldGeneratorAsyncTask.h"
 
 AChunk::AChunk()
 {

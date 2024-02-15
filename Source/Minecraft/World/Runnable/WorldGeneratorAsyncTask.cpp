@@ -1,6 +1,7 @@
 #include "WorldGeneratorAsyncTask.h"
 #include "Minecraft/Chunk/Chunk.h"
 #include "Minecraft/Chunk/ChunkSection.h"
+#include "../WorldManager.h"
 
 FWorldGeneratorAsyncTask::FWorldGeneratorAsyncTask(AChunk* Chunk)
 {
@@ -39,9 +40,15 @@ void FWorldGeneratorAsyncTask::DoWork()
 
 	AsyncTask(ENamedThreads::GameThread, [Chunk = this->Chunk]()
 	{
-		if (Chunk)
+		AWorldManager* WorldManager = Cast<AWorldManager>(Chunk->GetOwner());
+		if (WorldManager)
+		{
+			WorldManager->TaskQueue.Enqueue(Chunk);
+		}
+
+		/*if (Chunk)
 		{
 			Chunk->Render();
-		}
+		}*/
 	});
 }

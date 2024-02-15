@@ -91,6 +91,7 @@ void UInteractiveComponent::UseItem()
 					{
 						ChunkSection->SetBlock(Temp.BlockPos.OffsetLocation(), MainHandItemStack.ID);
 						Player->ConsumeItemStack();
+						Player->UpdateMainHandItem();
 						if (ChunkSection->IsEmpty())
 						{
 							ChunkSection->SetEmpty(false);

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Minecraft/Item/ItemStack.h"
+#include "Minecraft/Types/BlockType.h"
 #include "CraftingComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnCraftingItem);
@@ -54,7 +55,7 @@ private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemStack> Items;
 
-	//TArray<> Recipes;
+	static TMap<FString, FItemStack> Recipes;
 
 public:
 	FORCEINLINE int32 GetSize() const { return Dimension; }

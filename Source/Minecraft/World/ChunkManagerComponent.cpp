@@ -5,7 +5,14 @@
 
 UChunkManagerComponent::UChunkManagerComponent()
 {
+	PrimaryComponentTick.bCanEverTick = true;
+
 	_TerrainGenerator = NewObject<UClassicOverWorldGenerator>(this, TEXT("TerrainGenerator"));
+}
+
+void UChunkManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 AChunk* UChunkManagerComponent::GetChunk(const FVector2D& Key)

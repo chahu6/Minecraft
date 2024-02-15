@@ -8,6 +8,8 @@ constexpr int32 CHUNK_SIZE		=	16,
 
 constexpr float	CHUNK_SPHERE_RADIUS = CHUNK_SIZE * 0.5f * 1.7321f;
 
+constexpr int32 MAX_QUEUE_SIZE  =	8;
+
 // 手能伸长的最大长度
 constexpr int32 MAX_RAY_DIST	=	5;
 
