@@ -114,7 +114,7 @@ void AWorldManager::RemoveChunk()
 	const int32 MinRenderingRangeY = ChunkPositionY - ChunkRenderingRange;
 	const int32 MaxRenderingRangeY = ChunkPositionY + ChunkRenderingRange;
 
-	auto& ChunksMap = ChunkManager->_AllChunks;
+	auto& ChunksMap = ChunkManager->GetAllChunks();
 	for (auto Itr = ChunksMap.CreateConstIterator(); Itr; ++Itr)
 	{
 		FVector2D ChunkLocation = Itr.Key();
@@ -132,7 +132,7 @@ void AWorldManager::RemoveChunk()
 
 void AWorldManager::RenderChunks()
 {
-	const auto& ChunksMap = ChunkManager->_AllChunks;
+	const auto& ChunksMap = ChunkManager->GetAllChunks();
 	for (const auto& Elem : ChunksMap)
 	{
 		Elem.Value->BuildAndRenderAsync();

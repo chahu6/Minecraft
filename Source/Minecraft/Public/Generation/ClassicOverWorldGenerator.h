@@ -7,7 +7,7 @@
 
 class AChunk;
 
-UCLASS(Blueprintable)
+UCLASS(Blueprintable, BlueprintType)
 class MINECRAFT_API UClassicOverWorldGenerator : public UObject, public ITerrainGenerator
 {
 	GENERATED_BODY()
@@ -30,8 +30,8 @@ private:
 	UPROPERTY()
 	AChunk* CurrentChunk;
 
-	UPROPERTY(EditAnywhere)
-	UCurveFloat* HeightRemap;
+	//UPROPERTY(EditAnywhere)
+	//UCurveFloat* HeightRemap;
 
 	int32 Seed;
 

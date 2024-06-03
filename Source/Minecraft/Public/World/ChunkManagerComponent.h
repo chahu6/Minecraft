@@ -4,20 +4,16 @@
 #include "Components/ActorComponent.h"
 #include "ChunkManagerComponent.generated.h"
 
-class AWorldManager;
 class AChunk;
+class UClassicOverWorldGenerator;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class MINECRAFT_API UChunkManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	friend class AWorldManager;
-
 public:
 	UChunkManagerComponent();
-
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	AChunk* GetChunk(const FVector2D& Key);
 
@@ -28,11 +24,13 @@ private:
 
 	void Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y);
 
-private:
+public:
 	UPROPERTY()
 	TMap<FVector2D, AChunk*> _AllChunks;
 
 	UPROPERTY()
-	class UClassicOverWorldGenerator* _TerrainGenerator;
+	TObjectPtr<UClassicOverWorldGenerator> TerrainGenerator;
 
+public:
+	FORCEINLINE TMap<FVector2D, AChunk*>& GetAllChunks() { return _AllChunks; }
 };

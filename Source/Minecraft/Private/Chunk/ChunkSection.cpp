@@ -8,9 +8,8 @@ AChunkSection::AChunkSection()
 
 	Blocks.Init(0, CHUNK_VOLUME);
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-
 	ChunkMesh = CreateDefaultSubobject<UChunkMeshComponent>(TEXT("ChunkMesh"));
+	RootComponent = ChunkMesh;
 }
 
 void AChunkSection::PostInitializeComponents()
