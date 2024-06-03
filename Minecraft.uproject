@@ -10,7 +10,9 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine",
-				"UMG"
+				"UMG",
+				"DeveloperSettings",
+				"CoreUObject"
 			]
 		}
 	],

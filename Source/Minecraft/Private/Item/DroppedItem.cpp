@@ -1,8 +1,9 @@
 ﻿#include "Item/DroppedItem.h"
 #include "Components/BoxComponent.h"
-#include "Interfaces/ItemInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "World/MinecraftSettings.h"
+#include "Item/Item.h"
 
 ADroppedItem::ADroppedItem()
 {
@@ -23,10 +24,12 @@ ADroppedItem::ADroppedItem()
 		PickupSound = SoundCueObject.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UDataTable> ItemDataTableObject(TEXT("/Script/Engine.DataTable'/Game/Minecraft/Datas/DataTable/DT_ItemDetails.DT_ItemDetails'"));
-	if (ItemDataTableObject.Succeeded())
+	const UMinecraftSettings* Setting = GetDefault<UMinecraftSettings>();
+	check(Setting);
+
+	if (Setting)
 	{
-		ItemDataTable = ItemDataTableObject.Object;
+		ItemDataTable = Setting->ItemDataTable.LoadSynchronous();
 	}	
 }
 
@@ -61,7 +64,7 @@ void ADroppedItem::Tick(float DeltaTime)
 		{
 			UClass* ActorClass = Player->GetClass();
 
-			if (ActorClass->ImplementsInterface(UItemInterface::StaticClass()))
+			/*if (ActorClass->ImplementsInterface(UItemInterface::StaticClass()))
 			{
 				IItemInterface* InterfaceIns = CastChecked<IItemInterface>(Player);
 
@@ -73,7 +76,7 @@ void ADroppedItem::Tick(float DeltaTime)
 					}
 					Destroy();
 				}
-			}
+			}*/
 		}
 	}
 }
@@ -81,15 +84,9 @@ void ADroppedItem::Tick(float DeltaTime)
 void ADroppedItem::SetItemStack(const FItemStack& NewItemStack)
 {
 	ItemStack = NewItemStack;
-	if (ItemDataTable)
+	if (ItemStack.Item)
 	{
-		FItemDetails* ItemDetails = ItemDataTable->FindRow<FItemDetails>(FName(FString::FromInt(ItemStack.ID)), TEXT("ADroppedItem"));
-		if (ItemDetails)
-		{
-			ItemStack.MaxCount = ItemDetails->MaxCount;
-			ItemStack.Type = ItemDetails->Type;
-			MeshComponent->SetStaticMesh(ItemDetails->Mesh);
-		}
+		MeshComponent->SetStaticMesh(ItemStack.Item->GetMesh());
 	}
 }
 

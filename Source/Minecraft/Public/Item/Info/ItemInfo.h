@@ -17,7 +17,10 @@ struct FItemDetails : public FTableRowBase
 	FText Discription = FText::FromString(TEXT("None"));
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	int32 MaxCount = 64;
+	bool bIsStack = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag", Meta = (ClampMin = "0", ClampMax = "64", EditCondition = "bIsStack"))
+	uint8 MaxCount = 64;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
 	UTexture2D* Icon = nullptr;

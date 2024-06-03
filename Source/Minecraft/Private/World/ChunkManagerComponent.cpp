@@ -5,14 +5,9 @@
 
 UChunkManagerComponent::UChunkManagerComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
-	_TerrainGenerator = NewObject<UClassicOverWorldGenerator>(this, TEXT("TerrainGenerator"));
-}
-
-void UChunkManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	TerrainGenerator = NewObject<UClassicOverWorldGenerator>(this, TEXT("TerrainGenerator"));
 }
 
 AChunk* UChunkManagerComponent::GetChunk(const FVector2D& Key)
@@ -35,7 +30,7 @@ void UChunkManagerComponent::LoadChunk(const FVector2D& ChunkVoxelPosition)
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Owner = GetOwner();
 			Chunk = World->SpawnActor<AChunk>(AChunk::StaticClass(), { ChunkVoxelPosition.X * ChunkSize, ChunkVoxelPosition.Y * ChunkSize, 0.0 }, FRotator::ZeroRotator, SpawnParams);
-			Chunk->Load(_TerrainGenerator);
+			Chunk->Load(TerrainGenerator);
 			_AllChunks.Add(ChunkVoxelPosition, Chunk);
 
 			// 加载新的区块时，让新区块的四个面的区块也加载
@@ -61,8 +56,7 @@ void UChunkManagerComponent::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_
 {
 	AChunk* Chunk = GetChunk(FVector2D(Chunk_World_X, Chunk_World_Y));
 
-	if (Chunk == nullptr)
-		return;
+	if (Chunk == nullptr) return;
 
 	Chunk->Dirty();
 }

@@ -1,24 +1,23 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item.h"
-#include "Block/Blocks.h"
-#include "BlockItem.h"
-#include "AirItem.h"
+#include "Windows/WindowsCriticalSection.h"
+#include "Items.generated.h"
 
-struct Items
+class UItem;
+/**
+ * 
+ */
+UCLASS()
+class MINECRAFT_API UItems : public UObject
 {
-	static TSharedPtr<FItem> RegisterBlock(TSharedPtr<FBlock> Block);
+	GENERATED_BODY()
+public:
+	UFUNCTION(BlueprintCallable) // À¶Í¼¿Éµ÷ÓÃ
+	static UItems* Get();
 
-	static TSharedPtr<FItem> RegisterBlock(TSharedPtr<FBlockItem> BlockItem);
-
-	static TSharedPtr<FItem> RegisterBlock(TSharedPtr<FBlock> Block, TSharedPtr<FItem> Item);
-
-	static TSharedPtr<FItem> RegisterItem();
-
-	static TSharedPtr<FItem> AIR;
-	static TSharedPtr<FItem> STONE;
-	static TSharedPtr<FItem> DIRT;
-	static TSharedPtr<FItem> GRASS;
-	static TSharedPtr<FItem> IRON_HELMET;
+	UPROPERTY()
+	TMap<int32, TObjectPtr<UItem>> ItemsMap;
 };

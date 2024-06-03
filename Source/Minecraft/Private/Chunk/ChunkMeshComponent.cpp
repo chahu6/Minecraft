@@ -1,21 +1,22 @@
 #include "Chunk/ChunkMeshComponent.h"
-#include "ProceduralMeshComponent.h"
 #include "Chunk/ChunkMeshBuilder.h"
 #include "Chunk/ChunkSection.h"
-#include "Subsystem/MCGameInstanceSubsystem.h"
+#include "World/MinecraftSettings.h"
 
-UChunkMeshComponent::UChunkMeshComponent()
+UChunkMeshComponent::UChunkMeshComponent(const FObjectInitializer& ObjectInitializer)
+	:Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = false; // False
 
 	ChunkSection = Cast<AChunkSection>(GetOwner());
+
+	// 是否投射阴影
+	SetCastShadow(false);
 }
 
 void UChunkMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	InitProduralMeshComponent(GetOwner()->GetRootComponent());
 
 	ChunkSection = ChunkSection == nullptr ? Cast<AChunkSection>(GetOwner()) : ChunkSection;
 }
@@ -27,12 +28,12 @@ void UChunkMeshComponent::Render()
 		if (MeshData.Value.Vertices.IsEmpty()) continue;
 
 		//ProduralMesh->ClearAllMeshSections();
-		ProduralMesh->CreateMeshSection_LinearColor(MeshData.Key, MeshData.Value.Vertices, MeshData.Value.Triangles, MeshData.Value.Normals, MeshData.Value.UV0, MeshData.Value.VertexColors, MeshData.Value.Tangents, true);
+		CreateMeshSection_LinearColor(MeshData.Key, MeshData.Value.Vertices, MeshData.Value.Triangles, MeshData.Value.Normals, MeshData.Value.UV0, MeshData.Value.VertexColors, MeshData.Value.Tangents, true);
 		FBlockInfoTableRow* BlockInfo = GetBlockInfo(MeshData.Key);
 
 		if (BlockInfo)
 		{
-			ProduralMesh->SetMaterial(MeshData.Key, BlockInfo->Material);
+			SetMaterial(MeshData.Key, BlockInfo->Material);
 		}
 	}
 }
@@ -50,20 +51,11 @@ void UChunkMeshComponent::ClearMeshData()
 	MeshDatas.Empty();
 }
 
-bool UChunkMeshComponent::InitProduralMeshComponent(USceneComponent* Parent)
-{
-	ProduralMesh = NewObject<UProceduralMeshComponent>(this, TEXT("ProduralMesh"));
-	ProduralMesh->AttachToComponent(Parent, FAttachmentTransformRules::KeepRelativeTransform);
-
-	// 是否投射阴影
-	ProduralMesh->SetCastShadow(false);
-	ProduralMesh->RegisterComponent();
-
-	return ProduralMesh->IsRegistered();
-}
-
 FBlockInfoTableRow* UChunkMeshComponent::GetBlockInfo(uint8 BlockID)
 {
-	UMCGameInstanceSubsystem* MCGameInstance = UGameInstance::GetSubsystem<UMCGameInstanceSubsystem>(GetWorld()->GetGameInstance());
-	return MCGameInstance->GetBlockDataTable()->FindRow<FBlockInfoTableRow>(FName(FString::FromInt(BlockID)), nullptr);
+	const UMinecraftSettings* Setting = GetDefault<UMinecraftSettings>();
+	UDataTable* DataTable = Setting->BlockDataTable.LoadSynchronous();
+	check(DataTable != nullptr);
+
+	return DataTable->FindRow<FBlockInfoTableRow>(FName(FString::FromInt(BlockID)), nullptr);
 }

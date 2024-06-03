@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "ProceduralMeshComponent.h"
 #include "Engine/DataTable.h"
 #include "Types/MeshData.h"
 #include "ChunkMeshComponent.generated.h"
@@ -21,12 +21,12 @@ struct FBlockInfoTableRow : public FTableRowBase
 class AChunkSection;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MINECRAFT_API UChunkMeshComponent : public UActorComponent
+class MINECRAFT_API UChunkMeshComponent : public UProceduralMeshComponent
 {
 	GENERATED_BODY()
 
 public:	
-	UChunkMeshComponent();
+	UChunkMeshComponent(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void BeginPlay() override;
@@ -42,13 +42,7 @@ public:
 	void ClearMeshData();
 
 private:
-	bool InitProduralMeshComponent(USceneComponent* Parent);
-
 	FBlockInfoTableRow* GetBlockInfo(uint8 BlockID);
-
-private:
-	UPROPERTY()
-	class UProceduralMeshComponent* ProduralMesh;
 
 private:
 	UPROPERTY()

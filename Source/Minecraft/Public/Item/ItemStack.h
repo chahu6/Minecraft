@@ -1,10 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Types/ItemType.h"
+#include "Item.h"
 #include "ItemStack.generated.h"
 
-class FItem;
 /**
  * 
  */
@@ -13,24 +12,34 @@ struct FItemStack
 {
 	GENERATED_USTRUCT_BODY()
 
-	FItemStack();
-	FItemStack(int32 ID, TSharedPtr<FItem> NewItem, int32 Amount);
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
 	int32 ID = -1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	int32 Amount = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
+	int32 Quantity = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	int32 MaxCount = 64;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
+	TObjectPtr<UItem> Item;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	EItemType Type = EItemType::None;
+	void Clear()
+	{
+		ID = -1;
+		Quantity = 0;
+		Item = nullptr;
+	}
 
-	TSharedPtr<FItem> Item = nullptr;
+	bool IsEmpty()
+	{
+		return ID < 0;
+	}
 
-	void Clear();
+	bool IsStack()
+	{
+		return Item ? Item->IsStack() : false;
+	}
 
-	bool IsEmpty();
+	int32 GetMaxCount() const 
+	{
+		return Item ? Item->GetMaxCount() : 0;
+	}
 };

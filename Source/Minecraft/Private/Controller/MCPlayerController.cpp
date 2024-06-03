@@ -1,5 +1,5 @@
 #include "Controller/MCPlayerController.h"
-#include "HUD/MinecraftHUD.h"
+#include "UI/HUD/MinecraftHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "Controller/CameraManager/MinecraftPlayerCameraManager.h"
 
@@ -89,9 +89,9 @@ UTexture2D* AMCPlayerController::CreateTextureFromArray()
 		}
 	}
 
-	void* TextureData = TheTexture2D->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+	void* TextureData = TheTexture2D->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
 	FMemory::Memcpy(TextureData, Pixels, sizeof(uint8) * TextureWidth * TextureHeight * 4);
-	TheTexture2D->PlatformData->Mips[0].BulkData.Unlock();
+	TheTexture2D->GetPlatformData()->Mips[0].BulkData.Unlock();
 	TheTexture2D->UpdateResource();
 
 	return TheTexture2D;

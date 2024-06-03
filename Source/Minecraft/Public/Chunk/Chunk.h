@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interfaces/ChunkInterface.h"
 #include "Chunk.generated.h"
 
 class ITerrainGenerator;
@@ -9,7 +10,7 @@ class AChunkSection;
 class FWorldGeneratorAsyncTask;
 
 UCLASS()
-class MINECRAFT_API AChunk : public AActor
+class MINECRAFT_API AChunk : public AActor, public IChunkInterface
 {
 	GENERATED_BODY()
 	

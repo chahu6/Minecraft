@@ -8,11 +8,11 @@ UClassicOverWorldGenerator::UClassicOverWorldGenerator()
 {
 	HeightMap.SetNum(256);
 
-	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveObject(TEXT("/Script/Engine.CurveFloat'/Game/Test/NewCurveBase.NewCurveBase'"));
+	/*static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveObject(TEXT("/Script/Engine.CurveFloat'/Game/Test/NewCurveBase.NewCurveBase'"));
 	if (CurveObject.Succeeded())
 	{
 		HeightRemap = CurveObject.Object;
-	}
+	}*/
 }
 
 // 基本地形生成，生物群落特有方块覆盖，以及skylight计算。

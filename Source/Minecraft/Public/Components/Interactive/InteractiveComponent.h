@@ -5,7 +5,7 @@
 #include "HitResult/BlockHitResult.h"
 #include "InteractiveComponent.generated.h"
 
-class AMCPlayer;
+class AMinecraftPlayer;
 class FBlock;
 
 UENUM(BlueprintType)
@@ -28,7 +28,7 @@ class MINECRAFT_API UInteractiveComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	friend class AMCPlayer;
+	friend class AMinecraftPlayer;
 public:	
 	UInteractiveComponent();
 
@@ -43,8 +43,8 @@ private:
 
 	bool RemoveBlockFromWorld(const FBlockPos& BlockPos);
 
-	void OngoingClick();
-	bool OnPlayerDamageBlock(const FBlockHitResult& HitResult);
+	//void OngoingClick();
+	//bool OnPlayerDamageBlock(const FBlockHitResult& HitResult);
 	bool ClickBlock();
 
 	void ResetBlockRemoving();
@@ -53,7 +53,7 @@ private:
 
 	bool IsHittingPosition(const FBlockHitResult& HitResult);
 
-	bool DestroyBlock(const FBlock* Block, const FBlockHitResult& HitResult);
+	//bool DestroyBlock(const FBlock* Block, const FBlockHitResult& HitResult);
 
 	uint8 GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult);
 
@@ -71,7 +71,7 @@ private:
 
 private:
 	UPROPERTY()
-	AMCPlayer* Player;
+	AMinecraftPlayer* Player;
 
 	UPROPERTY()
 	APlayerController* PlayerController;

@@ -43,7 +43,7 @@ protected:
 	FItemStack ItemStack;
 
 	UPROPERTY(EditAnywhere, Category = "Data")
-	UDataTable* ItemDataTable;
+	TObjectPtr<UDataTable> ItemDataTable;
 
 	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
 	float FloatSpeed = 100.0f;

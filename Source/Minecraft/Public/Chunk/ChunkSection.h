@@ -4,6 +4,8 @@
 #include "GameFramework/Actor.h"
 #include "ChunkSection.generated.h"
 
+class UChunkMeshComponent;
+
 UCLASS()
 class MINECRAFT_API AChunkSection : public AActor
 {
@@ -32,7 +34,7 @@ public:
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	class UChunkMeshComponent* ChunkMesh;
+	UChunkMeshComponent* ChunkMesh;
 
 private:
 	TArray<uint8> Blocks;
