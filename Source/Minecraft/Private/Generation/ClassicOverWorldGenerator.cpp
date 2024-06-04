@@ -4,10 +4,9 @@
 #include "World/WorldSettings.h"
 
 UClassicOverWorldGenerator::UClassicOverWorldGenerator()
-	:Seed(FMath::Rand())
 {
 	HeightMap.SetNum(256);
-
+	Seed = FMath::Rand();
 	/*static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveObject(TEXT("/Script/Engine.CurveFloat'/Game/Test/NewCurveBase.NewCurveBase'"));
 	if (CurveObject.Succeeded())
 	{

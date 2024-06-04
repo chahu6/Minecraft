@@ -24,13 +24,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool RemoveItemFromInventory(int32 Index);
 
-	FItemStack GetItemStack(int32 Index);
+	FItemStack GetItemStack(int32 Index) const;
 	bool SetItemStack(int32 Index, const FItemStack& NewItemStack);
 
 protected:
 	virtual void BeginPlay() override;
 
-	bool IsValidIndex(int32 Index);
+	bool IsValidIndex(int32 Index) const;
 		
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))

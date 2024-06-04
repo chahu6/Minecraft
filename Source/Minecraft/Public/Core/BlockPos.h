@@ -17,7 +17,7 @@ struct FBlockPos
 	float Y_VOXEL_WORLD;
 	float Z_VOXEL_WORLD;
 
-	FBlockPos()
+	explicit FBlockPos()
 	{
 		Init();
 	}

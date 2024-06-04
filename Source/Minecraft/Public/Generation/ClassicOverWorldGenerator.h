@@ -27,8 +27,7 @@ private:
 	void GenerateBiomeMap();
 
 private:
-	UPROPERTY()
-	AChunk* CurrentChunk;
+	TObjectPtr<AChunk> CurrentChunk;
 
 	//UPROPERTY(EditAnywhere)
 	//UCurveFloat* HeightRemap;

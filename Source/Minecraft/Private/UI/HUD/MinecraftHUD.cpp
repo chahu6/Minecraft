@@ -1,6 +1,8 @@
 #include "UI/HUD/MinecraftHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "UI/Widget/StorageUI/Backpack.h"
+#include "UI/WidgetController/OverlayWidgetController.h"
+#include "UI/Widget/MainUI.h"
 
 void AMinecraftHUD::BeginPlay()
 {
@@ -12,6 +14,46 @@ void AMinecraftHUD::DrawHUD()
 	Super::DrawHUD();
 
 	DrawCrosshairs();
+}
+
+void AMinecraftHUD::DrawCrosshairs()
+{
+	FVector2D ViewportSize;
+	if (GEngine)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+		const FVector2D ViewportCenter(ViewportSize.X / 2.0f, ViewportSize.Y / 2.0f);
+		if (Crosshairs)
+		{
+			const float TextureWidget = Crosshairs->GetSizeX();
+			const float TextureHeight = Crosshairs->GetSizeY();
+
+			const FVector2D TextureDrawPoint(ViewportCenter.X - (TextureWidget / 2.0f), ViewportCenter.Y - (TextureHeight / 2.0f));
+
+			DrawTexture(
+				Crosshairs,
+				TextureDrawPoint.X,
+				TextureDrawPoint.Y,
+				TextureWidget,
+				TextureHeight,
+				0.0f,
+				0.0f,
+				1.0f,
+				1.0f
+			);
+		}
+	}
+}
+
+UOverlayWidgetController* AMinecraftHUD::GetOverlayWidgetController(const FWidgetControllerParams& WCParams)
+{
+	if (OverlayWidgetController == nullptr)
+	{
+		OverlayWidgetController = NewObject<UOverlayWidgetController>(this, OverlayWidgetControllerClass);
+		OverlayWidgetController->SetWidgetControllerParams(WCParams);
+		OverlayWidgetController->BindCallbacksToDependencies();
+	}
+	return OverlayWidgetController;
 }
 
 void AMinecraftHUD::AddDebugInfo()
@@ -50,41 +92,22 @@ void AMinecraftHUD::RemoveBackpack()
 	}
 }
 
-void AMinecraftHUD::DrawCrosshairs()
+void AMinecraftHUD::InitMainUI(APlayerController* PC, APlayerState* PS)
 {
-	FVector2D ViewportSize;
-	if (GEngine)
+	checkf(MainUIClass, TEXT("MainUIClass Class uninitialized"));
+	checkf(OverlayWidgetControllerClass, TEXT("Overlay Widget Controller Class uninitialized"));
+
+	if (APlayerController* PlayerController = GetOwningPlayerController())
 	{
-		GEngine->GameViewport->GetViewportSize(ViewportSize);
-		const FVector2D ViewportCenter(ViewportSize.X / 2.0f, ViewportSize.Y / 2.0f);
-		if (Crosshairs)
-		{
-			const float TextureWidget = Crosshairs->GetSizeX();
-			const float TextureHeight = Crosshairs->GetSizeY();
+		MainUI = CreateWidget<UMainUI>(PlayerController, MainUIClass);
 
-			const FVector2D TextureDrawPoint(ViewportCenter.X - (TextureWidget / 2.0f), ViewportCenter.Y - (TextureHeight / 2.0f));
+		const FWidgetControllerParams WCParams(PC, PS);
+		UOverlayWidgetController* WidgetController = GetOverlayWidgetController(WCParams);
+		check(WidgetController);
 
-			DrawTexture(
-				Crosshairs,
-				TextureDrawPoint.X,
-				TextureDrawPoint.Y,
-				TextureWidget,
-				TextureHeight,
-				0.0f,
-				0.0f,
-				1.0f,
-				1.0f
-			);
-		}
-	}
-}
+		MainUI->SetWidgetController(WidgetController);
+		WidgetController->BroadcastInitialValue();
 
-void AMinecraftHUD::AddMainUI()
-{
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && MainClass)
-	{
-		MainUI = CreateWidget<UUserWidget>(PlayerController, MainClass);
 		MainUI->AddToViewport();
 	}
 }

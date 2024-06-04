@@ -8,6 +8,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/Crafting/CraftingComponent.h"
 #include "Item/Info/ItemInfo.h"
+#include "UI/HUD/MinecraftHUD.h"
 
 AMinecraftPlayer::AMinecraftPlayer()
 {
@@ -66,6 +67,32 @@ AMinecraftPlayer::AMinecraftPlayer()
 	// 合成组件
 	CraftingComponent = CreateDefaultSubobject<UCraftingComponent>(TEXT("CraftingComponent"));
 	CraftingComponent->SetSize(2);
+}
+
+void AMinecraftPlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (AMCPlayerController* PC = GetController<AMCPlayerController>())
+	{
+		if (AMinecraftHUD* MinecraftHUD = PC->GetHUD<AMinecraftHUD>())
+		{
+			MinecraftHUD->InitMainUI(PC, GetPlayerState());
+		}
+	}
+}
+
+void AMinecraftPlayer::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+
+	if (AMCPlayerController* PC = GetController<AMCPlayerController>())
+	{
+		if (AMinecraftHUD* MinecraftHUD = PC->GetHUD<AMinecraftHUD>())
+		{
+			MinecraftHUD->InitMainUI(PC, GetPlayerState());
+		}
+	}
 }
 
 void AMinecraftPlayer::PostInitializeComponents()

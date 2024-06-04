@@ -7,6 +7,7 @@ UBackpackComponent::UBackpackComponent()
 {
 	InventorySize = 36;
 	ArmorItems.SetNum(4);
+
 }
 
 void UBackpackComponent::BeginPlay()

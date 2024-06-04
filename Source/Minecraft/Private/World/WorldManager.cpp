@@ -6,12 +6,23 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Core/BlockPos.h"
+#include "Generation/ClassicOverWorldGenerator.h"
 
 AWorldManager::AWorldManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+
 	ChunkManager = CreateDefaultSubobject<UChunkManagerComponent>(TEXT("ChunkManagerComponent"));
+
+	TerrainGeneratorss = NewObject<UClassicOverWorldGenerator>(this, TEXT("TerrainGenerator"));
+}
+
+void AWorldManager::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
 }
 
 void AWorldManager::BeginPlay()

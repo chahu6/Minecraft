@@ -31,9 +31,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-public:	
-	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 public:
 	void Render();
 
@@ -46,7 +43,7 @@ private:
 
 private:
 	UPROPERTY()
-	AChunkSection* ChunkSection = nullptr;
+	AChunkSection* ChunkSection;
 
 	TMap<uint8, FMeshData> MeshDatas;
 };

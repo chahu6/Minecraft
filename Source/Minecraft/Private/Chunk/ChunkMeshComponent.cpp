@@ -41,7 +41,7 @@ void UChunkMeshComponent::Render()
 void UChunkMeshComponent::BuildMesh()
 {
 	ChunkSection = ChunkSection == nullptr ? Cast<AChunkSection>(GetOwner()) : ChunkSection;
-	ensure(ChunkSection != nullptr);
+	check(ChunkSection != nullptr);
 
 	FChunkMeshBuilder::BuildChunkMesh(ChunkSection, MeshDatas);
 }
@@ -54,7 +54,7 @@ void UChunkMeshComponent::ClearMeshData()
 FBlockInfoTableRow* UChunkMeshComponent::GetBlockInfo(uint8 BlockID)
 {
 	const UMinecraftSettings* Setting = GetDefault<UMinecraftSettings>();
-	UDataTable* DataTable = Setting->BlockDataTable.LoadSynchronous();
+	UDataTable* DataTable = Setting->BlockDataTable.Get();
 	check(DataTable != nullptr);
 
 	return DataTable->FindRow<FBlockInfoTableRow>(FName(FString::FromInt(BlockID)), nullptr);

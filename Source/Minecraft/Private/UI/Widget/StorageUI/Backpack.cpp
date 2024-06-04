@@ -1,5 +1,5 @@
 #include "UI/Widget/StorageUI/Backpack.h"
-//#include "Components/Storage/BackpackComponent.h"
+#include "Components/Inventory/BackpackComponent.h"
 #include "Components/Crafting/CraftingComponent.h"
 #include "Entity/MinecraftPlayer.h"
 
@@ -16,14 +16,14 @@ void UBackpack::NativePreConstruct()
 	Player = Cast<AMinecraftPlayer>(GetOwningPlayerPawn());
 	if (Player)
 	{
-		//Backpack = Player->GetComponentByClass<UBackpackComponent>();
-		CraftingSystem = Player->GetComponentByClass<UCraftingComponent>();
+		Backpack = Player->GetBackpackComponent();
+		CraftingSystem = Player->GetCraftingComponent();
 	}
 
-	//if (Backpack)
+	if (Backpack)
 	{
-		//Backpack->OnHotbarUpdate.AddUObject(this, &UBackpack::FlushHotbar);
-		//Backpack->OnInventoryUpdate.AddUObject(this, &UBackpack::FlushBackpack);
+		Backpack->OnHotbarUpdate.AddUObject(this, &UBackpack::FlushHotbar);
+		Backpack->OnInventoryUpdate.AddUObject(this, &UBackpack::FlushBackpack);
 	}
 
 	if (CraftingSystem)
@@ -87,8 +87,8 @@ void UBackpack::HangItemStackToMouse(int32 Index)
 {
 	if (Player)
 	{
-		//const UBackpackComponent* BackpackComponent = Player->GetBackpackComponent();
-		//HangItemStack = BackpackComponent->GetItemStack(Index);
+		const UBackpackComponent* BackpackComponent = Player->GetBackpackComponent();
+		HangItemStack = BackpackComponent->GetItemStack(Index);
 	}
 }
 
