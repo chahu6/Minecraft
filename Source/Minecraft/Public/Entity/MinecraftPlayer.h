@@ -40,6 +40,8 @@ class MINECRAFT_API AMinecraftPlayer : public AMinecraftEntity
 
 public:
 	AMinecraftPlayer();
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_Controller() override;
 
 protected:
 	virtual void PostInitializeComponents() override;
@@ -123,4 +125,5 @@ private:
 
 public:
 	FORCEINLINE UCraftingComponent* GetCraftingComponent() const { return CraftingComponent; }
+	FORCEINLINE UBackpackComponent* GetBackpackComponent() const { return BackpackComponent; }
 };

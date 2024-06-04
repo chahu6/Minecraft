@@ -18,11 +18,6 @@ void AMCPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	MinecraftHUD = Cast<AMinecraftHUD>(GetHUD());
-
-	if (MinecraftHUD)
-	{
-		MinecraftHUD->AddMainUI();
-	}
 }
 
 void AMCPlayerController::OnPossess(APawn* InPawn)

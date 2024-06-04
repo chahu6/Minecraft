@@ -106,12 +106,12 @@ void UInventoryComponent::BeginPlay()
 	ItemsData.SetNum(InventorySize);
 }
 
-bool UInventoryComponent::IsValidIndex(int32 Index)
+bool UInventoryComponent::IsValidIndex(int32 Index) const
 {
 	return ItemsData.IsValidIndex(Index);
 }
 
-FItemStack UInventoryComponent::GetItemStack(int32 Index)
+FItemStack UInventoryComponent::GetItemStack(int32 Index) const
 {
 	if (IsValidIndex(Index))
 	{

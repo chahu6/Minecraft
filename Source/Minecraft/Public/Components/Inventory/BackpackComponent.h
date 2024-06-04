@@ -6,6 +6,7 @@
 #include "Components/Inventory/InventoryComponent.h"
 #include "BackpackComponent.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnInventoryUpdate);
 /**
  * 
  */
@@ -23,6 +24,11 @@ protected:
 
 private:
 	bool IsHotbarSlot(int32 Index);
+
+public:
+	FOnInventoryUpdate OnInventoryUpdate;
+	FOnInventoryUpdate OnHotbarUpdate;
+	FOnInventoryUpdate OnArmorUpdate;
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))

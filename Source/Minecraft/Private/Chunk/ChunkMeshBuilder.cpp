@@ -300,3 +300,42 @@ void FChunkMeshBuilder::BuildChunkMesh(const AChunkSection* ChunkSection, TMap<u
 		}
 	}
 }
+
+void FChunkMeshBuilder::BuildGreedyChunkMesh(const AChunkSection* ChunkSection, TMap<uint8, FMeshData>& OutMeshDatas)
+{
+	FVector ChunkLocation = ChunkSection->GetActorLocation();
+
+	for (int32 Axis = 0; Axis < 3; ++Axis)
+	{
+		const int32 Axis1 = (Axis + 1) % 3;
+		const int32 Axis2 = (Axis + 2) % 3;
+
+		const int32 MainAxisLimit = CHUNK_SIZE;
+		const int32 Axis1Limit = CHUNK_SIZE;
+		const int32 Axis2Limit = CHUNK_SIZE;
+
+		FIntVector DeltaAxis1 = FIntVector::ZeroValue;
+		FIntVector DeltaAxis2 = FIntVector::ZeroValue;
+
+		FIntVector ChunkItr = FIntVector::ZeroValue;
+		FIntVector AxisMask = FIntVector::ZeroValue;
+
+		AxisMask[Axis] = 1;
+
+		TArray<FMask> Mask;
+		Mask.SetNum(Axis1Limit * Axis2Limit);
+
+		for (ChunkItr[Axis] = -1; ChunkItr[Axis] < MainAxisLimit;)
+		{
+			int32 N = 0;
+
+			for (ChunkItr[Axis2] = 0; ChunkItr[Axis2] < Axis2Limit; ++ChunkItr[Axis2])
+			{
+				for (ChunkItr[Axis1] = 0; ChunkItr[Axis1] < Axis1Limit; ++ChunkItr[Axis1])
+				{
+					//const uint8 CurrentBlock = GetBlock();
+				}
+			}
+		}
+	}
+}

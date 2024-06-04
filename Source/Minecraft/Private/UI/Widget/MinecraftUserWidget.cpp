@@ -6,4 +6,5 @@
 void UMinecraftUserWidget::SetWidgetController(UObject* InWidgetController)
 {
 	WidgetController = InWidgetController;
+	OnWidgetControllerSet();
 }

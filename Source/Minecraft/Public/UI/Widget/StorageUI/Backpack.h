@@ -5,6 +5,7 @@
 #include "Item/ItemStack.h"
 #include "Backpack.generated.h"
 
+class UBackpackComponent;
 /**
  * 
  */
@@ -66,8 +67,8 @@ public:
 	class UInventoryItem* Off_Hand;
 
 private:
-	//UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	//class UBackpackComponent* Backpack;
+	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UBackpackComponent> Backpack;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	class UCraftingComponent* CraftingSystem;

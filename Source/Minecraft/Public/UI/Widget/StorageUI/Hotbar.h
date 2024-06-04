@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UI/Widget/MinecraftUserWidget.h"
 #include "Hotbar.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MINECRAFT_API UHotbar : public UUserWidget
+class MINECRAFT_API UHotbar : public UMinecraftUserWidget
 {
 	GENERATED_BODY()
 	
@@ -23,8 +23,4 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void FlushSelectedBox(int32 Index);
-
-protected:
-	//UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	//class UBackpackComponent* Backpack;
 };

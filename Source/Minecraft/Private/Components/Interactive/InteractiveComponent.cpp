@@ -67,7 +67,10 @@ bool UInteractiveComponent::InitMarkComponent(USceneComponent* Parent)
 
 void UInteractiveComponent::UpdateDestroyProgress(float Value)
 {
-	DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), Value);
+	if (DestroyMaterial)
+	{
+		DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), Value);
+	}
 }
 
 void UInteractiveComponent::UseItem()

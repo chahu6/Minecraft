@@ -4,6 +4,11 @@
 #include "GameFramework/HUD.h"
 #include "MinecraftHUD.generated.h"
 
+class UOverlayWidgetController;
+struct FWidgetControllerParams;
+class UMinecraftUserWidget;
+class UBackpack;
+class UMainUI;
 /**
  * 
  */
@@ -19,6 +24,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void DrawHUD() override;
 
+	UOverlayWidgetController* GetOverlayWidgetController(const FWidgetControllerParams& WCParams);
+
 public:
 	void AddDebugInfo();
 
@@ -30,7 +37,8 @@ public:
 
 	void DrawCrosshairs();
 
-	void AddMainUI();
+	void InitMainUI(APlayerController* PC, APlayerState* PS);
+
 private:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> DebugInfoClass;
@@ -42,13 +50,19 @@ private:
 	TSubclassOf<UUserWidget> BackpackClass;
 
 	UPROPERTY()
-	class UBackpack* BackpackUI;
+	TObjectPtr<UBackpack> BackpackUI;
 
 	UPROPERTY(EditAnywhere, Category = "UI")
-	TSubclassOf<UUserWidget> MainClass;
+	TSubclassOf<UOverlayWidgetController> OverlayWidgetControllerClass;
 
 	UPROPERTY()
-	class UUserWidget* MainUI;
+	TObjectPtr<UOverlayWidgetController> OverlayWidgetController;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UMainUI> MainUIClass;
+
+	UPROPERTY()
+	TObjectPtr<UMainUI> MainUI;
 
 	// Ê®×Ö×¼ÐÇ
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
