@@ -6,6 +6,9 @@
 #include "ItemStack.h"
 #include "DroppedItem.generated.h"
 
+class UBoxComponent;
+class USoundCue;
+
 UCLASS()
 class MINECRAFT_API ADroppedItem : public AActor
 {
@@ -30,14 +33,14 @@ protected:
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* MeshComponent;
+	TObjectPtr<UStaticMeshComponent> MeshComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
-	class UBoxComponent* Box;
+	TObjectPtr<UBoxComponent> Box;
 
 protected:
 	UPROPERTY(EditAnywhere)
-	class USoundCue* PickupSound;
+	TObjectPtr<USoundCue> PickupSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties")
 	FItemStack ItemStack;

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
-#include "Types/BlockType.h"
+#include "World/Block/Block.h"
 #include "ChunkSaveGame.generated.h"
 
 /**
@@ -17,5 +17,5 @@ class MINECRAFT_API UChunkSaveGame : public USaveGame
 	
 public:
 	UPROPERTY()
-	TArray<EBlockType> Blocks;
+	TArray<EBlockID> Blocks;
 };

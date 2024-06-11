@@ -3,7 +3,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "World/WorldManager.h"
 #include "Chunk/ChunkSection.h"
-//#include "Block/Blocks.h"
 #include "Entity/MinecraftPlayer.h"
 
 //#include "Item/Items.h"
@@ -76,7 +75,7 @@ void UInteractiveComponent::UpdateDestroyProgress(float Value)
 void UInteractiveComponent::UseItem()
 {
 	FBlockHitResult HitResult;
-	if (RayCast(HitResult))
+	if (RayCast(HitResult) && Player)
 	{
 		FItemStack MainHandItemStack = Player->GetMainHandItem();
 		if (!MainHandItemStack.IsEmpty()/* && (MainHandItemStack.Type == EItemType::NaturalBlock || MainHandItemStack.Type == EItemType::BuildingBlock)*/)
@@ -150,65 +149,65 @@ void UInteractiveComponent::ResetBlockRemoving()
 	}
 }
 
-//void UInteractiveComponent::OngoingClick()
-//{
-//	if (OnPlayerDamageBlock(GetBlockHitResult()))
-//	{
-//		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Black, TEXT("播放挥手动画和特效"));
-//	}
-//}
+void UInteractiveComponent::OngoingClick()
+{
+	if (OnPlayerDamageBlock(GetBlockHitResult()))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Black, TEXT("播放挥手动画和特效"));
+	}
+}
 
-//bool UInteractiveComponent::OnPlayerDamageBlock(const FBlockHitResult& HitResult)
-//{
-//	if (!HitResult.bIsHit) return false;
-//
-//	if (BlockHitDelay > 0)
-//	{
-//		--BlockHitDelay;
-//		return true;
-//	}
-//	//else if()// 创建模式以后再说
-//	else if (IsHittingPosition(HitResult))
-//	{
-//		FBlock* HitBlock = FBlock::GetBlock(HitResult.BlockID).Get();
-//
-//		ensure(HitBlock != nullptr);
-//
-//		if (HitBlock->IsAir())
-//		{
-//			check(false);
-//
-//			bIsHittingBlock = false;
-//			return false;
-//		}
-//		else
-//		{
-//			CurBlockDamageMP += HitBlock->GetPlayerRelativeBlockHardness(Player) * GetWorld()->GetDeltaSeconds();
-//
-//			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("播放音乐"));
-//
-//			if (CurBlockDamageMP >= 1.0f)
-//			{
-//				DestroyBlock(HitBlock, HitResult);
-//				bIsHittingBlock = false;
-//				CurBlockDamageMP = 0.0f;
-//				BlockHitDelay = 5.0f;
-//				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("破坏方块"));
-//			}
-//
-//			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("更新破坏进度"));
-//			DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), CurBlockDamageMP);
-//			return true;
-//		}
-//	}
-//	else
-//	{
-//		ResetBlockRemoving();
-//		return ClickBlock();
-//	}
-//
-//	return false;
-//}
+bool UInteractiveComponent::OnPlayerDamageBlock(const FBlockHitResult& HitResult)
+{
+	//if (!HitResult.bIsHit) return false;
+
+	//if (BlockHitDelay > 0)
+	//{
+	//	--BlockHitDelay;
+	//	return true;
+	//}
+	////else if()// 创建模式以后再说
+	//else if (IsHittingPosition(HitResult))
+	//{
+	//	FBlock* HitBlock = FBlock::GetBlock(HitResult.BlockID).Get();
+
+	//	ensure(HitBlock != nullptr);
+
+	//	if (HitBlock->IsAir())
+	//	{
+	//		check(false);
+
+	//		bIsHittingBlock = false;
+	//		return false;
+	//	}
+	//	else
+	//	{
+	//		CurBlockDamageMP += HitBlock->GetPlayerRelativeBlockHardness(Player) * GetWorld()->GetDeltaSeconds();
+
+	//		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("播放音乐"));
+
+	//		if (CurBlockDamageMP >= 1.0f)
+	//		{
+	//			DestroyBlock(HitBlock, HitResult);
+	//			bIsHittingBlock = false;
+	//			CurBlockDamageMP = 0.0f;
+	//			BlockHitDelay = 5.0f;
+	//			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("破坏方块"));
+	//		}
+
+	//		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("更新破坏进度"));
+	//		DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), CurBlockDamageMP);
+	//		return true;
+	//	}
+	//}
+	//else
+	//{
+	//	ResetBlockRemoving();
+	//	return ClickBlock();
+	//}
+
+	return false;
+}
 
 bool UInteractiveComponent::RayCast(FBlockHitResult& HitResult)
 {

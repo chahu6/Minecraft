@@ -22,7 +22,6 @@ enum class Action : uint8
 	SWAP_ITEM_WITH_OFFHAND
 };
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class MINECRAFT_API UInteractiveComponent : public UActorComponent
 {
@@ -43,8 +42,8 @@ private:
 
 	bool RemoveBlockFromWorld(const FBlockPos& BlockPos);
 
-	//void OngoingClick();
-	//bool OnPlayerDamageBlock(const FBlockHitResult& HitResult);
+	void OngoingClick();
+	bool OnPlayerDamageBlock(const FBlockHitResult& HitResult);
 	bool ClickBlock();
 
 	void ResetBlockRemoving();
@@ -67,14 +66,14 @@ private:
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* Marker;
+	TObjectPtr<UStaticMeshComponent> Marker;
 
 private:
 	UPROPERTY()
-	AMinecraftPlayer* Player;
+	TObjectPtr<AMinecraftPlayer> Player;
 
 	UPROPERTY()
-	APlayerController* PlayerController;
+	TObjectPtr<APlayerController> PlayerController;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* DestroyMaterial;
@@ -91,5 +90,5 @@ private:
 	FBlockHitResult CurrentHitResult;
 
 public:
-	FORCEINLINE const FBlockHitResult& GetBlockHitResult() const { return BlockHitResult; }
+	[[nodiscard]] FORCEINLINE const FBlockHitResult& GetBlockHitResult() const { return BlockHitResult; }
 };

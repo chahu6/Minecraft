@@ -2,6 +2,8 @@
 #include "Chunk/ChunkMeshBuilder.h"
 #include "Chunk/ChunkSection.h"
 #include "World/MinecraftSettings.h"
+#include "World/Block/Block.h"
+#include "Utils/MinecraftAssetLibrary.h"
 
 UChunkMeshComponent::UChunkMeshComponent(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
@@ -29,12 +31,9 @@ void UChunkMeshComponent::Render()
 
 		//ProduralMesh->ClearAllMeshSections();
 		CreateMeshSection_LinearColor(MeshData.Key, MeshData.Value.Vertices, MeshData.Value.Triangles, MeshData.Value.Normals, MeshData.Value.UV0, MeshData.Value.VertexColors, MeshData.Value.Tangents, true);
-		FBlockInfoTableRow* BlockInfo = GetBlockInfo(MeshData.Key);
+		const FBlockInfoTableRow& BlockInfo = UMinecraftAssetLibrary::GetBlockInfo(MeshData.Key);
 
-		if (BlockInfo)
-		{
-			SetMaterial(MeshData.Key, BlockInfo->Material);
-		}
+		SetMaterial(MeshData.Key, BlockInfo.Material);
 	}
 }
 
@@ -49,13 +48,4 @@ void UChunkMeshComponent::BuildMesh()
 void UChunkMeshComponent::ClearMeshData()
 {
 	MeshDatas.Empty();
-}
-
-FBlockInfoTableRow* UChunkMeshComponent::GetBlockInfo(uint8 BlockID)
-{
-	const UMinecraftSettings* Setting = GetDefault<UMinecraftSettings>();
-	UDataTable* DataTable = Setting->BlockDataTable.Get();
-	check(DataTable != nullptr);
-
-	return DataTable->FindRow<FBlockInfoTableRow>(FName(FString::FromInt(BlockID)), nullptr);
 }
