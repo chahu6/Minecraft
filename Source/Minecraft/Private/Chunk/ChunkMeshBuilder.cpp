@@ -2,8 +2,8 @@
 #include "World/WorldSettings.h"
 #include "Chunk/ChunkSection.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Types/FaceType.h"
 #include "World/WorldManager.h"
+#include "Chunk/ChunkMeshComponent.h"
 
 bool IsVoid(int32 X, int32 Y, int32 Z, const FVector& WorldLocation, AWorldManager* WorldManager)
 {

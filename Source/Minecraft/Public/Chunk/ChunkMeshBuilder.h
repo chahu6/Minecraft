@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Types/MeshData.h"
-
+struct FMeshData;
 class AChunkSection;
 
 struct FMask

@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Item/ItemStack.h"
-#include "Types/BlockType.h"
 #include "CraftingComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnCraftingItem);

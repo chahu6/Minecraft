@@ -2,23 +2,35 @@
 
 #include "CoreMinimal.h"
 #include "ProceduralMeshComponent.h"
-#include "Engine/DataTable.h"
-#include "Types/MeshData.h"
 #include "ChunkMeshComponent.generated.h"
 
+class AChunkSection;
+
+UENUM(BlueprintType)
+enum class EFaceType : uint8
+{
+	Forward,
+	BackGround,
+	Left,
+	Right,
+	Up,
+	Down,
+
+	EFT_MAX
+};
+
 USTRUCT(BlueprintType)
-struct FBlockInfoTableRow : public FTableRowBase
+struct FMeshData
 {
 	GENERATED_USTRUCT_BODY();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	FText Name;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	UMaterialInterface* Material;
+	TArray<FVector> Vertices;
+	TArray<int32> Triangles;
+	TArray<FVector> Normals;
+	TArray<FVector2D> UV0;
+	TArray<FLinearColor> VertexColors;
+	TArray<FProcMeshTangent> Tangents;
 };
-
-class AChunkSection;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MINECRAFT_API UChunkMeshComponent : public UProceduralMeshComponent
@@ -39,11 +51,8 @@ public:
 	void ClearMeshData();
 
 private:
-	FBlockInfoTableRow* GetBlockInfo(uint8 BlockID);
-
-private:
 	UPROPERTY()
-	AChunkSection* ChunkSection;
+	TObjectPtr<AChunkSection> ChunkSection;
 
 	TMap<uint8, FMeshData> MeshDatas;
 };
