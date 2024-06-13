@@ -4,6 +4,7 @@
 #include "MinecraftEntity.h"
 #include "InputActionValue.h"
 #include "Item/ItemStack.h"
+#include "Interfaces/InventoryInterface.h"
 #include "MinecraftPlayer.generated.h"
 
 class UBackpackComponent;
@@ -12,31 +13,32 @@ class UCameraComponent;
 class USphereComponent;
 class UInteractiveComponent;
 class UCraftingComponent;
+class UInputAction;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSwitchMainHand, int32);
 
 UCLASS()
-class MINECRAFT_API AMinecraftPlayer : public AMinecraftEntity
+class MINECRAFT_API AMinecraftPlayer : public AMinecraftEntity, public IInventoryInterface
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* UseItemAction;
+	TObjectPtr<UInputAction> UseItemAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* RemoveBlockAction;
+	TObjectPtr<UInputAction> RemoveBlockAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* SwitchPerspectivesAction;
+	TObjectPtr<UInputAction> SwitchPerspectivesAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* OpenBackpackAction;
+	TObjectPtr<UInputAction> OpenBackpackAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* WheelAction;
+	TObjectPtr<UInputAction> WheelAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* DropItemAction;
+	TObjectPtr<UInputAction> DropItemAction;
 
 public:
 	AMinecraftPlayer();
@@ -51,6 +53,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual bool AddItemToInventory(FItemStack& ItemStack) override;
+
+	UFUNCTION()
 	void UpdateMainHandItem();
 
 	FItemStack GetMainHandItem();
@@ -109,9 +115,6 @@ private:
 	TObjectPtr<UBackpackComponent> BackpackComponent;
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Data")
-	class UDataTable* ItemsDataTable;
-
 	enum class EPerspective : uint8
 	{
 		First,

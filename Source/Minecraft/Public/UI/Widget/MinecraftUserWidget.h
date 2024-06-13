@@ -21,7 +21,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnWidgetControllerSet();
 
-public:
+protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UObject> WidgetController;
 };

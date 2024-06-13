@@ -7,6 +7,7 @@
 #include "MinecraftAssetLibrary.generated.h"
 
 struct FBlockInfoTableRow;
+struct FItemDetails;
 /**
  * 
  */
@@ -17,4 +18,7 @@ class MINECRAFT_API UMinecraftAssetLibrary : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintCallable, Category = "MinecraftAssetLibrary|Block")
 	static const FBlockInfoTableRow& GetBlockInfo(int32 BlockID);
+
+	UFUNCTION(BlueprintCallable, Category = "MinecraftAssetLibrary|Item")
+	static const FItemDetails& GetItemInfo(int32 ItemID);
 };

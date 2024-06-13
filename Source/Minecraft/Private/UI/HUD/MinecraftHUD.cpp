@@ -92,7 +92,7 @@ void AMinecraftHUD::RemoveBackpack()
 	}
 }
 
-void AMinecraftHUD::InitMainUI(APlayerController* PC, APlayerState* PS)
+void AMinecraftHUD::InitMainUI(APlayerController* PC, APlayerState* PS, APawn* Pawn)
 {
 	checkf(MainUIClass, TEXT("MainUIClass Class uninitialized"));
 	checkf(OverlayWidgetControllerClass, TEXT("Overlay Widget Controller Class uninitialized"));
@@ -101,7 +101,7 @@ void AMinecraftHUD::InitMainUI(APlayerController* PC, APlayerState* PS)
 	{
 		MainUI = CreateWidget<UMainUI>(PlayerController, MainUIClass);
 
-		const FWidgetControllerParams WCParams(PC, PS);
+		const FWidgetControllerParams WCParams(PC, PS, Pawn);
 		UOverlayWidgetController* WidgetController = GetOverlayWidgetController(WCParams);
 		check(WidgetController);
 

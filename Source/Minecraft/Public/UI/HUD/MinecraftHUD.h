@@ -37,7 +37,7 @@ public:
 
 	void DrawCrosshairs();
 
-	void InitMainUI(APlayerController* PC, APlayerState* PS);
+	void InitMainUI(APlayerController* PC, APlayerState* PS, APawn* Pawn);
 
 private:
 	UPROPERTY(EditAnywhere, Category = "UI")

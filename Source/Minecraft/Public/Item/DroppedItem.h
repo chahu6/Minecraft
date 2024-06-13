@@ -45,9 +45,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties")
 	FItemStack ItemStack;
 
-	UPROPERTY(EditAnywhere, Category = "Data")
-	TObjectPtr<UDataTable> ItemDataTable;
-
 	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
 	float FloatSpeed = 100.0f;
 
@@ -62,7 +59,7 @@ private:
 	bool bIsPickingUp = false;
 
 	UPROPERTY()
-	AActor* Player;
+	TObjectPtr<AActor> Player;
 
 	UPROPERTY(EditAnywhere, Category = "Properties")
 	float InterpSeepd = 8.0f;

@@ -77,7 +77,7 @@ void AMinecraftPlayer::PossessedBy(AController* NewController)
 	{
 		if (AMinecraftHUD* MinecraftHUD = PC->GetHUD<AMinecraftHUD>())
 		{
-			MinecraftHUD->InitMainUI(PC, GetPlayerState());
+			MinecraftHUD->InitMainUI(PC, GetPlayerState(), this);
 		}
 	}
 }
@@ -90,7 +90,7 @@ void AMinecraftPlayer::OnRep_Controller()
 	{
 		if (AMinecraftHUD* MinecraftHUD = PC->GetHUD<AMinecraftHUD>())
 		{
-			MinecraftHUD->InitMainUI(PC, GetPlayerState());
+			MinecraftHUD->InitMainUI(PC, GetPlayerState(), this);
 		}
 	}
 }
@@ -102,6 +102,11 @@ void AMinecraftPlayer::PostInitializeComponents()
 	if (InteractiveComponent)
 	{
 		InteractiveComponent->Player = this;
+	}
+
+	if (BackpackComponent)
+	{
+		BackpackComponent->OnHotbarUpdate.AddDynamic(this, &AMinecraftPlayer::UpdateMainHandItem);
 	}
 }
 
@@ -141,6 +146,15 @@ void AMinecraftPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		// DropItem
 		EnhancedInputComponent->BindAction(DropItemAction, ETriggerEvent::Started, this, &AMinecraftPlayer::DropItem);
 	}
+}
+
+bool AMinecraftPlayer::AddItemToInventory(FItemStack& ItemStack)
+{
+	if (BackpackComponent)
+	{
+		return BackpackComponent->AddItemToInventory(ItemStack);
+	}
+	return false;
 }
 
 void AMinecraftPlayer::SwitchPerspectives()
@@ -192,7 +206,7 @@ void AMinecraftPlayer::OngoinAction()
 {
 	if (InteractiveComponent != nullptr)
 	{
-		//InteractiveComponent->OngoingClick();
+		InteractiveComponent->OngoingClick();
 	}
 }
 
@@ -254,24 +268,13 @@ void AMinecraftPlayer::Initial()
 
 void AMinecraftPlayer::UpdateMainHandItem()
 {
-	int32 ID = GetMainHandItem().ID;
+	FItemStack MainItemStack = GetMainHandItem();
 
-	if (ID < 0)
+	if (MainItemStack.IsEmpty())
 	{
 		ItemMesh->SetStaticMesh(nullptr);
 		return;
 	}
 
-	if (ItemsDataTable)
-	{
-		FItemDetails* ItemDetails = ItemsDataTable->FindRow<FItemDetails>(FName(FString::FromInt(ID)), TEXT("AMinecraftPlayer"));
-		if (ItemDetails)
-		{
-			ItemMesh->SetStaticMesh(ItemDetails->Mesh);
-		}
-		else
-		{
-			ItemMesh->SetStaticMesh(nullptr);
-		}
-	}
+	ItemMesh->SetStaticMesh(MainItemStack.Item->GetMesh());
 }

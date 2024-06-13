@@ -6,7 +6,7 @@
 #include "InteractiveComponent.generated.h"
 
 class AMinecraftPlayer;
-class FBlock;
+class ADroppedItem;
 
 UENUM(BlueprintType)
 enum class Action : uint8
@@ -52,7 +52,7 @@ private:
 
 	bool IsHittingPosition(const FBlockHitResult& HitResult);
 
-	//bool DestroyBlock(const FBlock* Block, const FBlockHitResult& HitResult);
+	bool DestroyBlock(const FBlockHitResult& HitResult);
 
 	uint8 GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult);
 
@@ -75,15 +75,22 @@ private:
 	UPROPERTY()
 	TObjectPtr<APlayerController> PlayerController;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ADroppedItem> DroppedItemClass;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UMaterialInstance> MaterialInstance;
+
 	UPROPERTY()
-	UMaterialInstanceDynamic* DestroyMaterial;
+	TObjectPtr<UMaterialInstanceDynamic> DestroyMaterial;
 
 	FBlockHitResult BlockHitResult;
 
 	bool bIsDebug = false;
-	bool bIsHittingBlock;
-	int32 BlockHitDelay;
-	float CurBlockDamageMP;
+	bool bIsHittingBlock = false;
+	int32 BlockHitDelay = 0;
+	float CurBlockDamageMP = 0.0f;
+	float DestroyPercent = 0.0f;
 
 	FBlockPos CurrentBlock;
 

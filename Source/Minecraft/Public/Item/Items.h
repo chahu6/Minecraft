@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Windows/WindowsCriticalSection.h"
 #include "Items.generated.h"
 
 class UItem;
@@ -17,6 +16,8 @@ class MINECRAFT_API UItems : public UObject
 public:
 	UFUNCTION(BlueprintCallable) // À¶Í¼¿Éµ÷ÓÃ
 	static UItems* Get();
+
+	static void InitializeItems();
 
 	UPROPERTY()
 	TMap<int32, TObjectPtr<UItem>> ItemsMap;

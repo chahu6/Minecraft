@@ -22,8 +22,8 @@ void UBackpack::NativePreConstruct()
 
 	if (Backpack)
 	{
-		Backpack->OnHotbarUpdate.AddUObject(this, &UBackpack::FlushHotbar);
-		Backpack->OnInventoryUpdate.AddUObject(this, &UBackpack::FlushBackpack);
+		Backpack->OnHotbarUpdate.AddDynamic(this, &UBackpack::FlushHotbar);
+		Backpack->OnInventoryUpdate.AddDynamic(this, &UBackpack::FlushBackpack);
 	}
 
 	if (CraftingSystem)

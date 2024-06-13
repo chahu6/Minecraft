@@ -11,11 +11,13 @@ UCLASS()
 class MINECRAFT_API UItem : public UObject
 {
 	GENERATED_BODY()
-
 public:
-	UItem();
+	// ¿ËÂ¡º¯Êý
+	virtual UItem* Clone() {
+		UE_LOG(LogTemp, Error, TEXT("Please implement this!"));
+		return nullptr;
+	}
 
-protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Properties")
 	FItemDetails ItemInfo;
 
