@@ -6,7 +6,6 @@
 #include "Components/Inventory/InventoryComponent.h"
 #include "BackpackComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnInventoryUpdate);
 /**
  * 
  */
@@ -22,12 +21,24 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-private:
+protected:
+	/*
+	* 背包数据更新后所作的事情
+	*/
+	virtual void AfterDataUpdate(int32 Index) override;
+
+	/*
+	* 通知UI更新
+	*/
+	virtual void NotifyAndUpdateUI(int32 Index) override;
+
 	bool IsHotbarSlot(int32 Index);
 
 public:
-	FOnInventoryUpdate OnInventoryUpdate;
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnInventoryUpdate OnHotbarUpdate;
+
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnInventoryUpdate OnArmorUpdate;
 
 private:

@@ -4,10 +4,13 @@
 #include "Sound/SoundCue.h"
 #include "World/MinecraftSettings.h"
 #include "Item/Item.h"
+#include "Interfaces/InventoryInterface.h"
 
 ADroppedItem::ADroppedItem()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	InitialLifeSpan = 5.0f;
 
 	Box = CreateDefaultSubobject<UBoxComponent>(TEXT("Box"));
 	RootComponent = Box;
@@ -17,20 +20,6 @@ ADroppedItem::ADroppedItem()
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionProfileName(TEXT("NoCollision"));
 	MeshComponent->SetRelativeScale3D(FVector(0.4f));
-
-	static ConstructorHelpers::FObjectFinder<USoundCue> SoundCueObject(TEXT("/Script/Engine.SoundCue'/Game/Minecraft/Assets/Sound/Pickup_Cue.Pickup_Cue'"));
-	if (SoundCueObject.Succeeded())
-	{
-		PickupSound = SoundCueObject.Object;
-	}
-
-	const UMinecraftSettings* Setting = GetDefault<UMinecraftSettings>();
-	check(Setting);
-
-	if (Setting)
-	{
-		ItemDataTable = Setting->ItemDataTable.LoadSynchronous();
-	}	
 }
 
 void ADroppedItem::PostInitializeComponents()
@@ -64,11 +53,11 @@ void ADroppedItem::Tick(float DeltaTime)
 		{
 			UClass* ActorClass = Player->GetClass();
 
-			/*if (ActorClass->ImplementsInterface(UItemInterface::StaticClass()))
+			if (ActorClass->ImplementsInterface(UInventoryInterface::StaticClass()))
 			{
-				IItemInterface* InterfaceIns = CastChecked<IItemInterface>(Player);
+				IInventoryInterface* InterfaceIns = CastChecked<IInventoryInterface>(Player);
 
-				if (InterfaceIns->AddItem(this))
+				if (InterfaceIns->AddItemToInventory(ItemStack))
 				{
 					if (PickupSound)
 					{
@@ -76,7 +65,7 @@ void ADroppedItem::Tick(float DeltaTime)
 					}
 					Destroy();
 				}
-			}*/
+			}
 		}
 	}
 }

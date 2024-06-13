@@ -4,8 +4,10 @@
 #include "World/WorldManager.h"
 #include "Chunk/ChunkSection.h"
 #include "Entity/MinecraftPlayer.h"
-
-//#include "Item/Items.h"
+#include "Utils/MinecraftAssetLibrary.h"
+#include "World/Block/Block.h"
+#include "Item/Items.h"
+#include "Item/DroppedItem.h"
 
 UInteractiveComponent::UInteractiveComponent()
 {
@@ -23,30 +25,14 @@ void UInteractiveComponent::BeginPlay()
 		Marker->SetWorldScale3D(FVector(1.0001f));
 		Marker->SetCastShadow(false);
 		Marker->SetVisibility(false);
-		UMaterialInstance* Instance = LoadObject<UMaterialInstance>(this, TEXT("/Script/Engine.MaterialInstanceConstant'/Game/Minecraft/Assets/Materials/Minecraft/MI_Mark.MI_Mark'"));
-		if (Instance)
+		if (MaterialInstance)
 		{
-			DestroyMaterial = Marker->CreateDynamicMaterialInstance(0, Instance);
+			DestroyMaterial = Marker->CreateDynamicMaterialInstance(0, MaterialInstance);
 			UpdateDestroyProgress(0.0f);
 		}
 	}
 
 	PlayerController = Cast<APlayerController>(Player->Controller);
-}
-
-void UInteractiveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (RayCast(BlockHitResult))
-	{
-		Marker->SetVisibility(true);
-		Marker->SetWorldLocation(BlockHitResult.BlockPos.WorldLocation() + BlockSize / 2.0f);
-	}
-	else
-	{
-		Marker->SetVisibility(false);
-	}
 }
 
 bool UInteractiveComponent::InitMarkComponent(USceneComponent* Parent)
@@ -62,6 +48,21 @@ bool UInteractiveComponent::InitMarkComponent(USceneComponent* Parent)
 	}
 	Marker->SetCollisionProfileName(TEXT("NoCollision"));
 	return Marker->IsRegistered();
+}
+
+void UInteractiveComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (RayCast(BlockHitResult))
+	{
+		Marker->SetVisibility(true);
+		Marker->SetWorldLocation(BlockHitResult.BlockPos.WorldLocation() + BlockSize / 2.0f);
+	}
+	else
+	{
+		Marker->SetVisibility(false);
+	}
 }
 
 void UInteractiveComponent::UpdateDestroyProgress(float Value)
@@ -145,6 +146,7 @@ void UInteractiveComponent::ResetBlockRemoving()
 		bIsHittingBlock = false;
 		CurBlockDamageMP = 0.0f;
 		BlockHitDelay = 0.0;
+		DestroyPercent = 0.0f;
 		UpdateDestroyProgress(CurBlockDamageMP);
 	}
 }
@@ -159,52 +161,75 @@ void UInteractiveComponent::OngoingClick()
 
 bool UInteractiveComponent::OnPlayerDamageBlock(const FBlockHitResult& HitResult)
 {
-	//if (!HitResult.bIsHit) return false;
+	if (!HitResult.bIsHit) return false;
 
-	//if (BlockHitDelay > 0)
-	//{
-	//	--BlockHitDelay;
-	//	return true;
-	//}
-	////else if()// 创建模式以后再说
-	//else if (IsHittingPosition(HitResult))
-	//{
-	//	FBlock* HitBlock = FBlock::GetBlock(HitResult.BlockID).Get();
+	if (BlockHitDelay > 0)
+	{
+		--BlockHitDelay;
+		return true;
+	}
+	//else if()// 创建模式以后再说
+	else if (IsHittingPosition(HitResult))
+	{
+		const FBlockInfoTableRow& BlockInfo = UMinecraftAssetLibrary::GetBlockInfo(HitResult.BlockID);
 
-	//	ensure(HitBlock != nullptr);
+		if (HitResult.BlockID <= 0)
+		{
+			check(false);
 
-	//	if (HitBlock->IsAir())
-	//	{
-	//		check(false);
+			bIsHittingBlock = false;
+			return false;
+		}
+		else
+		{
+			CurBlockDamageMP += BlockInfo.Hardness * GetWorld()->GetDeltaSeconds();
 
-	//		bIsHittingBlock = false;
-	//		return false;
-	//	}
-	//	else
-	//	{
-	//		CurBlockDamageMP += HitBlock->GetPlayerRelativeBlockHardness(Player) * GetWorld()->GetDeltaSeconds();
+			DestroyPercent = CurBlockDamageMP / BlockInfo.Hardness;
 
-	//		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("播放音乐"));
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("播放音乐"));
 
-	//		if (CurBlockDamageMP >= 1.0f)
-	//		{
-	//			DestroyBlock(HitBlock, HitResult);
-	//			bIsHittingBlock = false;
-	//			CurBlockDamageMP = 0.0f;
-	//			BlockHitDelay = 5.0f;
-	//			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("破坏方块"));
-	//		}
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("更新破坏进度: %f"), DestroyPercent));
+			DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), DestroyPercent);
 
-	//		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("更新破坏进度"));
-	//		DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), CurBlockDamageMP);
-	//		return true;
-	//	}
-	//}
-	//else
-	//{
-	//	ResetBlockRemoving();
-	//	return ClickBlock();
-	//}
+			if (DestroyPercent >= 1.0f)
+			{
+				DestroyBlock(HitResult);
+				bIsHittingBlock = false;
+				CurBlockDamageMP = 0.0f;
+				BlockHitDelay = 5.0f;
+				DestroyPercent = 0.0f;
+				DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), DestroyPercent);
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("破坏方块"));
+			}
+			return true;
+		}
+	}
+	else
+	{
+		ResetBlockRemoving();
+		return ClickBlock();
+	}
+
+	return false;
+}
+
+bool UInteractiveComponent::DestroyBlock(const FBlockHitResult& HitResult)
+{
+	bool bIsDestroyed = RemoveBlockFromWorld(HitResult.BlockPos);
+
+	if (bIsDestroyed)
+	{
+		FItemStack DroppedItemStack;
+		DroppedItemStack.Quantity = 1;
+		DroppedItemStack.ID = HitResult.BlockID;
+		DroppedItemStack.Item = UItems::Get()->ItemsMap[HitResult.BlockID]->Clone();
+
+		checkf(DroppedItemClass, TEXT("Uninitialize DroppedItemClass"));
+		ADroppedItem* DroppedItem = GetWorld()->SpawnActorDeferred<ADroppedItem>(DroppedItemClass, FTransform(FRotator::ZeroRotator, HitResult.BlockPos.WorldLocation()));
+		DroppedItem->SetItemStack(DroppedItemStack);
+		DroppedItem->FinishSpawning(DroppedItem->GetActorTransform());
+		return true;
+	}
 
 	return false;
 }
@@ -326,20 +351,6 @@ bool UInteractiveComponent::IsHittingPosition(const FBlockHitResult& HitResult)
 {
 	return CurrentHitResult == HitResult;
 }
-
-//bool UInteractiveComponent::DestroyBlock(const FBlock* Block, const FBlockHitResult& HitResult)
-//{
-//	bool bIsDestroyed = RemoveBlockFromWorld(HitResult.BlockPos);
-//
-//	if (bIsDestroyed)
-//	{
-//		Block->DropBlockAsItem(GetWorld(), HitResult.BlockPos, HitResult.BlockID);
-//		Block->Destroyed();
-//		return true;
-//	}
-//
-//	return false;
-//}
 
 uint8 UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult)
 {

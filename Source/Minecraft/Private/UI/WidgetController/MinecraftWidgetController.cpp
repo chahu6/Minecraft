@@ -7,6 +7,7 @@ void UMinecraftWidgetController::SetWidgetControllerParams(const FWidgetControll
 {
 	PlayerController = WCParams.PlayerController;
 	PlayerState = WCParams.PlayerState;
+	Pawn = WCParams.Pawn;
 }
 
 void UMinecraftWidgetController::BroadcastInitialValue()

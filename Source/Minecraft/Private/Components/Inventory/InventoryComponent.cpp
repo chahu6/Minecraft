@@ -21,7 +21,10 @@ bool UInventoryComponent::AddItemToInventory(FItemStack& ItemStack)
 				if (Sum <= ItemStack.GetMaxCount())
 				{
 					Itr->Quantity = Sum;
-					return true;
+					ItemStack.Clear();
+					bFlags = true;
+					AfterDataUpdate(Itr.GetIndex());
+					break;
 				}
 				else
 				{
@@ -29,6 +32,7 @@ bool UInventoryComponent::AddItemToInventory(FItemStack& ItemStack)
 					int32 Remain = Sum - ItemStack.GetMaxCount();
 					ItemStack.Quantity = Remain;
 				}
+				AfterDataUpdate(Itr.GetIndex());
 			}
 		}
 	}
@@ -41,7 +45,8 @@ bool UInventoryComponent::AddItemToInventory(FItemStack& ItemStack)
 			{
 				bFlags = true;
 				*Itr = ItemStack;
-
+				ItemStack.Clear();
+				AfterDataUpdate(Itr.GetIndex());
 				break;
 			}
 		}
@@ -109,6 +114,16 @@ void UInventoryComponent::BeginPlay()
 bool UInventoryComponent::IsValidIndex(int32 Index) const
 {
 	return ItemsData.IsValidIndex(Index);
+}
+
+void UInventoryComponent::AfterDataUpdate(int32 Index)
+{
+	NotifyAndUpdateUI(Index);
+}
+
+void UInventoryComponent::NotifyAndUpdateUI(int32 Index)
+{
+	OnInventoryUpdate.Broadcast();
 }
 
 FItemStack UInventoryComponent::GetItemStack(int32 Index) const

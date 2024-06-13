@@ -19,7 +19,7 @@ struct FItemStack
 	int32 Quantity = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
-	TObjectPtr<UItem> Item;
+	TObjectPtr<UItem> Item = nullptr;
 
 	void Clear()
 	{

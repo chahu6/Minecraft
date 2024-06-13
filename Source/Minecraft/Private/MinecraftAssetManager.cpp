@@ -4,6 +4,7 @@
 #include "MinecraftAssetManager.h"
 #include "World/MinecraftSettings.h"
 #include "Engine/DataTable.h"
+#include "Item/Items.h"
 
 UMinecraftAssetManager& UMinecraftAssetManager::Get()
 {
@@ -22,4 +23,7 @@ void UMinecraftAssetManager::StartInitialLoading()
 
 	Setting->BlockDataTable.LoadSynchronous();
 	Setting->ItemDataTable.LoadSynchronous();
+
+	// ≥ı ºªØ
+	UItems::InitializeItems();
 }

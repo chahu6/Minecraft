@@ -7,6 +7,9 @@
 #include "Item/ItemStack.h"
 #include "InventoryComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdate);
+
+class AMinecraftPlayer;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MINECRAFT_API UInventoryComponent : public UActorComponent
@@ -31,7 +34,21 @@ protected:
 	virtual void BeginPlay() override;
 
 	bool IsValidIndex(int32 Index) const;
+
+	/*
+	* 背包数据更新后所作的事情
+	*/
+	virtual void AfterDataUpdate(int32 Index);
 		
+	/*
+	* 通知UI更新
+	*/
+	virtual void NotifyAndUpdateUI(int32 Index);
+
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnInventoryUpdate OnInventoryUpdate;
+
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemStack> ItemsData;

@@ -12,14 +12,17 @@ struct FWidgetControllerParams
 	GENERATED_USTRUCT_BODY()
 
 	FWidgetControllerParams() {}
-	FWidgetControllerParams(APlayerController* PC, APlayerState* PS)
-		:PlayerController(PC), PlayerState(PS) {}
+	FWidgetControllerParams(APlayerController* PC, APlayerState* PS, APawn* PW)
+		:PlayerController(PC), PlayerState(PS), Pawn(PW) {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<APlayerController> PlayerController = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<APlayerState> PlayerState = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<APawn> Pawn = nullptr;
 };
 
 /**
@@ -44,4 +47,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<APlayerState> PlayerState;
+
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<APawn> Pawn;
 };

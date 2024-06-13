@@ -34,10 +34,10 @@ struct FItemDetails : public FTableRowBase
 	uint8 MaxCount = 64;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	UTexture2D* Icon = nullptr;
+	TObjectPtr<UTexture2D> Icon = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	UStaticMesh* Mesh = nullptr;
+	TObjectPtr<UStaticMesh> Mesh = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
 	EItemType Type = EItemType::None;
