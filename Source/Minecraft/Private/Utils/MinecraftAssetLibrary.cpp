@@ -4,22 +4,19 @@
 #include "Utils/MinecraftAssetLibrary.h"
 #include "World/MinecraftSettings.h"
 #include "World/Block/Block.h"
-#include "Item/Info/ItemInfo.h"
 
-const FBlockInfoTableRow& UMinecraftAssetLibrary::GetBlockInfo(int32 BlockID)
+bool UMinecraftAssetLibrary::GetBlockMeta(int32 BlockID, FBlockMeta& OutBlockInfo)
 {
 	const UMinecraftSettings* Setting = GetDefault<UMinecraftSettings>();
 	UDataTable* DataTable = Setting->BlockDataTable.Get();
 	check(DataTable != nullptr);
 
-	return (*DataTable->FindRow<FBlockInfoTableRow>(FName(FString::FromInt(BlockID)), nullptr));
-}
+	FBlockMeta* Info = DataTable->FindRow<FBlockMeta>(FName(FString::FromInt(BlockID)), nullptr);
+	if (Info)
+	{
+		OutBlockInfo = *Info;
+		return true;
+	}
 
-const FItemDetails& UMinecraftAssetLibrary::GetItemInfo(int32 ItemID)
-{
-	const UMinecraftSettings* Setting = GetDefault<UMinecraftSettings>();
-	UDataTable* DataTable = Setting->ItemDataTable.Get();
-	check(DataTable != nullptr);
-
-	return (*DataTable->FindRow<FItemDetails>(FName(FString::FromInt(ItemID)), nullptr));
+	return false;
 }

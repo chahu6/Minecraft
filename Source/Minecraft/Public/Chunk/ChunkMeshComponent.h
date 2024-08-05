@@ -54,5 +54,5 @@ private:
 	UPROPERTY()
 	TObjectPtr<AChunkSection> ChunkSection;
 
-	TMap<uint8, FMeshData> MeshDatas;
+	TMap<int32, FMeshData> MeshDatas;
 };

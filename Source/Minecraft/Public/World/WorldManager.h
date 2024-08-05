@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Block/BlockID.h"
 #include "WorldManager.generated.h"
 
 class AChunk;
@@ -32,7 +33,12 @@ public:
 
 	AChunkSection* GetChunkSection(const FBlockPos& BlockPos);
 
+	bool DestroyBlock(const FBlockPos& BlockPos);
+
+	void SetBlock(const FBlockPos& BlockPos, EBlockID BlockID);
+
 private:
+
 	void InitialWorldChunkLoad();
 
 	bool UpdatePosition();
@@ -42,6 +48,10 @@ private:
 	void RemoveChunk();
 
 	void RenderChunks();
+
+	void Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos);
+
+	void Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z);
 
 public:
 	TQueue<AChunk*, EQueueMode::Mpsc> TaskQueue;

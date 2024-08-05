@@ -2,24 +2,56 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
-#include "World/MinecraftSettings.h"
-#include "Item/Item.h"
-#include "Interfaces/InventoryInterface.h"
+#include "Interfaces/InteractiveInterface.h"
 
 ADroppedItem::ADroppedItem()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	InitialLifeSpan = 5.0f;
+	InitialLifeSpan = 60.0f;
 
 	Box = CreateDefaultSubobject<UBoxComponent>(TEXT("Box"));
-	RootComponent = Box;
 	Box->SetCollisionProfileName(TEXT("Item"));
+	Box->SetSimulatePhysics(true);
+	Box->SetEnableGravity(true);
+	RootComponent = Box;
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionProfileName(TEXT("NoCollision"));
 	MeshComponent->SetRelativeScale3D(FVector(0.4f));
+}
+
+void ADroppedItem::OnConstruction(const FTransform& Transform)
+{
+	ConstructionInit();
+}
+
+void ADroppedItem::ConstructionInit()
+{
+	SetItemData();
+}
+
+void ADroppedItem::SetItemData()
+{
+	FItemInstance* ItemInstance = ItemHandle.GetRow<FItemInstance>(nullptr);
+	if (ItemInstance)
+	{
+		ItemData.ID = ItemInstance->ID;
+		ItemData.bIsStack = ItemInstance->bIsStack;
+		ItemData.Discription = ItemInstance->Discription;
+		ItemData.Icon = ItemInstance->Icon;
+		ItemData.MaxCount = ItemInstance->MaxCount;
+		ItemData.Name = ItemInstance->Name;
+		ItemData.Mesh = ItemInstance->Mesh;
+		ItemData.Type = ItemInstance->Type;
+		ItemData.Quantity = 1;
+		MeshComponent->SetStaticMesh(ItemData.Mesh);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Item << %s >> not found in data table!"), *ItemHandle.RowName.ToString())
+	}
 }
 
 void ADroppedItem::PostInitializeComponents()
@@ -51,41 +83,24 @@ void ADroppedItem::Tick(float DeltaTime)
 		SetActorLocation(FMath::VInterpTo(GetActorLocation(), Player->GetActorLocation(), DeltaTime, InterpSeepd));
 		if (GetActorLocation().Equals(Player->GetActorLocation(), 10.0f))
 		{
-			UClass* ActorClass = Player->GetClass();
-
-			if (ActorClass->ImplementsInterface(UInventoryInterface::StaticClass()))
+			if (IInteractiveInterface::Execute_AddItemToInventory(Player, this))
 			{
-				IInventoryInterface* InterfaceIns = CastChecked<IInventoryInterface>(Player);
-
-				if (InterfaceIns->AddItemToInventory(ItemStack))
+				if (PickupSound)
 				{
-					if (PickupSound)
-					{
-						UGameplayStatics::PlaySound2D(this, PickupSound);
-					}
-					Destroy();
+					UGameplayStatics::PlaySound2D(this, PickupSound);
 				}
+				Destroy();
 			}
 		}
-	}
-}
-
-void ADroppedItem::SetItemStack(const FItemStack& NewItemStack)
-{
-	ItemStack = NewItemStack;
-	if (ItemStack.Item)
-	{
-		MeshComponent->SetStaticMesh(ItemStack.Item->GetMesh());
 	}
 }
 
 void ADroppedItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// 吸附移动相关
-	if (IsValid(OtherActor))
+	if (IsValid(OtherActor) && OtherActor->Implements<UInteractiveInterface>())
 	{
 		Player = OtherActor;
 		bIsPickingUp = true;
 	}
 }
-

@@ -2,37 +2,53 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "BlockID.h"
 #include "Block.generated.h"
 
-UENUM(BlueprintType)
-enum class EBlockID : uint8
-{
-	Air,
-	Stone,
-	Dirt,
-	Grass,
-	BedRock,
-	Water,
+class UBlockBehavior;
 
-	EBT_MAX
+struct FBlockData
+{
+	EBlockID ID = EBlockID::Air;
+	uint8 BlockState = 0;
+
+	FBlockData() : ID(EBlockID::Air), BlockState(0) {}
+
+	FBlockData(EBlockID InBlockID) : ID(InBlockID) {}
+
+	FBlockData(EBlockID InBlockID, uint8 InBlockState)
+		:ID(InBlockID), BlockState(InBlockState)
+	{}
 };
 
 USTRUCT(BlueprintType)
-struct FBlockInfoTableRow : public FTableRowBase
+struct FBlockMeta : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties")
-	FText Name;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 BlockID = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties")
-	UMaterialInterface* Material;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName BlockName = TEXT("None");
 
-	// 硬度
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties")
-	float Hardness;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FDataTableRowHandle ItemHandle;
 
-	// 阻力系数
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties", Meta = (ClampMin = "0", ClampMax = "1"))
-	float Friction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UMaterialInterface* Material = nullptr;
+
+	// 是否是流体
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bLiquid = false;
+
+	// 是否是透明的
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bTransparent = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Hardness = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UBlockBehavior> BehaviorClass = nullptr;
 };

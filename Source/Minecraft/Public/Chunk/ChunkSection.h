@@ -5,6 +5,7 @@
 #include "ChunkSection.generated.h"
 
 class UChunkMeshComponent;
+struct FBlockData;
 
 UCLASS()
 class MINECRAFT_API AChunkSection : public AActor
@@ -18,12 +19,12 @@ protected:
 	virtual void PostInitializeComponents() override;
 
 public:
-	uint8 GetBlock(int32 X, int32 Y, int32 Z) const;
-	uint8 GetBlock(int32 Index) const;
+	FBlockData GetBlock(int32 X, int32 Y, int32 Z) const;
+	FBlockData GetBlock(int32 Index) const;
 
-	void SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID);
-	void SetBlock(int32 Index, uint8 BlockID);
-	void SetBlock(const FVector& OffsetLocation, uint8 BlockID);
+	void SetBlock(int32 X, int32 Y, int32 Z, const FBlockData& BlockData);
+	void SetBlock(int32 Index, const FBlockData& BlockData);
+	void SetBlock(const FVector& OffsetLocation, const FBlockData& BlockData);
 
 	void BuildMesh();
 	void Render();
@@ -37,7 +38,7 @@ private:
 	UChunkMeshComponent* ChunkMesh;
 
 private:
-	TArray<uint8> Blocks;
+	TArray<FBlockData> Blocks;
 
 	int32 Seed = -1;
 

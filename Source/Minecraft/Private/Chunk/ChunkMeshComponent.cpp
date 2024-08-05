@@ -31,9 +31,12 @@ void UChunkMeshComponent::Render()
 
 		//ProduralMesh->ClearAllMeshSections();
 		CreateMeshSection_LinearColor(MeshData.Key, MeshData.Value.Vertices, MeshData.Value.Triangles, MeshData.Value.Normals, MeshData.Value.UV0, MeshData.Value.VertexColors, MeshData.Value.Tangents, true);
-		const FBlockInfoTableRow& BlockInfo = UMinecraftAssetLibrary::GetBlockInfo(MeshData.Key);
 
-		SetMaterial(MeshData.Key, BlockInfo.Material);
+		FBlockMeta BlockMeta;
+		if (UMinecraftAssetLibrary::GetBlockMeta(MeshData.Key, BlockMeta))
+		{
+			SetMaterial(MeshData.Key, BlockMeta.Material);
+		}
 	}
 }
 

@@ -2,23 +2,25 @@
 
 
 #include "Item/Items.h"
-#include "Item/AirItem.h"
 #include "Utils/MinecraftAssetLibrary.h"
-#include "Item/BlockItem.h"
+//#include "World/Block/Blocks.h"
 
-UItems* UItems::Get()
+UItems* UItems::Singleton = nullptr;
+
+UItems::~UItems()
 {
-    if (GEngine)
-    {
-        static UItems* Instance = Cast<UItems>(GEngine->GameSingleton);
-        return Instance;
-    }
-    return nullptr;
+    Singleton = nullptr;
+}
+
+void UItems::Initializer()
+{
+    Singleton = NewObject<UItems>(GetTransientPackage(), NAME_None);
+    Singleton->AddToRoot();
 }
 
 void UItems::InitializeItems()
 {
-    UItems* Items = UItems::Get();
+    /*UItems* Items = UItems::Get();
     UAirItem* AirItem = NewObject<UAirItem>();
     AirItem->ItemInfo = UMinecraftAssetLibrary::GetItemInfo(0);
     Items->ItemsMap.Add(0, AirItem);
@@ -33,5 +35,5 @@ void UItems::InitializeItems()
 
     UBlockItem* Grass = NewObject<UBlockItem>();
     Grass->ItemInfo = UMinecraftAssetLibrary::GetItemInfo(3);
-    Items->ItemsMap.Add(3, Grass);
+    Items->ItemsMap.Add(3, Grass);*/
 }

@@ -2,7 +2,6 @@
 #include "UI/HUD/MinecraftHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "Controller/CameraManager/MinecraftPlayerCameraManager.h"
-
 #include "SimplexNoiseLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Generation/Noise/NormalNoise.h"
@@ -17,7 +16,7 @@ void AMCPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	MinecraftHUD = Cast<AMinecraftHUD>(GetHUD());
+	MinecraftHUD = GetHUD<AMinecraftHUD>();
 }
 
 void AMCPlayerController::OnPossess(APawn* InPawn)
@@ -33,7 +32,16 @@ void AMCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("ShowDebugInfo", IE_Pressed, this, &AMCPlayerController::ShowDebugInfo);
 }
 
-void AMCPlayerController::OpenBackpack()
+void AMCPlayerController::InitMainUI_Implementation()
+{
+	MinecraftHUD = MinecraftHUD == nullptr ? GetHUD<AMinecraftHUD>() : MinecraftHUD;
+	if (MinecraftHUD)
+	{
+		MinecraftHUD->InitMainUI(this, GetPawn()->GetPlayerState(), GetPawn());
+	}
+}
+
+void AMCPlayerController::OpenBackpack_Implementation()
 {
 	if (MinecraftHUD)
 	{

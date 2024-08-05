@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Item/ItemStack.h"
+#include "Item/Info/ItemInfo.h"
 #include "Backpack.generated.h"
 
 class UBackpackComponent;
@@ -35,7 +35,7 @@ protected:
 	void FlushHotbar();
 
 	UFUNCTION(BlueprintCallable)
-	void HangItemStackToMouse(int32 Index);
+	void HangItemDataToMouseAndRemove(int32 Index);
 
 	UFUNCTION(BlueprintCallable)
 	void HangItemStackToCrafting(int32 Index);
@@ -47,8 +47,8 @@ protected:
 	void CraftingCompleted();
 
 private:
-	UFUNCTION(BlueprintCallable)
-	void UpdateHangItemStack(const FItemStack& NewItemStack);
+	//UFUNCTION(BlueprintCallable)
+	//void UpdateHangItemStack(const FItemStack& NewItemStack);
 
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -77,5 +77,5 @@ private:
 	class AMinecraftPlayer* Player;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	FItemStack HangItemStack;
+	FItemData HangItemData;
 };

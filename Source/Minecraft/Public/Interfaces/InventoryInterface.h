@@ -4,7 +4,7 @@
 #include "UObject/Interface.h"
 #include "InventoryInterface.generated.h"
 
-struct FItemStack;
+struct FItemData;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, BlueprintType)
@@ -21,6 +21,9 @@ class MINECRAFT_API IInventoryInterface
 	GENERATED_BODY()
 
 public:
-	//virtual void TransferSlots(int32 SourceIndex, IInventoryInterface* SourceInventory, int32 DestinationIndex) = 0;
-	virtual bool AddItemToInventory(FItemStack& ItemStack) = 0;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void TryAddItem(int32 Index, UPARAM(ref) FItemData& InItemData);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void RemoveItem(int32 Index, UPARAM(ref) FItemData& OutItemData);
 };

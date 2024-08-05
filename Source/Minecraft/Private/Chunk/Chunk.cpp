@@ -3,7 +3,7 @@
 #include "World/WorldSettings.h"
 #include "Generation/TerrainGenerator.h"
 #include "Chunk/ChunkSection.h"
-
+#include "World/Block/Block.h"
 #include "World/Runnable/WorldGeneratorAsyncTask.h"
 
 AChunk::AChunk()
@@ -75,7 +75,7 @@ void AChunk::Dirty()
 	}
 }
 
-uint8 AChunk::GetBlock(int32 X, int32 Y, int32 Z)
+FBlockData AChunk::GetBlock(int32 X, int32 Y, int32 Z)
 {
 	int32 Index = Z / CHUNK_SIZE;
 	if (ChunkSections.IsValidIndex(Index))
@@ -83,15 +83,15 @@ uint8 AChunk::GetBlock(int32 X, int32 Y, int32 Z)
 		return ChunkSections[Index]->GetBlock(X, Y, Z % CHUNK_SIZE);
 	}
 
-	return 0;
+	return {};
 }
 
-void AChunk::SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID)
+void AChunk::SetBlock(int32 X, int32 Y, int32 Z, const FBlockData& BlockData)
 {
 	int32 Index = Z / CHUNK_SIZE;
 	if (ChunkSections.IsValidIndex(Index))
 	{
-		ChunkSections[Index]->SetBlock(X, Y, Z % CHUNK_SIZE, BlockID);
+		ChunkSections[Index]->SetBlock(X, Y, Z % CHUNK_SIZE, BlockData);
 	}
 }
 
