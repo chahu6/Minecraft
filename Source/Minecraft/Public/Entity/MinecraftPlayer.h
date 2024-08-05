@@ -3,8 +3,7 @@
 #include "CoreMinimal.h"
 #include "MinecraftEntity.h"
 #include "InputActionValue.h"
-#include "Item/ItemStack.h"
-#include "Interfaces/InventoryInterface.h"
+#include "Interfaces/InteractiveInterface.h"
 #include "MinecraftPlayer.generated.h"
 
 class UBackpackComponent;
@@ -14,11 +13,13 @@ class USphereComponent;
 class UInteractiveComponent;
 class UCraftingComponent;
 class UInputAction;
+class ADroppedItem;
+struct FItemData;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSwitchMainHand, int32);
 
 UCLASS()
-class MINECRAFT_API AMinecraftPlayer : public AMinecraftEntity, public IInventoryInterface
+class MINECRAFT_API AMinecraftPlayer : public AMinecraftEntity, public IInteractiveInterface
 {
 	GENERATED_BODY()
 
@@ -44,24 +45,23 @@ public:
 	AMinecraftPlayer();
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_Controller() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 
-public:	
-	virtual void Tick(float DeltaTime) override;
-
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual bool AddItemToInventory(FItemStack& ItemStack) override;
-
+public:
 	UFUNCTION()
 	void UpdateMainHandItem();
 
-	FItemStack GetMainHandItem();
+	FItemData GetMainHandItem();
 
-	void ConsumeItemStack();
+	void ConsumeItem();
+
+	/** Interactive Interface */
+	virtual bool AddItemToInventory_Implementation(ADroppedItem* DroppedItem) override;
+	/** Interactive Interface end*/
 
 private:
 	void SwitchPerspectives();
@@ -78,7 +78,7 @@ private:
 	void SwitchingItem(const FInputActionValue& Value);
 	void DropItem();
 
-	void Initial();
+	void Initializer();
 
 public:
 	FOnSwitchMainHand OnSwitchMainHand;
@@ -124,6 +124,7 @@ private:
 
 	EPerspective NextPerspective = EPerspective::Third;
 
+	UPROPERTY()
 	int32 MainHandIndex = 0;
 
 public:

@@ -83,12 +83,12 @@ void UBackpack::InitUI()
 	FlushCrafting();
 }
 
-void UBackpack::HangItemStackToMouse(int32 Index)
+void UBackpack::HangItemDataToMouseAndRemove(int32 Index)
 {
 	if (Player)
 	{
-		const UBackpackComponent* BackpackComponent = Player->GetBackpackComponent();
-		HangItemStack = BackpackComponent->GetItemStack(Index);
+		UBackpackComponent* BackpackComponent = Player->GetBackpackComponent();
+		IInventoryInterface::Execute_RemoveItem(BackpackComponent, Index, HangItemData);
 	}
 }
 
@@ -97,11 +97,11 @@ void UBackpack::HangItemStackToCrafting(int32 Index)
 	if (Player)
 	{
 		UCraftingComponent* CraftingComponent = Player->GetCraftingComponent();
-		HangItemStack = CraftingComponent->GetItem(Index);
+		//HangItemStack = CraftingComponent->GetItem(Index);
 	}
 }
 
-void UBackpack::UpdateHangItemStack(const FItemStack& NewItemStack)
-{
-	HangItemStack = NewItemStack;
-}
+//void UBackpack::UpdateHangItemStack(const FItemStack& NewItemStack)
+//{
+//	HangItemStack = NewItemStack;
+//}

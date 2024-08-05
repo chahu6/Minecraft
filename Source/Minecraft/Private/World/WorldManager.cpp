@@ -7,6 +7,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Core/BlockPos.h"
 #include "Generation/ClassicOverWorldGenerator.h"
+#include "Chunk/ChunkSection.h"
+#include "World/Block/Block.h"
 
 AWorldManager::AWorldManager()
 {
@@ -179,4 +181,86 @@ AChunkSection* AWorldManager::GetChunkSection(const FBlockPos& BlockPos)
 	}
 
 	return nullptr;
+}
+
+bool AWorldManager::DestroyBlock(const FBlockPos& BlockPos)
+{
+	AChunkSection* ChunkSection = GetChunkSection(BlockPos);
+	if (ChunkSection == nullptr) return false;
+
+	ChunkSection->SetBlock(BlockPos.OffsetLocation(), FBlockData());
+
+	// 重新计算空值
+	ChunkSection->RecalculateEmpty();
+	ChunkSection->Rebuild();
+	Rebuild_Adjacent_Chunks(BlockPos);
+
+	return true;
+}
+
+void AWorldManager::SetBlock(const FBlockPos& BlockPos, EBlockID BlockID)
+{
+	AChunkSection* ChunkSection = GetChunkSection(BlockPos);
+	if (ChunkSection)
+	{
+		ChunkSection->SetBlock(BlockPos.OffsetLocation(), { BlockID, 0 });
+		if (ChunkSection->IsEmpty())
+		{
+			ChunkSection->SetEmpty(false);
+		}
+		ChunkSection->Rebuild();
+	}
+}
+
+void AWorldManager::Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos)
+{
+	// 获取Voxel位置
+	int32 Voxel_Local_X = BlockPos.X_OFFSET;
+	int32 Voxel_Local_Y = BlockPos.Y_OFFSET;
+	int32 Voxel_Local_Z = BlockPos.Z_OFFSET;
+
+	// 获取Chunk所在Voxel位置
+	int32 Chunk_World_X = FMath::Floor(BlockPos.X_VOXEL_WORLD / CHUNK_SIZE);
+	int32 Chunk_World_Y = FMath::Floor(BlockPos.Y_VOXEL_WORLD / CHUNK_SIZE);
+	int32 Chunk_World_Z = FMath::Floor(BlockPos.Z_VOXEL_WORLD / CHUNK_SIZE);
+
+	// X轴
+	if (Voxel_Local_X == 0)
+	{
+		Rebuild_Adj_Chunk(Chunk_World_X - 1, Chunk_World_Y, Chunk_World_Z);
+	}
+	else if (Voxel_Local_X == CHUNK_SIZE - 1)
+	{
+		Rebuild_Adj_Chunk(Chunk_World_X + 1, Chunk_World_Y, Chunk_World_Z);
+	}
+
+	// Y轴
+	if (Voxel_Local_Y == 0)
+	{
+		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y - 1, Chunk_World_Z);
+	}
+	else if (Voxel_Local_Y == CHUNK_SIZE - 1)
+	{
+		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y + 1, Chunk_World_Z);
+	}
+
+	// Z轴
+	if (Voxel_Local_Z == 0)
+	{
+		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y, Chunk_World_Z - 1);
+	}
+	else if (Voxel_Local_Z == CHUNK_SIZE - 1)
+	{
+		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y, Chunk_World_Z + 1);
+	}
+}
+
+void AWorldManager::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z)
+{
+	AChunkSection* ChunkSection = GetChunkSection(FVector(Chunk_World_X, Chunk_World_Y, Chunk_World_Z));
+
+	if (ChunkSection == nullptr)
+		return;
+
+	ChunkSection->Rebuild();
 }

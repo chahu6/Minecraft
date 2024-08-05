@@ -4,55 +4,51 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Item/ItemStack.h"
+#include "Item/Info/ItemInfo.h"
+#include "Interfaces/InventoryInterface.h"
 #include "InventoryComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdate);
 
-class AMinecraftPlayer;
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MINECRAFT_API UInventoryComponent : public UActorComponent
+class MINECRAFT_API UInventoryComponent : public UActorComponent, public IInventoryInterface
 {
 	GENERATED_BODY()
 
 public:	
 	UInventoryComponent();
 
-	bool AddItemToInventory(FItemStack& ItemStack);
-
 	UFUNCTION(BlueprintCallable)
-	bool TransferSlots(FItemStack HangItemStack, FItemStack& NewHangItemStack, UInventoryComponent* DestinationInventory, int32 DestinationIndex);
+	void TransferItem(int32 Index, UPARAM(ref) FItemData& OutItemData);
 
-	UFUNCTION(BlueprintCallable)
-	bool RemoveItemFromInventory(int32 Index);
+	/** Inventory Interface */
+	virtual void TryAddItem_Implementation(int32 Index, FItemData& InItemData) override;
+	virtual void RemoveItem_Implementation(int32 Index, FItemData& OutItemData) override;
+	/** end Inventory Interface */
 
-	FItemStack GetItemStack(int32 Index) const;
-	bool SetItemStack(int32 Index, const FItemStack& NewItemStack);
+	bool AddItemToInventory(FItemData& ItemData);
 
 protected:
 	virtual void BeginPlay() override;
 
-	bool IsValidIndex(int32 Index) const;
-
 	/*
 	* 背包数据更新后所作的事情
 	*/
-	virtual void AfterDataUpdate(int32 Index);
+	virtual void AfterDataUpdate();
 		
 	/*
 	* 通知UI更新
 	*/
-	virtual void NotifyAndUpdateUI(int32 Index);
+	virtual void NotifyAndUpdateUI();
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	UPROPERTY(BlueprintAssignable)
 	FOnInventoryUpdate OnInventoryUpdate;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TArray<FItemStack> ItemsData;
+	TArray<FItemData> Items;
 
-	UPROPERTY(EditAnywhere, Category = "Inventory")
+	UPROPERTY(EditAnywhere)
 	int32 InventorySize = 9;
 };

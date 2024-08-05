@@ -12,6 +12,6 @@ struct FMask
 class FChunkMeshBuilder
 {
 public:
-	static void BuildChunkMesh(const AChunkSection* ChunkSection, TMap<uint8, FMeshData>& OutMeshDatas);
-	static void BuildGreedyChunkMesh(const AChunkSection* ChunkSection, TMap<uint8, FMeshData>& OutMeshDatas);
+	static void BuildChunkMesh(const AChunkSection* ChunkSection, TMap<int32, FMeshData>& OutMeshDatas);
+	static void BuildGreedyChunkMesh(const AChunkSection* ChunkSection, TMap<int32, FMeshData>& OutMeshDatas);
 };

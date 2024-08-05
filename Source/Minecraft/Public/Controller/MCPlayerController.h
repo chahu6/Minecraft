@@ -2,13 +2,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Interfaces/PlayerControllerInterface.h"
 #include "MCPlayerController.generated.h"
 
+class AMinecraftHUD;
 /**
  * 
  */
 UCLASS()
-class MINECRAFT_API AMCPlayerController : public APlayerController
+class MINECRAFT_API AMCPlayerController : public APlayerController, public IPlayerControllerInterface
 {
 	GENERATED_BODY()
 
@@ -21,9 +23,11 @@ public:
 
 	virtual void SetupInputComponent() override;
 
-public:
-	void OpenBackpack();
+	virtual void InitMainUI_Implementation() override;
 
+	virtual void OpenBackpack_Implementation() override;
+
+public:
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* CreateTextureFromArray();
 
@@ -32,7 +36,7 @@ private:
 
 private:
 	UPROPERTY()
-	class AMinecraftHUD* MinecraftHUD;
+	TObjectPtr<AMinecraftHUD> MinecraftHUD;
 
 	UPROPERTY(EditAnywhere, Category = "AAA")
 	float Factor = 0.05f;

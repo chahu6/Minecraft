@@ -14,11 +14,25 @@ class MINECRAFT_API UItems : public UObject
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintCallable) // 蓝图可调用
-	static UItems* Get();
+	~UItems();
 
+	//UFUNCTION(BlueprintCallable) // 蓝图可调用
+	FORCEINLINE static UItems* Get()
+	{
+		if (Singleton == nullptr)
+		{
+			Initializer();
+		}
+		return Singleton;
+	}
+
+	//UPROPERTY()
+	//TMap<int32, TObjectPtr<UItem>> ItemsMap;
+
+private:
+	static void Initializer();
 	static void InitializeItems();
 
-	UPROPERTY()
-	TMap<int32, TObjectPtr<UItem>> ItemsMap;
+private:
+	static UItems* Singleton;
 };

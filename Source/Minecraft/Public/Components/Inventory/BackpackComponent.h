@@ -16,36 +16,28 @@ class MINECRAFT_API UBackpackComponent : public UInventoryComponent
 public:
 	UBackpackComponent();
 
-	FItemStack GetSelected(int32 SelectedIndex);
+	FItemData GetSelected(int32 SelectedIndex);
+
+	void ConsumeItem(int32 SelectedIndex);
 
 protected:
 	virtual void BeginPlay() override;
 
-protected:
-	/*
-	* 背包数据更新后所作的事情
-	*/
-	virtual void AfterDataUpdate(int32 Index) override;
-
-	/*
-	* 通知UI更新
-	*/
-	virtual void NotifyAndUpdateUI(int32 Index) override;
+	virtual void NotifyAndUpdateUI() override;
 
 	bool IsHotbarSlot(int32 Index);
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	UPROPERTY(BlueprintAssignable)
 	FOnInventoryUpdate OnHotbarUpdate;
 
-	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	UPROPERTY(BlueprintAssignable)
 	FOnInventoryUpdate OnArmorUpdate;
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TArray<FItemStack> ArmorItems;
+	TArray<FItemData> ArmorItems;
 
-	FItemStack OffHand;
-
-	int32 HotbarSelectedIndex = 0;
+	UPROPERTY()
+	FItemData OffHand;
 };

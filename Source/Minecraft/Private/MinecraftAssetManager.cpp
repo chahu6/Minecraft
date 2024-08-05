@@ -21,9 +21,6 @@ void UMinecraftAssetManager::StartInitialLoading()
 	const UMinecraftSettings* Setting = GetDefault<UMinecraftSettings>();
 	check(Setting);
 
-	Setting->BlockDataTable.LoadSynchronous();
 	Setting->ItemDataTable.LoadSynchronous();
-
-	// ³õÊ¼»¯
-	UItems::InitializeItems();
+	Setting->BlockDataTable.LoadSynchronous();
 }

@@ -1,12 +1,13 @@
 #include "Chunk/ChunkSection.h"
 #include "Chunk/ChunkMeshComponent.h"
 #include "World/WorldSettings.h"
+#include "World/Block/Block.h"
 
 AChunkSection::AChunkSection()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	Blocks.Init(0, CHUNK_VOLUME);
+	Blocks.Init({}, CHUNK_VOLUME);
 
 	ChunkMesh = CreateDefaultSubobject<UChunkMeshComponent>(TEXT("ChunkMesh"));
 	RootComponent = ChunkMesh;
@@ -20,29 +21,29 @@ void AChunkSection::PostInitializeComponents()
 	Center = GetActorLocation() + ChunkSize_Half;
 }
 
-uint8 AChunkSection::GetBlock(int32 X, int32 Y, int32 Z) const
+FBlockData AChunkSection::GetBlock(int32 X, int32 Y, int32 Z) const
 {
 	return Blocks[GetBlocksIndex(X, Y, Z)];
 }
 
-uint8 AChunkSection::GetBlock(int32 Index) const
+FBlockData AChunkSection::GetBlock(int32 Index) const
 {
 	return Blocks[Index];
 }
 
-void AChunkSection::SetBlock(int32 X, int32 Y, int32 Z, uint8 BlockID)
+void AChunkSection::SetBlock(int32 X, int32 Y, int32 Z, const FBlockData& BlockData)
 {
-	Blocks[GetBlocksIndex(X, Y, Z)] = BlockID;
+	Blocks[GetBlocksIndex(X, Y, Z)] = BlockData;
 }
 
-void AChunkSection::SetBlock(int32 Index, uint8 BlockID)
+void AChunkSection::SetBlock(int32 Index, const FBlockData& BlockData)
 {
-	Blocks[Index] = BlockID;
+	Blocks[Index] = BlockData;
 }
 
-void AChunkSection::SetBlock(const FVector& OffsetLocation, uint8 BlockID)
+void AChunkSection::SetBlock(const FVector& OffsetLocation, const FBlockData& BlockData)
 {
-	Blocks[GetBlocksIndex(OffsetLocation.X, OffsetLocation.Y, OffsetLocation.Z)] = BlockID;
+	Blocks[GetBlocksIndex(OffsetLocation.X, OffsetLocation.Y, OffsetLocation.Z)] = BlockData;
 }
 
 void AChunkSection::BuildMesh()
@@ -80,5 +81,5 @@ void AChunkSection::Rebuild()
 
 void AChunkSection::RecalculateEmpty()
 {
-	bIsEmpty = !Blocks.ContainsByPredicate([](uint8 Element) {return Element != 0; });
+	bIsEmpty = !Blocks.ContainsByPredicate([](const FBlockData& Element) { return Element.ID != EBlockID::Air; });
 }

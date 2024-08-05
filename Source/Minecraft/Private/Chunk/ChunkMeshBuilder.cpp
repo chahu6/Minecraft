@@ -4,6 +4,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "World/WorldManager.h"
 #include "Chunk/ChunkMeshComponent.h"
+#include "World/Block/Block.h"
 
 bool IsVoid(int32 X, int32 Y, int32 Z, const FVector& WorldLocation, AWorldManager* WorldManager)
 {
@@ -18,13 +19,13 @@ bool IsVoid(int32 X, int32 Y, int32 Z, const FVector& WorldLocation, AWorldManag
 	int32 Local_X = (X + CHUNK_SIZE) % CHUNK_SIZE;
 	int32 Local_Y = (Y + CHUNK_SIZE) % CHUNK_SIZE;
 	int32 Local_Z = (Z + CHUNK_SIZE) % CHUNK_SIZE;
-	if (ChunkSection->GetBlock(Local_X, Local_Y, Local_Z) > 0)
+	if (ChunkSection->GetBlock(Local_X, Local_Y, Local_Z).ID > EBlockID::Air)
 		return false;
 
 	return true;
 }
 
-void FChunkMeshBuilder::BuildChunkMesh(const AChunkSection* ChunkSection, TMap<uint8, FMeshData>& OutMeshDatas)
+void FChunkMeshBuilder::BuildChunkMesh(const AChunkSection* ChunkSection, TMap<int32, FMeshData>& OutMeshDatas)
 {
 	int32 Index = 0;
 
@@ -47,13 +48,14 @@ void FChunkMeshBuilder::BuildChunkMesh(const AChunkSection* ChunkSection, TMap<u
 		{
 			for (int32 Z = 0; Z < CHUNK_SIZE; ++Z)
 			{
-				uint8 BlockID = ChunkSection->GetBlock(X, Y, Z);
+				FBlockData BlockData = ChunkSection->GetBlock(X, Y, Z);
 
-				if (BlockID < 1)
+				if (BlockData.ID < EBlockID::Stone)
 					continue;
 
 				FMeshData TempMeshData;
 
+				int32 BlockID = static_cast<int32>(BlockData.ID);
 				if(OutMeshDatas.Contains(BlockID))
 				{
 					TempMeshData = OutMeshDatas[BlockID];
@@ -301,7 +303,7 @@ void FChunkMeshBuilder::BuildChunkMesh(const AChunkSection* ChunkSection, TMap<u
 	}
 }
 
-void FChunkMeshBuilder::BuildGreedyChunkMesh(const AChunkSection* ChunkSection, TMap<uint8, FMeshData>& OutMeshDatas)
+void FChunkMeshBuilder::BuildGreedyChunkMesh(const AChunkSection* ChunkSection, TMap<int32, FMeshData>& OutMeshDatas)
 {
 	FVector ChunkLocation = ChunkSection->GetActorLocation();
 

@@ -2,65 +2,79 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "Item/ItemType.h"
 #include "ItemInfo.generated.h"
 
-UENUM(BlueprintType)
-enum class EItemType : uint8
-{
-	None = 0		UMETA(DisplayName = "None", ToolTip = "无"),
-
-	BuildingBlock	UMETA(DisplayName = "BuildingBlock", ToolTip = "建筑方块"),
-	NaturalBlock	UMETA(DisplayName = "NaturalBlock", ToolTip = "自然方块"),
-	Tool			UMETA(DisplayName = "Tool", ToolTip = "工具"),
-	Combat			UMETA(DisplayName = "Combat", ToolTip = "战斗工具"),
-	Consumable		UMETA(DisplayName = "Consumable", ToolTip = "消耗品"),
-};
-
 USTRUCT(BlueprintType)
-struct FItemDetails : public FTableRowBase
+struct FItemInstance : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	FText Name = FText::FromString(TEXT("None"));
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 ID = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	FText Discription = FText::FromString(TEXT("None"));
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsStack = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag", Meta = (ClampMin = "0", ClampMax = "64", EditCondition = "bIsStack"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (ClampMin = "0", ClampMax = "64", EditCondition = "bIsStack"))
 	uint8 MaxCount = 64;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	TObjectPtr<UTexture2D> Icon = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName Name = TEXT("None");
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	TObjectPtr<UStaticMesh> Mesh = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FText Discription = FText::FromString(TEXT("None"));
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EItemType Type = EItemType::None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UStaticMesh* Mesh = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UTexture2D* Icon = nullptr;
 };
 
 USTRUCT(BlueprintType)
-struct FItemSlot
+struct FItemData : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	int32 ID = -1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 ID = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	int32 Count = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 Quantity = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayTag")
-	int32 MaxCount = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bIsStack = true;
 
-	void Empty()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (ClampMin = "0", ClampMax = "64", EditCondition = "bIsStack"))
+	uint8 MaxCount = 64;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName Name = TEXT("None");
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FText Discription = FText::FromString(TEXT("None"));
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EItemType Type = EItemType::None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UStaticMesh* Mesh = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UTexture2D* Icon = nullptr;
+
+	void Clear()
 	{
-		ID = -1;
-		Count = 0;
-		MaxCount = 0;
+		ID = 0;
+		Quantity = 0;
+	}
+
+	bool IsValid()
+	{
+		return ID > 0;
 	}
 };

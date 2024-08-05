@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Info/ItemInfo.h"
-#include "ItemStack.h"
 #include "DroppedItem.generated.h"
 
 class UBoxComponent;
@@ -16,20 +15,21 @@ class MINECRAFT_API ADroppedItem : public AActor
 	
 public:	
 	ADroppedItem();
+	virtual void OnConstruction(const FTransform& Transform) override;
+
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 
-public:	
-	virtual void Tick(float DeltaTime) override;
-
-public:
-	void SetItemStack(const FItemStack& NewItemStack);
-
-protected:
 	UFUNCTION()
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+private:
+	void ConstructionInit();
+
+	void SetItemData();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
@@ -42,8 +42,11 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USoundCue> PickupSound;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties")
-	FItemStack ItemStack;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
+	FDataTableRowHandle ItemHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
+	FItemData ItemData;
 
 	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
 	float FloatSpeed = 100.0f;
@@ -61,9 +64,10 @@ private:
 	UPROPERTY()
 	TObjectPtr<AActor> Player;
 
-	UPROPERTY(EditAnywhere, Category = "Properties")
-	float InterpSeepd = 8.0f;
+	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
+	float InterpSeepd = 15.0f;
 
 public:
-	FORCEINLINE const FItemStack& GetItemStack() const { return ItemStack; }
+	FORCEINLINE FItemData& GetItemData() { return ItemData; }
+	FORCEINLINE void SetItemHandle(const FDataTableRowHandle& NewItemHandle) { ItemHandle = NewItemHandle; }
 };

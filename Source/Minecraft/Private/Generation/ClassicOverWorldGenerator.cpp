@@ -2,6 +2,7 @@
 #include "SimplexNoiseLibrary.h"
 #include "Chunk/Chunk.h"
 #include "World/WorldSettings.h"
+#include "World/Block/Block.h"
 
 UClassicOverWorldGenerator::UClassicOverWorldGenerator()
 {
@@ -59,22 +60,22 @@ void UClassicOverWorldGenerator::SetBlocksInChunk()
 				{
 					if (Z <= WATER_LEVEL)
 					{
-						CurrentChunk->SetBlock(X, Y, Z, 6);
+						CurrentChunk->SetBlock(X, Y, Z, { EBlockID::Water, 0 });
 						continue;
 					}
 					break;
 				}
 				else if (Z == Height)
 				{
-					CurrentChunk->SetBlock(X, Y, Z, 3);
+					CurrentChunk->SetBlock(X, Y, Z, { EBlockID::Grass, 0 });
 				}
 				else if (Z > Height - 3)
 				{
-					CurrentChunk->SetBlock(X, Y, Z, 2);
+					CurrentChunk->SetBlock(X, Y, Z, { EBlockID::Dirt, 0 });
 				}
 				else
 				{
-					CurrentChunk->SetBlock(X, Y, Z, 1);
+					CurrentChunk->SetBlock(X, Y, Z, { EBlockID::Stone, 0 });
 				}
 			}
 		}

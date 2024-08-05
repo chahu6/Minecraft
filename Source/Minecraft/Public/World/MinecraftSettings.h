@@ -34,10 +34,10 @@ public:
 	// 用途：允许在不需要立即加载资源时引用它们。通过存储资源的路径而不是直接的对象指针，TSoftObjectPtr 可以在需要时灵活地加载资源，减少加载负担并缩短启动时间。
 	// 软引用不会主动加载资源，只在使用时才会加载。
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly)
-	TSoftObjectPtr<UDataTable> BlockDataTable;
+	TSoftObjectPtr<UDataTable> ItemDataTable;
 
 	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly)
-	TSoftObjectPtr<UDataTable> ItemDataTable;
+	TSoftObjectPtr<UDataTable> BlockDataTable;
 
 private:
 #if WITH_EDITOR

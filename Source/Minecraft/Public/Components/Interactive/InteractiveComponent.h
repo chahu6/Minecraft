@@ -9,7 +9,7 @@ class AMinecraftPlayer;
 class ADroppedItem;
 
 UENUM(BlueprintType)
-enum class Action : uint8
+enum class EAction : uint8
 {
 	None = 0,
 
@@ -31,11 +31,13 @@ class MINECRAFT_API UInteractiveComponent : public UActorComponent
 public:	
 	UInteractiveComponent();
 
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 protected:
 	virtual void BeginPlay() override;
 
 public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	bool DestroyBlock(const FBlockHitResult& HitResult);
 
 private:
 	void UseItem();
@@ -52,13 +54,7 @@ private:
 
 	bool IsHittingPosition(const FBlockHitResult& HitResult);
 
-	bool DestroyBlock(const FBlockHitResult& HitResult);
-
-	uint8 GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult);
-
-	void Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z);
-
-	void Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos);
+	EBlockID GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult);
 
 	bool InitMarkComponent(USceneComponent* Parent);
 
@@ -86,7 +82,9 @@ private:
 
 	FBlockHitResult BlockHitResult;
 
+	UPROPERTY(EditAnywhere, Category = "Debug")
 	bool bIsDebug = false;
+
 	bool bIsHittingBlock = false;
 	int32 BlockHitDelay = 0;
 	float CurBlockDamageMP = 0.0f;

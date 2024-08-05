@@ -15,32 +15,36 @@ void UBackpackComponent::BeginPlay()
 
 }
 
-FItemStack UBackpackComponent::GetSelected(int32 SelectedIndex)
+void UBackpackComponent::NotifyAndUpdateUI()
 {
-	HotbarSelectedIndex = SelectedIndex;
-
-	if (IsHotbarSlot(HotbarSelectedIndex))
-	{
-		return ItemsData[HotbarSelectedIndex];
-	}
-
-	return FItemStack();
+	OnHotbarUpdate.Broadcast();
+	OnInventoryUpdate.Broadcast();
 }
 
-void UBackpackComponent::AfterDataUpdate(int32 Index)
+FItemData UBackpackComponent::GetSelected(int32 SelectedIndex)
 {
-	NotifyAndUpdateUI(Index);
+	if (IsHotbarSlot(SelectedIndex))
+	{
+		return Items[SelectedIndex];
+	}
+
+	return {};
 }
 
-void UBackpackComponent::NotifyAndUpdateUI(int32 Index)
+void UBackpackComponent::ConsumeItem(int32 SelectedIndex)
 {
-	if (IsHotbarSlot(Index))
+	if (Items.IsValidIndex(SelectedIndex))
 	{
-		OnHotbarUpdate.Broadcast();
-	}
-	else
-	{
-		OnInventoryUpdate.Broadcast();
+		FItemData& ItemData = Items[SelectedIndex];
+		if (ItemData.Quantity > 0)
+		{
+			ItemData.Quantity--;
+		}
+		if (ItemData.Quantity <= 0)
+		{
+			ItemData.Clear();
+		}
+		AfterDataUpdate();
 	}
 }
 

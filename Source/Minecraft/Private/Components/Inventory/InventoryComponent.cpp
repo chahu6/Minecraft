@@ -8,140 +8,106 @@ UInventoryComponent::UInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-bool UInventoryComponent::AddItemToInventory(FItemStack& ItemStack)
-{
-	bool bFlags = false;
-	if (ItemStack.IsStack())
-	{
-		for (auto Itr = ItemsData.CreateIterator(); Itr; ++Itr)
-		{
-			if (Itr->ID == ItemStack.ID)
-			{
-				int32 Sum = Itr->Quantity + ItemStack.Quantity;
-				if (Sum <= ItemStack.GetMaxCount())
-				{
-					Itr->Quantity = Sum;
-					ItemStack.Clear();
-					bFlags = true;
-					AfterDataUpdate(Itr.GetIndex());
-					break;
-				}
-				else
-				{
-					Itr->Quantity = Itr->GetMaxCount();
-					int32 Remain = Sum - ItemStack.GetMaxCount();
-					ItemStack.Quantity = Remain;
-				}
-				AfterDataUpdate(Itr.GetIndex());
-			}
-		}
-	}
-	
-	if (ItemStack.Quantity > 0)
-	{
-		for (auto Itr = ItemsData.CreateIterator(); Itr; ++Itr)
-		{
-			if (Itr->IsEmpty())
-			{
-				bFlags = true;
-				*Itr = ItemStack;
-				ItemStack.Clear();
-				AfterDataUpdate(Itr.GetIndex());
-				break;
-			}
-		}
-	}
-
-	return bFlags;
-}
-
-bool UInventoryComponent::TransferSlots(FItemStack HangItemStack, FItemStack& NewHangItemStack, UInventoryComponent* DestinationInventory, int32 DestinationIndex)
-{
-	if (DestinationInventory->IsValidIndex(DestinationIndex))
-	{
-		FItemStack DestItemStack = DestinationInventory->GetItemStack(DestinationIndex);
-		FItemStack ItemStack_Temp;
-
-		if (DestItemStack.ID == HangItemStack.ID)
-		{
-			int32 Sum = DestItemStack.Quantity + HangItemStack.Quantity;
-			if (Sum <= DestItemStack.GetMaxCount())
-			{
-				ItemStack_Temp.Quantity = Sum;
-			}
-			else
-			{
-				ItemStack_Temp.Quantity = DestItemStack.GetMaxCount();
-				int32 Remain = Sum - DestItemStack.GetMaxCount();
-				HangItemStack.Quantity = Remain;
-			}
-		}
-		else
-		{
-			ItemStack_Temp = HangItemStack;
-			HangItemStack = DestItemStack;
-		}
-
-		DestinationInventory->SetItemStack(DestinationIndex, ItemStack_Temp);
-		NewHangItemStack = HangItemStack;
-		//AfterDataUpdate(DestinationIndex);
-		return true;
-	}
-
-	return false;
-}
-
-bool UInventoryComponent::RemoveItemFromInventory(int32 Index)
-{
-	if (ItemsData.IsValidIndex(Index))
-	{
-		ItemsData[Index].Clear();
-
-		//AfterDataUpdate(Index);
-		return true;
-	}
-
-	return false;
-}
-
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ItemsData.SetNum(InventorySize);
+	Items.SetNum(InventorySize);
 }
 
-bool UInventoryComponent::IsValidIndex(int32 Index) const
+void UInventoryComponent::TryAddItem_Implementation(int32 Index, FItemData& InItemData)
 {
-	return ItemsData.IsValidIndex(Index);
+	if (Items.IsValidIndex(Index) && InItemData.IsValid())
+	{
+		FItemData& ItemData = Items[Index];
+		if (ItemData.ID > 0 && ItemData.ID == InItemData.ID && ItemData.bIsStack)
+		{
+			int32 Sum = ItemData.Quantity + InItemData.Quantity;
+			if (ItemData.MaxCount >= Sum)
+			{
+				ItemData.Quantity = Sum;
+				InItemData.Clear();
+			}
+			else
+			{
+				ItemData.Quantity = ItemData.MaxCount;
+				InItemData.Quantity = Sum - ItemData.MaxCount;
+			}
+		}
+		else if(ItemData.ID > 0)
+		{
+			FItemData TempItemData = ItemData;
+			ItemData = InItemData;
+			InItemData = TempItemData;
+		}
+		else
+		{
+			ItemData = InItemData;
+			InItemData.Clear();
+		}
+
+		AfterDataUpdate();
+	}
 }
 
-void UInventoryComponent::AfterDataUpdate(int32 Index)
+void UInventoryComponent::RemoveItem_Implementation(int32 Index, FItemData& OutItemData)
 {
-	NotifyAndUpdateUI(Index);
+	if (Items.IsValidIndex(Index))
+	{
+		OutItemData = Items[Index];
+		Items[Index].Clear();
+
+		AfterDataUpdate();
+	}
+	else
+	{
+		OutItemData.Clear();
+	}
 }
 
-void UInventoryComponent::NotifyAndUpdateUI(int32 Index)
+void UInventoryComponent::TransferItem(int32 Index, FItemData& OutItemData)
+{
+	if (Items.IsValidIndex(Index))
+	{
+		FItemData TempItemData = OutItemData;
+		OutItemData = Items[Index];
+		Items[Index] = TempItemData;
+		AfterDataUpdate();
+	}
+}
+
+bool UInventoryComponent::AddItemToInventory(FItemData& ItemData)
+{
+	if (!ItemData.IsValid()) return false;
+
+	for (int32 Index = 0; Index < Items.Num(); ++Index)
+	{
+		if (Items[Index].ID == ItemData.ID && ItemData.IsValid() && ItemData.bIsStack && Items[Index].Quantity < ItemData.MaxCount)
+		{
+			Execute_TryAddItem(this, Index, ItemData);
+		}
+	}
+
+	if (ItemData.IsValid())
+	{
+		for (int32 Index = 0; Index < Items.Num(); ++Index)
+		{
+			if (Items[Index].ID == 0)
+			{
+				Execute_TryAddItem(this, Index, ItemData);
+			}
+		}
+	}
+
+	return !ItemData.IsValid();
+}
+
+void UInventoryComponent::AfterDataUpdate()
+{
+	NotifyAndUpdateUI();
+}
+
+void UInventoryComponent::NotifyAndUpdateUI()
 {
 	OnInventoryUpdate.Broadcast();
-}
-
-FItemStack UInventoryComponent::GetItemStack(int32 Index) const
-{
-	if (IsValidIndex(Index))
-	{
-		return ItemsData[Index];
-	}
-	return FItemStack();
-}
-
-bool UInventoryComponent::SetItemStack(int32 Index, const FItemStack& NewItemStack)
-{
-	if (ItemsData.IsValidIndex(Index))
-	{
-		ItemsData[Index] = NewItemStack;
-		return true;
-	}
-
-	return false;
 }

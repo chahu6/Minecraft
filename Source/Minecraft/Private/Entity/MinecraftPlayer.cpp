@@ -9,13 +9,17 @@
 #include "Components/Crafting/CraftingComponent.h"
 #include "Item/Info/ItemInfo.h"
 #include "UI/HUD/MinecraftHUD.h"
+#include "Item/DroppedItem.h"
+#include "Components/CapsuleComponent.h"
 
 AMinecraftPlayer::AMinecraftPlayer()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
+	PrimaryActorTick.bCanEverTick = false;
+	
 	// 自身不转动
 	bUseControllerRotationYaw = false;
+
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Player"));
 
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0, -90.0f, 0.0f));
@@ -73,12 +77,9 @@ void AMinecraftPlayer::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	if (AMCPlayerController* PC = GetController<AMCPlayerController>())
+	if (IPlayerControllerInterface* PlayerControllerInterface = GetController<IPlayerControllerInterface>())
 	{
-		if (AMinecraftHUD* MinecraftHUD = PC->GetHUD<AMinecraftHUD>())
-		{
-			MinecraftHUD->InitMainUI(PC, GetPlayerState(), this);
-		}
+		IPlayerControllerInterface::Execute_InitMainUI(GetController());
 	}
 }
 
@@ -86,12 +87,9 @@ void AMinecraftPlayer::OnRep_Controller()
 {
 	Super::OnRep_Controller();
 
-	if (AMCPlayerController* PC = GetController<AMCPlayerController>())
+	if (IPlayerControllerInterface* PlayerControllerInterface = GetController<IPlayerControllerInterface>())
 	{
-		if (AMinecraftHUD* MinecraftHUD = PC->GetHUD<AMinecraftHUD>())
-		{
-			MinecraftHUD->InitMainUI(PC, GetPlayerState(), this);
-		}
+		IPlayerControllerInterface::Execute_InitMainUI(GetController());
 	}
 }
 
@@ -114,47 +112,7 @@ void AMinecraftPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	Initial();
-}
-
-void AMinecraftPlayer::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-void AMinecraftPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		// 交互方块
-		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Started, this, &AMinecraftPlayer::UseItem);
-
-		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Started, this, &AMinecraftPlayer::OnClickAction);
-		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Triggered, this, &AMinecraftPlayer::OngoinAction);
-		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Completed, this, &AMinecraftPlayer::OnResetAction);
-
-		EnhancedInputComponent->BindAction(SwitchPerspectivesAction, ETriggerEvent::Started, this, &AMinecraftPlayer::SwitchPerspectives);
-
-		// 打开背包
-		EnhancedInputComponent->BindAction(OpenBackpackAction, ETriggerEvent::Started, this, &AMinecraftPlayer::OpenBackpack);
-
-		// 鼠标滚轮
-		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Triggered, this, &AMinecraftPlayer::SwitchingItem);
-
-		// DropItem
-		EnhancedInputComponent->BindAction(DropItemAction, ETriggerEvent::Started, this, &AMinecraftPlayer::DropItem);
-	}
-}
-
-bool AMinecraftPlayer::AddItemToInventory(FItemStack& ItemStack)
-{
-	if (BackpackComponent)
-	{
-		return BackpackComponent->AddItemToInventory(ItemStack);
-	}
-	return false;
+	Initializer();
 }
 
 void AMinecraftPlayer::SwitchPerspectives()
@@ -210,31 +168,6 @@ void AMinecraftPlayer::OngoinAction()
 	}
 }
 
-void AMinecraftPlayer::OpenBackpack()
-{
-	AMCPlayerController* PlayerController = Cast<AMCPlayerController>(Controller);
-	if (PlayerController != nullptr)
-	{
-		PlayerController->OpenBackpack();
-	}
-}
-
-void AMinecraftPlayer::SwitchingItem(const FInputActionValue& Value)
-{
-	int32 WheelValue = -Value.Get<float>();
-
-	MainHandIndex = (MainHandIndex + WheelValue + 9) % 9;
-
-	UpdateMainHandItem();
-
-	OnSwitchMainHand.Broadcast(MainHandIndex);
-}
-
-void AMinecraftPlayer::DropItem()
-{
-
-}
-
 void AMinecraftPlayer::OnResetAction()
 {
 	if (InteractiveComponent != nullptr)
@@ -243,38 +176,86 @@ void AMinecraftPlayer::OnResetAction()
 	}
 }
 
-FItemStack AMinecraftPlayer::GetMainHandItem()
+void AMinecraftPlayer::OpenBackpack()
 {
-	if (BackpackComponent)
-	{
-		return BackpackComponent->GetSelected(MainHandIndex);
-	}
-
-	return FItemStack();
+	IPlayerControllerInterface::Execute_OpenBackpack(GetController());
 }
 
-void AMinecraftPlayer::ConsumeItemStack()
+void AMinecraftPlayer::SwitchingItem(const FInputActionValue& Value)
 {
-	//if (BackpackComponent)
-	{
-		//BackpackComponent->ConsumeItemStack();
-	}
+	int32 WheelValue = -Value.Get<float>();
+	
+	MainHandIndex = (MainHandIndex + WheelValue + 9) % 9;
+
+	UpdateMainHandItem();
+
+	OnSwitchMainHand.Broadcast(MainHandIndex);
 }
 
-void AMinecraftPlayer::Initial()
+void AMinecraftPlayer::Initializer()
 {
 	UpdateMainHandItem();
 }
 
 void AMinecraftPlayer::UpdateMainHandItem()
 {
-	FItemStack MainItemStack = GetMainHandItem();
+	FItemData MainItemData = GetMainHandItem();
 
-	if (MainItemStack.IsEmpty())
+	ItemMesh->SetStaticMesh(MainItemData.IsValid() ? MainItemData.Mesh : nullptr);
+}
+
+FItemData AMinecraftPlayer::GetMainHandItem()
+{
+	if (BackpackComponent)
 	{
-		ItemMesh->SetStaticMesh(nullptr);
-		return;
+		return BackpackComponent->GetSelected(MainHandIndex);
 	}
 
-	ItemMesh->SetStaticMesh(MainItemStack.Item->GetMesh());
+	return {};
+}
+
+void AMinecraftPlayer::DropItem()
+{
+}
+
+void AMinecraftPlayer::ConsumeItem()
+{
+	if (BackpackComponent)
+	{
+		BackpackComponent->ConsumeItem(MainHandIndex);
+	}
+}
+
+bool AMinecraftPlayer::AddItemToInventory_Implementation(ADroppedItem* DroppedItem)
+{
+	if (DroppedItem == nullptr) return false;
+
+	FItemData& ItemData = DroppedItem->GetItemData();
+	return BackpackComponent->AddItemToInventory(ItemData);
+}
+
+void AMinecraftPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		// 交互方块
+		EnhancedInputComponent->BindAction(UseItemAction, ETriggerEvent::Started, this, &AMinecraftPlayer::UseItem);
+
+		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Started, this, &AMinecraftPlayer::OnClickAction);
+		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Triggered, this, &AMinecraftPlayer::OngoinAction);
+		EnhancedInputComponent->BindAction(RemoveBlockAction, ETriggerEvent::Completed, this, &AMinecraftPlayer::OnResetAction);
+
+		EnhancedInputComponent->BindAction(SwitchPerspectivesAction, ETriggerEvent::Started, this, &AMinecraftPlayer::SwitchPerspectives);
+
+		// 打开背包
+		EnhancedInputComponent->BindAction(OpenBackpackAction, ETriggerEvent::Started, this, &AMinecraftPlayer::OpenBackpack);
+
+		// 鼠标滚轮
+		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Triggered, this, &AMinecraftPlayer::SwitchingItem);
+
+		// DropItem
+		EnhancedInputComponent->BindAction(DropItemAction, ETriggerEvent::Started, this, &AMinecraftPlayer::DropItem);
+	}
 }

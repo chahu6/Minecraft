@@ -8,6 +8,7 @@
 #include "World/Block/Block.h"
 #include "Item/Items.h"
 #include "Item/DroppedItem.h"
+#include "World/Behavior/BlockBehavior.h"
 
 UInteractiveComponent::UInteractiveComponent()
 {
@@ -75,35 +76,31 @@ void UInteractiveComponent::UpdateDestroyProgress(float Value)
 
 void UInteractiveComponent::UseItem()
 {
-	FBlockHitResult HitResult;
-	if (RayCast(HitResult) && Player)
+	if (BlockHitResult.bIsHit && Player)
 	{
-		FItemStack MainHandItemStack = Player->GetMainHandItem();
-		if (!MainHandItemStack.IsEmpty()/* && (MainHandItemStack.Type == EItemType::NaturalBlock || MainHandItemStack.Type == EItemType::BuildingBlock)*/)
-		{
-			FBlockHitResult Temp;
-			uint8 BlockID = GetBlockID(HitResult.BlockPos.VoxelWorldLocation() + HitResult.Direction, Temp);
+		FItemData MainHandItemData = Player->GetMainHandItem();
+		if (!MainHandItemData.IsValid()) return;
 
-			if (BlockID == 0)
+		if (MainHandItemData.Type == EItemType::BuildingBlock)
+		{
+			FBlockHitResult HitPosition;
+			EBlockID BlockID = GetBlockID(BlockHitResult.BlockPos.VoxelWorldLocation() + BlockHitResult.Direction, HitPosition);
+			if (BlockID != EBlockID::Air) return;
+
+			FBlockMeta BlockMeta;
+			if (!UMinecraftAssetLibrary::GetBlockMeta(MainHandItemData.ID, BlockMeta)) return;
+
+			BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnInteract();
+
+			AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
+			if (WorldManager)
 			{
-				AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
-				if (WorldManager)
-				{
-					AChunkSection* ChunkSection = WorldManager->GetChunkSection(Temp.BlockPos);
-					if (ChunkSection)
-					{
-						ChunkSection->SetBlock(Temp.BlockPos.OffsetLocation(), MainHandItemStack.ID);
-						Player->ConsumeItemStack();
-						Player->UpdateMainHandItem();
-						if (ChunkSection->IsEmpty())
-						{
-							ChunkSection->SetEmpty(false);
-						}
-						ChunkSection->Rebuild();
-					}
-				}
+				WorldManager->SetBlock(HitPosition.BlockPos, static_cast<EBlockID>(BlockMeta.BlockID));
+				Player->ConsumeItem();
+				Player->UpdateMainHandItem();
 			}
 		}
+
 	}
 }
 
@@ -112,15 +109,7 @@ bool UInteractiveComponent::RemoveBlockFromWorld(const FBlockPos& BlockPos)
 	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 	if (WorldManager)
 	{
-		AChunkSection* ChunkSection = WorldManager->GetChunkSection(BlockPos);
-		ChunkSection->SetBlock(BlockPos.OffsetLocation(), 0);
-
-		// 重新计算空值
-		ChunkSection->RecalculateEmpty();
-		ChunkSection->Rebuild();
-		Rebuild_Adjacent_Chunks(BlockPos);
-
-		return true;
+		return WorldManager->DestroyBlock(BlockPos);
 	}
 
 	return false;
@@ -131,7 +120,7 @@ bool UInteractiveComponent::ClickBlock()
 	if (!bIsHittingBlock)
 	{
 		bIsHittingBlock = true;
-		CurrentHitResult = GetBlockHitResult();
+		CurrentHitResult = BlockHitResult;
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("点击Block")));
 		return true;
 	}
@@ -139,23 +128,11 @@ bool UInteractiveComponent::ClickBlock()
 	return false;
 }
 
-void UInteractiveComponent::ResetBlockRemoving()
-{
-	if (bIsHittingBlock)
-	{
-		bIsHittingBlock = false;
-		CurBlockDamageMP = 0.0f;
-		BlockHitDelay = 0.0;
-		DestroyPercent = 0.0f;
-		UpdateDestroyProgress(CurBlockDamageMP);
-	}
-}
-
 void UInteractiveComponent::OngoingClick()
 {
-	if (OnPlayerDamageBlock(GetBlockHitResult()))
+	if (OnPlayerDamageBlock(BlockHitResult))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Black, TEXT("播放挥手动画和特效"));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Black, TEXT("播放挥手动画和特效"));
 	}
 }
 
@@ -168,23 +145,22 @@ bool UInteractiveComponent::OnPlayerDamageBlock(const FBlockHitResult& HitResult
 		--BlockHitDelay;
 		return true;
 	}
-	//else if()// 创建模式以后再说
 	else if (IsHittingPosition(HitResult))
 	{
-		const FBlockInfoTableRow& BlockInfo = UMinecraftAssetLibrary::GetBlockInfo(HitResult.BlockID);
+		FBlockMeta BlockMeta;
+		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(HitResult.GetBlockID(), BlockMeta);
+		if (!bSuccessed) return false;
 
-		if (HitResult.BlockID <= 0)
+		if (HitResult.BlockData.ID <= EBlockID::Air)
 		{
-			check(false);
-
 			bIsHittingBlock = false;
 			return false;
 		}
 		else
 		{
-			CurBlockDamageMP += BlockInfo.Hardness * GetWorld()->GetDeltaSeconds();
+			CurBlockDamageMP += BlockMeta.Hardness * GetWorld()->GetDeltaSeconds();
 
-			DestroyPercent = CurBlockDamageMP / BlockInfo.Hardness;
+			DestroyPercent = CurBlockDamageMP / BlockMeta.Hardness;
 
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("播放音乐"));
 
@@ -213,22 +189,34 @@ bool UInteractiveComponent::OnPlayerDamageBlock(const FBlockHitResult& HitResult
 	return false;
 }
 
+void UInteractiveComponent::ResetBlockRemoving()
+{
+	if (bIsHittingBlock)
+	{
+		bIsHittingBlock = false;
+		CurBlockDamageMP = 0.0f;
+		BlockHitDelay = 0.0;
+		DestroyPercent = 0.0f;
+		UpdateDestroyProgress(CurBlockDamageMP);
+	}
+}
+
 bool UInteractiveComponent::DestroyBlock(const FBlockHitResult& HitResult)
 {
 	bool bIsDestroyed = RemoveBlockFromWorld(HitResult.BlockPos);
 
 	if (bIsDestroyed)
 	{
-		FItemStack DroppedItemStack;
-		DroppedItemStack.Quantity = 1;
-		DroppedItemStack.ID = HitResult.BlockID;
-		DroppedItemStack.Item = UItems::Get()->ItemsMap[HitResult.BlockID]->Clone();
-
-		checkf(DroppedItemClass, TEXT("Uninitialize DroppedItemClass"));
-		ADroppedItem* DroppedItem = GetWorld()->SpawnActorDeferred<ADroppedItem>(DroppedItemClass, FTransform(FRotator::ZeroRotator, HitResult.BlockPos.WorldLocation()));
-		DroppedItem->SetItemStack(DroppedItemStack);
-		DroppedItem->FinishSpawning(DroppedItem->GetActorTransform());
-		return true;
+		FBlockMeta BlockMeta;
+		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(static_cast<int32>(HitResult.BlockData.ID), BlockMeta);
+		if (bSuccessed)
+		{
+			checkf(DroppedItemClass, TEXT("Uninitialize DroppedItemClass"));
+			ADroppedItem* DroppedItem = GetWorld()->SpawnActorDeferred<ADroppedItem>(DroppedItemClass, FTransform(FRotator::ZeroRotator, HitResult.BlockPos.WorldLocation() + FVector(BlockSize >> 2)));
+			DroppedItem->SetItemHandle(BlockMeta.ItemHandle);
+			DroppedItem->FinishSpawning(DroppedItem->GetActorTransform());
+			return true;
+		}
 	}
 
 	return false;
@@ -287,7 +275,7 @@ bool UInteractiveComponent::RayCast(FBlockHitResult& HitResult)
 
 	while (true)
 	{
-		if (GetBlockID(Current_Voxel, HitResult) > 0)
+		if (GetBlockID(Current_Voxel, HitResult) > EBlockID::Air)
 		{
 			HitResult.bIsHit = true;
 			if (Step_Dir == 0)
@@ -352,7 +340,7 @@ bool UInteractiveComponent::IsHittingPosition(const FBlockHitResult& HitResult)
 	return CurrentHitResult == HitResult;
 }
 
-uint8 UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult)
+EBlockID UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult)
 {
 	int32 ChunkWorld_X = FMath::Floor(VoxelWorldPosition.X / CHUNK_SIZE);
 	int32 ChunkWorld_Y = FMath::Floor(VoxelWorldPosition.Y / CHUNK_SIZE);
@@ -366,7 +354,7 @@ uint8 UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBloc
 		AChunkSection* ChunkSection = WorldManager->GetChunkSection(ChunkVoexlWorldPosition);
 
 		// 在游玩时，因为地形一直是随着玩家的位置加载的所以完整游戏中，不因该为空
-		if (ChunkSection == nullptr) return 0;
+		if (ChunkSection == nullptr) return EBlockID::Air;
 
 		int32 Local_X = VoxelWorldPosition.X - ChunkWorld_X * CHUNK_SIZE;
 		int32 Local_Y = VoxelWorldPosition.Y - ChunkWorld_Y * CHUNK_SIZE;
@@ -374,69 +362,12 @@ uint8 UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBloc
 
 		int32 BlockIndex = Local_X + Local_Y * CHUNK_SIZE + Local_Z * CHUNK_AREA;
 
-		OutHitResult.BlockID = ChunkSection->GetBlock(BlockIndex);
+		OutHitResult.BlockData = ChunkSection->GetBlock(BlockIndex);
 		OutHitResult.BlockPos.SetOffsetLocation(Local_X, Local_Y, Local_Z);
 		OutHitResult.BlockPos.SetVoxelWorldLocation(VoxelWorldPosition.X, VoxelWorldPosition.Y, VoxelWorldPosition.Z);
 
-		return OutHitResult.BlockID;
+		return OutHitResult.BlockData.ID;
 	}
 
-	return 0;
-}
-
-void UInteractiveComponent::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z)
-{
-	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
-	if (WorldManager)
-	{
-		AChunkSection* ChunkSection = WorldManager->GetChunkSection(FVector(Chunk_World_X, Chunk_World_Y, Chunk_World_Z));
-
-		if (ChunkSection == nullptr)
-			return;
-
-		ChunkSection->Rebuild();
-	}
-}
-
-void UInteractiveComponent::Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos)
-{
-	// 获取Voxel位置
-	int32 Voxel_Local_X = BlockPos.X_OFFSET;
-	int32 Voxel_Local_Y = BlockPos.Y_OFFSET;
-	int32 Voxel_Local_Z = BlockPos.Z_OFFSET;
-
-	// 获取Chunk所在Voxel位置
-	int32 Chunk_World_X = FMath::Floor(BlockPos.X_VOXEL_WORLD / CHUNK_SIZE);
-	int32 Chunk_World_Y = FMath::Floor(BlockPos.Y_VOXEL_WORLD / CHUNK_SIZE);
-	int32 Chunk_World_Z = FMath::Floor(BlockPos.Z_VOXEL_WORLD / CHUNK_SIZE);
-
-	// X轴
-	if (Voxel_Local_X == 0)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X - 1, Chunk_World_Y, Chunk_World_Z);
-	}
-	else if (Voxel_Local_X == CHUNK_SIZE - 1)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X + 1, Chunk_World_Y, Chunk_World_Z);
-	}
-
-	// Y轴
-	if (Voxel_Local_Y == 0)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y - 1, Chunk_World_Z);
-	}
-	else if (Voxel_Local_Y == CHUNK_SIZE - 1)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y + 1, Chunk_World_Z);
-	}
-
-	// Z轴
-	if (Voxel_Local_Z == 0)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y, Chunk_World_Z - 1);
-	}
-	else if (Voxel_Local_Z == CHUNK_SIZE - 1)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y, Chunk_World_Z + 1);
-	}
+	return EBlockID::Air;
 }

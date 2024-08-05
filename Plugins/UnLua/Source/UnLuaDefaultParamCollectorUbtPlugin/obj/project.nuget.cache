@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "+4poBdV8sRmUwUtMWdyBB34V5nuWNxBdyzE5guWbHJC85oZEEV2YJD2sBjRlTNLNGc++FvX9Sycj65uSoz7Bsg==",
+  "success": true,
+  "projectFilePath": "F:\\UETemp\\Minecraft\\Plugins\\UnLua\\Source\\UnLuaDefaultParamCollectorUbtPlugin\\UnLuaDefaultParamCollectorUbtPlugin.ubtplugin.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512"
+  ],
+  "logs": []
+}
