@@ -2,6 +2,7 @@
 #include "Chunk/ChunkMeshComponent.h"
 #include "World/WorldSettings.h"
 #include "World/Block/Block.h"
+#include "Core/BlockPos.h"
 
 AChunkSection::AChunkSection()
 {
@@ -21,9 +22,19 @@ void AChunkSection::PostInitializeComponents()
 	Center = GetActorLocation() + ChunkSize_Half;
 }
 
-FBlockData AChunkSection::GetBlock(int32 X, int32 Y, int32 Z) const
+FBlockData AChunkSection::GetBlock(int32 OffsetX, int32 OffsetY, int32 OffsetZ) const
 {
-	return Blocks[GetBlocksIndex(X, Y, Z)];
+	return Blocks[GetBlocksIndex(OffsetX, OffsetY, OffsetZ)];
+}
+
+FBlockData AChunkSection::GetBlock(const FVector& OffsetLocation) const
+{
+	return Blocks[GetBlocksIndex(OffsetLocation.X, OffsetLocation.Y, OffsetLocation.Z)];
+}
+
+FBlockData AChunkSection::GetBlock(const FBlockPos& BlockPos) const
+{
+	return GetBlock(BlockPos.OffsetLocation());
 }
 
 FBlockData AChunkSection::GetBlock(int32 Index) const
@@ -31,9 +42,9 @@ FBlockData AChunkSection::GetBlock(int32 Index) const
 	return Blocks[Index];
 }
 
-void AChunkSection::SetBlock(int32 X, int32 Y, int32 Z, const FBlockData& BlockData)
+void AChunkSection::SetBlock(int32 OffsetX, int32 OffsetY, int32 OffsetZ, const FBlockData& BlockData)
 {
-	Blocks[GetBlocksIndex(X, Y, Z)] = BlockData;
+	Blocks[GetBlocksIndex(OffsetX, OffsetY, OffsetZ)] = BlockData;
 }
 
 void AChunkSection::SetBlock(int32 Index, const FBlockData& BlockData)

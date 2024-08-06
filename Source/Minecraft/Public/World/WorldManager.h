@@ -10,6 +10,7 @@ class AChunkSection;
 class UClassicOverWorldGenerator;
 class UChunkManagerComponent;
 struct FBlockPos;
+struct FBlockData;
 
 UCLASS()
 class MINECRAFT_API AWorldManager : public AActor
@@ -36,6 +37,10 @@ public:
 	bool DestroyBlock(const FBlockPos& BlockPos);
 
 	void SetBlock(const FBlockPos& BlockPos, EBlockID BlockID);
+
+	void SetBlock(const FBlockPos& BlockPos, int32 BlockID);
+
+	FBlockData GetBlock(const FBlockPos& BlockPos);
 
 private:
 

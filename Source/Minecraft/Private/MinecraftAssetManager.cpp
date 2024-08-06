@@ -4,7 +4,6 @@
 #include "MinecraftAssetManager.h"
 #include "World/MinecraftSettings.h"
 #include "Engine/DataTable.h"
-#include "Item/Items.h"
 
 UMinecraftAssetManager& UMinecraftAssetManager::Get()
 {
