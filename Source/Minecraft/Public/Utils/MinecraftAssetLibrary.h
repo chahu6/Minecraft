@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "World/Block/BlockID.h"
 #include "MinecraftAssetLibrary.generated.h"
 
 struct FBlockMeta;

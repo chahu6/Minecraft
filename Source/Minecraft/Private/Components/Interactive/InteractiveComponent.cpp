@@ -6,7 +6,6 @@
 #include "Entity/MinecraftPlayer.h"
 #include "Utils/MinecraftAssetLibrary.h"
 #include "World/Block/Block.h"
-#include "Item/Items.h"
 #include "Item/DroppedItem.h"
 #include "World/Behavior/BlockBehavior.h"
 
@@ -83,24 +82,31 @@ void UInteractiveComponent::UseItem()
 
 		if (MainHandItemData.Type == EItemType::BuildingBlock)
 		{
-			FBlockHitResult HitPosition;
-			EBlockID BlockID = GetBlockID(BlockHitResult.BlockPos.VoxelWorldLocation() + BlockHitResult.Direction, HitPosition);
-			if (BlockID != EBlockID::Air) return;
-
-			FBlockMeta BlockMeta;
-			if (!UMinecraftAssetLibrary::GetBlockMeta(MainHandItemData.ID, BlockMeta)) return;
-
-			BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnInteract();
-
-			AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
-			if (WorldManager)
-			{
-				WorldManager->SetBlock(HitPosition.BlockPos, static_cast<EBlockID>(BlockMeta.BlockID));
-				Player->ConsumeItem();
-				Player->UpdateMainHandItem();
-			}
+			PlaceBlock(BlockHitResult, MainHandItemData.ID);
 		}
 
+	}
+}
+
+void UInteractiveComponent::PlaceBlock(const FBlockHitResult& HitResult, int32 ItemID)
+{
+	FBlockHitResult HitPosition;
+	FBlockData BlockData = GetBlockID(HitResult.BlockPos.VoxelWorldLocation() + HitResult.Direction, HitPosition);
+	if (BlockData.IsValid()) return;
+
+	FBlockMeta BlockMeta;
+	if (!UMinecraftAssetLibrary::GetBlockMeta(ItemID, BlockMeta)) return;
+
+	BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnInteract();
+
+	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
+	if (WorldManager)
+	{
+		BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnBeforePlace();
+		WorldManager->SetBlock(HitPosition.BlockPos, BlockMeta.BlockID);
+		BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnAfterPlace(WorldManager, HitResult.BlockPos.WorldLocation(), BlockMeta.PlaceSound);
+		Player->ConsumeItem();
+		Player->UpdateMainHandItem();
 	}
 }
 
@@ -151,7 +157,7 @@ bool UInteractiveComponent::OnPlayerDamageBlock(const FBlockHitResult& HitResult
 		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(HitResult.GetBlockID(), BlockMeta);
 		if (!bSuccessed) return false;
 
-		if (HitResult.BlockData.ID <= EBlockID::Air)
+		if (!HitResult.BlockData.IsValid())
 		{
 			bIsHittingBlock = false;
 			return false;
@@ -275,7 +281,7 @@ bool UInteractiveComponent::RayCast(FBlockHitResult& HitResult)
 
 	while (true)
 	{
-		if (GetBlockID(Current_Voxel, HitResult) > EBlockID::Air)
+		if (GetBlockID(Current_Voxel, HitResult).IsValid())
 		{
 			HitResult.bIsHit = true;
 			if (Step_Dir == 0)
@@ -340,7 +346,7 @@ bool UInteractiveComponent::IsHittingPosition(const FBlockHitResult& HitResult)
 	return CurrentHitResult == HitResult;
 }
 
-EBlockID UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult)
+FBlockData UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult)
 {
 	int32 ChunkWorld_X = FMath::Floor(VoxelWorldPosition.X / CHUNK_SIZE);
 	int32 ChunkWorld_Y = FMath::Floor(VoxelWorldPosition.Y / CHUNK_SIZE);
@@ -354,7 +360,7 @@ EBlockID UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FB
 		AChunkSection* ChunkSection = WorldManager->GetChunkSection(ChunkVoexlWorldPosition);
 
 		// 在游玩时，因为地形一直是随着玩家的位置加载的所以完整游戏中，不因该为空
-		if (ChunkSection == nullptr) return EBlockID::Air;
+		if (ChunkSection == nullptr) return {};
 
 		int32 Local_X = VoxelWorldPosition.X - ChunkWorld_X * CHUNK_SIZE;
 		int32 Local_Y = VoxelWorldPosition.Y - ChunkWorld_Y * CHUNK_SIZE;
@@ -366,8 +372,8 @@ EBlockID UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FB
 		OutHitResult.BlockPos.SetOffsetLocation(Local_X, Local_Y, Local_Z);
 		OutHitResult.BlockPos.SetVoxelWorldLocation(VoxelWorldPosition.X, VoxelWorldPosition.Y, VoxelWorldPosition.Z);
 
-		return OutHitResult.BlockData.ID;
+		return OutHitResult.BlockData;
 	}
 
-	return EBlockID::Air;
+	return {};
 }

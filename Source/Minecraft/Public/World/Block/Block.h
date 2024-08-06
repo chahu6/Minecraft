@@ -19,6 +19,16 @@ struct FBlockData
 	FBlockData(EBlockID InBlockID, uint8 InBlockState)
 		:ID(InBlockID), BlockState(InBlockState)
 	{}
+
+	FORCEINLINE bool IsValid() const
+	{
+		return ID != EBlockID::Air;
+	}
+
+	FORCEINLINE int32 BlockID()
+	{
+		return static_cast<int32>(ID);
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -37,6 +47,12 @@ struct FBlockMeta : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UMaterialInterface* Material = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USoundBase* DestroySound = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USoundBase* PlaceSound = nullptr;
 
 	// 是否是流体
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

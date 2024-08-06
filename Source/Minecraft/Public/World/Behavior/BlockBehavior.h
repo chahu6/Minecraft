@@ -6,6 +6,9 @@
 #include "UObject/NoExportTypes.h"
 #include "BlockBehavior.generated.h"
 
+class AWorldManager;
+class USoundBase;
+
 /**
  * 
  */
@@ -17,16 +20,13 @@ class MINECRAFT_API UBlockBehavior : public UObject
 public:
 	virtual void OnInit() {};
 
-	virtual void OnDestroy() {};
+	virtual void OnInteract();
 
-	virtual void OnBeforePlace() {};
+	virtual void OnBeforePlace();
 
-	virtual void OnAfterPlace() {};
+	virtual void OnAfterPlace(AWorldManager* WorldManager, const FVector& Location, USoundBase* Sound);
 
-	virtual void OnInteract() 
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Behavior")));
-	};
+	virtual void OnDestroy(AWorldManager* WorldManager, const FVector& Location, USoundBase* Sound);
 
 	virtual void OnUpdate() {};
 };

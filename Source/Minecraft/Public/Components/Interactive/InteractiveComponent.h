@@ -42,6 +42,8 @@ public:
 private:
 	void UseItem();
 
+	void PlaceBlock(const FBlockHitResult& HitResult, int32 ItemID);
+
 	bool RemoveBlockFromWorld(const FBlockPos& BlockPos);
 
 	void OngoingClick();
@@ -54,7 +56,7 @@ private:
 
 	bool IsHittingPosition(const FBlockHitResult& HitResult);
 
-	EBlockID GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult);
+	FBlockData GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult);
 
 	bool InitMarkComponent(USceneComponent* Parent);
 

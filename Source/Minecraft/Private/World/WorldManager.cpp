@@ -8,7 +8,9 @@
 #include "Core/BlockPos.h"
 #include "Generation/ClassicOverWorldGenerator.h"
 #include "Chunk/ChunkSection.h"
+#include "Utils/MinecraftAssetLibrary.h"
 #include "World/Block/Block.h"
+#include "World/Behavior/BlockBehavior.h"
 
 AWorldManager::AWorldManager()
 {
@@ -188,7 +190,14 @@ bool AWorldManager::DestroyBlock(const FBlockPos& BlockPos)
 	AChunkSection* ChunkSection = GetChunkSection(BlockPos);
 	if (ChunkSection == nullptr) return false;
 
-	ChunkSection->SetBlock(BlockPos.OffsetLocation(), FBlockData());
+	FBlockData BlockData = GetBlock(BlockPos);
+	if (!BlockData.IsValid()) return false;
+
+	FBlockMeta BlockMeta;
+	if (!UMinecraftAssetLibrary::GetBlockMeta(BlockData.BlockID(), BlockMeta)) return false;
+
+	BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnDestroy(this, BlockPos.WorldLocation(), BlockMeta.DestroySound);
+	ChunkSection->SetBlock(BlockPos.OffsetLocation(), {});
 
 	// 重新计算空值
 	ChunkSection->RecalculateEmpty();
@@ -210,6 +219,21 @@ void AWorldManager::SetBlock(const FBlockPos& BlockPos, EBlockID BlockID)
 		}
 		ChunkSection->Rebuild();
 	}
+}
+
+void AWorldManager::SetBlock(const FBlockPos& BlockPos, int32 BlockID)
+{
+	SetBlock(BlockPos, static_cast<EBlockID>(BlockID));
+}
+
+FBlockData AWorldManager::GetBlock(const FBlockPos& BlockPos)
+{
+	AChunkSection* ChunkSection = GetChunkSection(BlockPos);
+	if (ChunkSection)
+	{
+		return ChunkSection->GetBlock(BlockPos);
+	}
+	return {};
 }
 
 void AWorldManager::Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos)
