@@ -36,9 +36,8 @@ void AWorldManager::BeginPlay()
 void AWorldManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	bool bIsUpdated = UpdatePosition();
-	if (bIsUpdated)
+	
+	if (UpdatePosition())
 	{
 		AddChunk();
 		RemoveChunk();
@@ -47,12 +46,10 @@ void AWorldManager::Tick(float DeltaTime)
 
 	if (!TaskQueue.IsEmpty())
 	{
-		AChunk* Chunk;
+		AChunk* Chunk = nullptr;
 		for (int32 i = 0; i < MAX_QUEUE_SIZE; ++i)
 		{
-			if (!TaskQueue.Dequeue(Chunk)) break;
-
-			if (Chunk)
+			if (TaskQueue.Dequeue(Chunk) && nullptr != Chunk)
 			{
 				Chunk->Render();
 			}
@@ -181,8 +178,8 @@ void AWorldManager::RenderChunks()
 
 void AWorldManager::RenderChunksAsync()
 {
-	const auto& ChunksMap = ChunkManager->GetAllChunks();
-	for (const auto& Elem : ChunksMap)
+	const TMap<FVector2D, AChunk*>& ChunksMap = ChunkManager->GetAllChunks();
+	for (const TPair<FVector2D, AChunk*>& Elem : ChunksMap)
 	{
 		Elem.Value->BuildAndRenderAsync();
 	}

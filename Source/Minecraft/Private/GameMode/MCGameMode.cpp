@@ -52,7 +52,7 @@ void AMCGameMode::EnterWorld(AMCPlayerController* NewPlayer)
 	AWorldManager* WorldManager = GetWorld()->SpawnActorDeferred<AWorldManager>(AWorldManager::StaticClass(), FTransform());
 	WorldManager->ProgressDelegate.BindLambda([=](float Percent) {
 		NewPlayer->SetPrograssPercent(Percent);
-		if (FMath::IsNearlyEqual(Percent, 1.f, 0.0001))
+		if (Percent >= 1.f)
 		{
 			NewPlayer->RemovePrograssWidget();
 

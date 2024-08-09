@@ -106,6 +106,7 @@ void AChunk::BuildAndRender()
 
 void AChunk::BuildAndRenderAsync()
 {
+	if (bIsRendering) return;
 	ChunkGeneratorTask = new FAsyncTask<FChunkGeneratorAsyncTask>(this);
 	ChunkGeneratorTask->StartBackgroundTask();
 }
@@ -133,8 +134,10 @@ void AChunk::Load(ITerrainGenerator* Generator)
 
 void AChunk::Render()
 {
-	for (const auto ChunkSection : ChunkSections)
+	for (AChunkSection* ChunkSection : ChunkSections)
 	{
 		ChunkSection->Render();
 	}
+
+	bIsRendering = true;
 }

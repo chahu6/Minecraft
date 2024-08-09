@@ -58,6 +58,8 @@ private:
 
 	FString SlotName;
 
+	bool bIsRendering = false;
+
 public:
 	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }
 	FORCEINLINE const TArray<AChunkSection*>& GetChunkSections() const { return ChunkSections; }

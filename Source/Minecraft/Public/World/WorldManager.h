@@ -64,7 +64,6 @@ private:
 
 public:
 	TQueue<AChunk*, EQueueMode::Mpsc> TaskQueue;
-	TQueue<AChunk*, EQueueMode::Mpsc> LoadinChunksQueue;
 
 protected:
 	UPROPERTY()

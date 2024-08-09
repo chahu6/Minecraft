@@ -33,17 +33,14 @@ void FChunkGeneratorAsyncTask::DoWork()
 
 	const TArray<AChunkSection*>& ChunkSections = Chunk->GetChunkSections();
 
-	for (const auto ChunkSection : ChunkSections)
+	for (AChunkSection* ChunkSection : ChunkSections)
 	{
 		ChunkSection->BuildMesh();
 	}
 
-	AsyncTask(ENamedThreads::GameThread, [Chunk = this->Chunk]()
+	AWorldManager* WorldManager = Cast<AWorldManager>(Chunk->GetOwner());
+	if (WorldManager)
 	{
-		AWorldManager* WorldManager = Cast<AWorldManager>(Chunk->GetOwner());
-		if (WorldManager)
-		{
-			WorldManager->TaskQueue.Enqueue(Chunk);
-		}
-	});
+		WorldManager->TaskQueue.Enqueue(Chunk);
+	}
 }

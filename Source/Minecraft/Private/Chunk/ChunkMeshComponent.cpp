@@ -25,7 +25,7 @@ void UChunkMeshComponent::BeginPlay()
 
 void UChunkMeshComponent::Render()
 {
-	for (const auto& MeshData : MeshDatas)
+	for (const TPair<int32, FMeshData>& MeshData : MeshDatas)
 	{
 		if (MeshData.Value.Vertices.IsEmpty()) continue;
 
