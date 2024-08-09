@@ -11,7 +11,11 @@ FWorldRunner::FWorldRunner(AWorldManager* WorldManager)
 
 FWorldRunner::~FWorldRunner()
 {
-
+	if (WorldRunnerThread)
+	{
+		delete WorldRunnerThread;
+		WorldRunnerThread = nullptr;
+	}
 }
 
 bool FWorldRunner::Init()

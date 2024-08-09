@@ -12,6 +12,8 @@ class UChunkManagerComponent;
 struct FBlockPos;
 struct FBlockData;
 
+DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
+
 UCLASS()
 class MINECRAFT_API AWorldManager : public AActor
 {
@@ -21,7 +23,6 @@ public:
 	AWorldManager();
 
 protected:
-	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 
 public:	
@@ -42,8 +43,11 @@ public:
 
 	FBlockData GetBlock(const FBlockPos& BlockPos);
 
-private:
+	FProgressDelegate ProgressDelegate;
 
+	void RenderChunks();
+
+private:
 	void InitialWorldChunkLoad();
 
 	bool UpdatePosition();
@@ -52,7 +56,7 @@ private:
 
 	void RemoveChunk();
 
-	void RenderChunks();
+	void RenderChunksAsync();
 
 	void Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos);
 
@@ -60,8 +64,9 @@ private:
 
 public:
 	TQueue<AChunk*, EQueueMode::Mpsc> TaskQueue;
+	TQueue<AChunk*, EQueueMode::Mpsc> LoadinChunksQueue;
 
-private:
+protected:
 	UPROPERTY()
 	TObjectPtr<UClassicOverWorldGenerator> TerrainGeneratorss;
 
@@ -74,8 +79,17 @@ private:
 	UPROPERTY(EditAnywhere)
 	int32 Seed = 0;
 
-	FVector2D CharacterPosition;
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D CharacterChunkPosition;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D DefaultCharacterPosition;
+
+	int32 InitChunksNum = 0;
+
+	FTimerHandle LoadingTimerHandle;
 
 public:
 	FORCEINLINE UClassicOverWorldGenerator* GetTerrainGenerator() const { return TerrainGeneratorss; }
+	FORCEINLINE FVector2D GetDefaultCharacterPosition() const { return DefaultCharacterPosition; }
 };

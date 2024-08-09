@@ -4,7 +4,7 @@
 #include "Generation/TerrainGenerator.h"
 #include "Chunk/ChunkSection.h"
 #include "World/Block/Block.h"
-#include "World/Runnable/WorldGeneratorAsyncTask.h"
+#include "World/Runnable/ChunkGeneratorAsyncTask.h"
 
 AChunk::AChunk()
 {
@@ -44,11 +44,11 @@ void AChunk::Destroyed()
 	Super::Destroyed();
 
 	// É¾³ýÈÎÎñ
-	if (WorldGeneratorTask)
+	if (ChunkGeneratorTask)
 	{
-		WorldGeneratorTask->EnsureCompletion();
-		delete WorldGeneratorTask;
-		WorldGeneratorTask = nullptr;
+		ChunkGeneratorTask->EnsureCompletion();
+		delete ChunkGeneratorTask;
+		ChunkGeneratorTask = nullptr;
 	}
 
 	for (const auto ChunkSection : ChunkSections)
@@ -95,17 +95,26 @@ void AChunk::SetBlock(int32 X, int32 Y, int32 Z, const FBlockData& BlockData)
 	}
 }
 
+void AChunk::BuildAndRender()
+{
+	for (const auto ChunkSection : ChunkSections)
+	{
+		ChunkSection->BuildMesh();
+	}
+	Render();
+}
+
 void AChunk::BuildAndRenderAsync()
 {
-	WorldGeneratorTask = new FAsyncTask<FWorldGeneratorAsyncTask>(this);
-	WorldGeneratorTask->StartBackgroundTask();
+	ChunkGeneratorTask = new FAsyncTask<FChunkGeneratorAsyncTask>(this);
+	ChunkGeneratorTask->StartBackgroundTask();
 }
 
 bool AChunk::IsDone()
 {
-	if (WorldGeneratorTask)
+	if (ChunkGeneratorTask)
 	{
-		return WorldGeneratorTask->IsDone();
+		return ChunkGeneratorTask->IsDone();
 	}
 
 	return false;

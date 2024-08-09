@@ -5,7 +5,8 @@
 #include "SimplexNoiseLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Generation/Noise/NormalNoise.h"
-#include "Math/Spline.h"
+#include "UI/Widget/ProgressBarWidget.h"
+#include "Components/ProgressBar.h"
 
 AMCPlayerController::AMCPlayerController()
 {
@@ -46,6 +47,31 @@ void AMCPlayerController::OpenBackpack_Implementation()
 	if (MinecraftHUD)
 	{
 		MinecraftHUD->AddBackpack();
+	}
+}
+
+void AMCPlayerController::AddPrograssWidget()
+{
+	if (ProgressBarWidgetClass)
+	{
+		ProgressBarWidget = CreateWidget<UProgressBarWidget>(this, ProgressBarWidgetClass);
+		ProgressBarWidget->AddToViewport();
+	}
+}
+
+void AMCPlayerController::RemovePrograssWidget()
+{
+	if (ProgressBarWidget)
+	{
+		ProgressBarWidget->RemoveFromParent();
+	}
+}
+
+void AMCPlayerController::SetPrograssPercent(float Percent)
+{
+	if (ProgressBarWidget && ProgressBarWidget->ProgressBar)
+	{
+		ProgressBarWidget->ProgressBar->SetPercent(Percent);
 	}
 }
 

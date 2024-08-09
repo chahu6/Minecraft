@@ -7,7 +7,7 @@
 
 class ITerrainGenerator;
 class AChunkSection;
-class FWorldGeneratorAsyncTask;
+class FChunkGeneratorAsyncTask;
 struct FBlockData;
 
 UCLASS()
@@ -35,6 +35,8 @@ public:
 
 	virtual void SetBlock(int32 X, int32 Y, int32 Z, const FBlockData& BlockData) override;
 
+	void BuildAndRender();
+
 	void BuildAndRenderAsync();
 
 	bool IsDone();
@@ -50,7 +52,7 @@ private:
 	UPROPERTY()
 	TArray<AChunkSection*> ChunkSections;
 
-	FAsyncTask<FWorldGeneratorAsyncTask>* WorldGeneratorTask = nullptr;
+	FAsyncTask<FChunkGeneratorAsyncTask>* ChunkGeneratorTask = nullptr;
 
 	int32 Seed = -1;
 

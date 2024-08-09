@@ -2,17 +2,19 @@
 
 #include "CoreMinimal.h"
 
-class AChunk;
+class AWorldManager;
 /**
  * 
  */
 class MINECRAFT_API FWorldGeneratorAsyncTask : public FNonAbandonableTask
 {
-	friend class FAsyncTask<FWorldGeneratorAsyncTask>;
+	friend class FAutoDeleteAsyncTask<FWorldGeneratorAsyncTask>;
 
 public:
 	FWorldGeneratorAsyncTask() = default;
-	FWorldGeneratorAsyncTask(AChunk* Chunk);
+
+	FWorldGeneratorAsyncTask(AWorldManager* Chunk);
+
 	~FWorldGeneratorAsyncTask() = default;
 
 public:
@@ -24,5 +26,5 @@ public:
 	void DoWork();
 
 private:
-	AChunk* Chunk = nullptr;
+	AWorldManager* WorldManager = nullptr;
 };

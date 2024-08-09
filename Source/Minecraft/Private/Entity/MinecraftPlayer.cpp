@@ -79,7 +79,7 @@ void AMinecraftPlayer::PossessedBy(AController* NewController)
 
 	if (IPlayerControllerInterface* PlayerControllerInterface = GetController<IPlayerControllerInterface>())
 	{
-		IPlayerControllerInterface::Execute_InitMainUI(GetController());
+		IPlayerControllerInterface::Execute_InitMainUI(NewController);
 	}
 }
 

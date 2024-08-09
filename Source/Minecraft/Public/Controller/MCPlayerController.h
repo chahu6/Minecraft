@@ -6,6 +6,7 @@
 #include "MCPlayerController.generated.h"
 
 class AMinecraftHUD;
+class UProgressBarWidget;
 /**
  * 
  */
@@ -27,6 +28,10 @@ public:
 
 	virtual void OpenBackpack_Implementation() override;
 
+	void AddPrograssWidget();
+	void RemovePrograssWidget();
+	void SetPrograssPercent(float Percent);
+
 public:
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* CreateTextureFromArray();
@@ -34,9 +39,15 @@ public:
 private:
 	void ShowDebugInfo();
 
-private:
+protected:
 	UPROPERTY()
 	TObjectPtr<AMinecraftHUD> MinecraftHUD;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UProgressBarWidget> ProgressBarWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UProgressBarWidget> ProgressBarWidget;
 
 	UPROPERTY(EditAnywhere, Category = "AAA")
 	float Factor = 0.05f;
