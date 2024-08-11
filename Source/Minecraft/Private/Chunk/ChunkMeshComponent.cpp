@@ -25,6 +25,7 @@ void UChunkMeshComponent::BeginPlay()
 
 void UChunkMeshComponent::Render()
 {
+	FBlockMeta BlockMeta;
 	for (const TPair<int32, FMeshData>& MeshData : MeshDatas)
 	{
 		if (MeshData.Value.Vertices.IsEmpty()) continue;
@@ -32,7 +33,6 @@ void UChunkMeshComponent::Render()
 		//ProduralMesh->ClearAllMeshSections();
 		CreateMeshSection_LinearColor(MeshData.Key, MeshData.Value.Vertices, MeshData.Value.Triangles, MeshData.Value.Normals, MeshData.Value.UV0, MeshData.Value.VertexColors, MeshData.Value.Tangents, true);
 
-		FBlockMeta BlockMeta;
 		if (UMinecraftAssetLibrary::GetBlockMeta(MeshData.Key, BlockMeta))
 		{
 			SetMaterial(MeshData.Key, BlockMeta.Material);

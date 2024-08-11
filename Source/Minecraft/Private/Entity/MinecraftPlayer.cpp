@@ -178,7 +178,10 @@ void AMinecraftPlayer::OnResetAction()
 
 void AMinecraftPlayer::OpenBackpack()
 {
-	IPlayerControllerInterface::Execute_OpenBackpack(GetController());
+	if (IPlayerControllerInterface* PlayerControllerInterface = GetController<IPlayerControllerInterface>())
+	{
+		IPlayerControllerInterface::Execute_OpenBackpack(GetController());
+	}
 }
 
 void AMinecraftPlayer::SwitchingItem(const FInputActionValue& Value)

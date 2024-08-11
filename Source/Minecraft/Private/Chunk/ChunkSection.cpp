@@ -12,6 +12,7 @@ AChunkSection::AChunkSection()
 
 	ChunkMesh = CreateDefaultSubobject<UChunkMeshComponent>(TEXT("ChunkMesh"));
 	RootComponent = ChunkMesh;
+	ChunkMesh->bUseAsyncCooking = true;
 }
 
 void AChunkSection::PostInitializeComponents()

@@ -44,10 +44,11 @@ void AWorldManager::Tick(float DeltaTime)
 		RenderChunksAsync();
 	}
 
+	// 分帧加载
 	if (!TaskQueue.IsEmpty())
 	{
 		AChunk* Chunk = nullptr;
-		for (int32 i = 0; i < MAX_QUEUE_SIZE; ++i)
+		for (int32 i = 0; i < MAX_QUEUE_SIZE; ++i) // 每帧最大能加载几个
 		{
 			if (TaskQueue.Dequeue(Chunk) && nullptr != Chunk)
 			{
