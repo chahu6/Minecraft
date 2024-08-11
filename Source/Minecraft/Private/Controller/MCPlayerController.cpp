@@ -4,7 +4,6 @@
 #include "Controller/CameraManager/MinecraftPlayerCameraManager.h"
 #include "SimplexNoiseLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Generation/Noise/NormalNoise.h"
 #include "UI/Widget/ProgressBarWidget.h"
 #include "Components/ProgressBar.h"
 
@@ -74,7 +73,7 @@ void AMCPlayerController::SetPrograssPercent(float Percent)
 		ProgressBarWidget->ProgressBar->SetPercent(Percent);
 	}
 }
-
+#if 0
 UTexture2D* AMCPlayerController::CreateTextureFromArray()
 {
 	USimplexNoiseLibrary::SetNoiseSeed(Seed);
@@ -125,7 +124,7 @@ UTexture2D* AMCPlayerController::CreateTextureFromArray()
 
 	return TheTexture2D;
 }
-
+#endif
 void AMCPlayerController::ShowDebugInfo()
 {
 	if (bIsDebug)

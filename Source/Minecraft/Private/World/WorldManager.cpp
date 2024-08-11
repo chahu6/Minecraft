@@ -1,17 +1,17 @@
 #include "World/WorldManager.h"
 #include "World/WorldSettings.h"
 #include "Chunk/Chunk.h"
-#include "World/ChunkManagerComponent.h"
+#include "World/Components/ChunkManagerComponent.h"
 #include "SimplexNoiseLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Core/BlockPos.h"
-#include "Generation/ClassicOverWorldGenerator.h"
 #include "Chunk/ChunkSection.h"
 #include "Utils/MinecraftAssetLibrary.h"
 #include "World/Block/Block.h"
 #include "World/Behavior/BlockBehavior.h"
 #include "World/Runnable/WorldGeneratorAsyncTask.h"
+#include "World/Components/TerrainComponent.h"
 
 AWorldManager::AWorldManager()
 {
@@ -21,7 +21,7 @@ AWorldManager::AWorldManager()
 
 	ChunkManager = CreateDefaultSubobject<UChunkManagerComponent>(TEXT("ChunkManagerComponent"));
 
-	TerrainGeneratorss = NewObject<UClassicOverWorldGenerator>(this, TEXT("TerrainGenerator"));
+	TerrainManager = CreateDefaultSubobject<UTerrainComponent>(TEXT("TerrainComponent"));
 }
 
 void AWorldManager::BeginPlay()
@@ -43,7 +43,7 @@ void AWorldManager::Tick(float DeltaTime)
 		RemoveChunk();
 		RenderChunksAsync();
 	}
-
+	
 	// ∑÷÷°º”‘ÿ
 	if (!TaskQueue.IsEmpty())
 	{
@@ -56,6 +56,7 @@ void AWorldManager::Tick(float DeltaTime)
 			}
 		}
 	}
+	
 }
 
 void AWorldManager::InitialWorldChunkLoad()
@@ -71,7 +72,7 @@ void AWorldManager::InitialWorldChunkLoad()
 		for (int32 ChunkY = -ChunkRenderingRange; ChunkY <= ChunkRenderingRange; ++ChunkY)
 		{
 			FVector2D ChunkPosition = CharacterChunkPosition + FVector2D(ChunkX, ChunkY);
-			ChunkManager->LoadChunk(ChunkPosition);
+			LoadChunk(ChunkPosition);
 		}
 	}
 
@@ -83,10 +84,12 @@ bool AWorldManager::UpdatePosition()
 	APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	if (Pawn == nullptr) return false;
 
-	FVector2D NewLocation2D(Pawn->GetActorLocation());
-	if (!UKismetMathLibrary::EqualEqual_Vector2DVector2D(CharacterChunkPosition * ChunkSize, NewLocation2D, ChunkSize_Half))
+	FVector2D NewLocation2D;
+	NewLocation2D.X = FMath::Floor(Pawn->GetActorLocation().X / ChunkSize);
+	NewLocation2D.Y = FMath::Floor(Pawn->GetActorLocation().Y / ChunkSize);
+	if (!NewLocation2D.Equals(CharacterChunkPosition, 0.001f))
 	{
-		CharacterChunkPosition = NewLocation2D / ChunkSize;
+		CharacterChunkPosition = NewLocation2D;
 		return true;
 	}
 
@@ -108,9 +111,16 @@ void AWorldManager::AddChunk()
 	{
 		for (int32 Y = MinRenderingRangeY; Y <= MaxRenderingRangeY; ++Y)
 		{
-			FVector2D ChunkPosition(X, Y);
-			ChunkManager->LoadChunk(ChunkPosition);
+			LoadChunk(FVector2D(X, Y));
 		}
+	}
+}
+
+void AWorldManager::LoadChunk(const FVector2D& ChunkPosition)
+{
+	if (ChunkManager->LoadChunk(ChunkPosition))
+	{
+		TerrainManager->LoadTerrainInfo(ChunkManager->GetChunk(ChunkPosition));
 	}
 }
 
@@ -125,18 +135,15 @@ void AWorldManager::RemoveChunk()
 	const int32 MinRenderingRangeY = ChunkPositionY - ChunkRenderingRange;
 	const int32 MaxRenderingRangeY = ChunkPositionY + ChunkRenderingRange;
 
-	auto& ChunksMap = ChunkManager->GetAllChunks();
+	TMap<FVector2D, AChunk*>& ChunksMap = ChunkManager->GetAllChunks();
 	for (auto Itr = ChunksMap.CreateConstIterator(); Itr; ++Itr)
 	{
 		FVector2D ChunkLocation = Itr.Key();
 		bool bIsRemove = MinRenderingRangeX <= ChunkLocation.X && ChunkLocation.X <= MaxRenderingRangeX && MinRenderingRangeY <= ChunkLocation.Y && ChunkLocation.Y <= MaxRenderingRangeY;
 		if (!bIsRemove)
 		{
-			if (Itr.Value()->IsDone())
-			{
-				Itr.Value()->Destroy();
-				ChunksMap.Remove(ChunkLocation);
-			}
+			Itr.Value()->Destroy();
+			ChunksMap.Remove(ChunkLocation);
 		}
 	}
 }
@@ -144,10 +151,10 @@ void AWorldManager::RemoveChunk()
 void AWorldManager::RenderChunks()
 {
 	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this]() {
-		const auto& ChunksMap = ChunkManager->GetAllChunks();
+		const TMap<FVector2D, AChunk*>& ChunksMap = ChunkManager->GetAllChunks();
 		int32 Total = ChunksMap.Num();
 		int32 Count = 0;
-		for (const auto& Elem : ChunksMap)
+		for (const TPair<FVector2D, AChunk*>& Elem : ChunksMap)
 		{
 			AChunk* Chunk = Elem.Value;
 
@@ -158,7 +165,7 @@ void AWorldManager::RenderChunks()
 			FScopeLock RefreshLock(&Chunk->BuildDataMutex);
 
 			const TArray<AChunkSection*>& ChunkSections = Chunk->GetChunkSections();
-			for (const auto ChunkSection : ChunkSections)
+			for (AChunkSection* const ChunkSection : ChunkSections)
 			{
 				ChunkSection->BuildMesh();
 			}

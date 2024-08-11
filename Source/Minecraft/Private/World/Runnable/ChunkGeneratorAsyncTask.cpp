@@ -28,7 +28,7 @@ void FChunkGeneratorAsyncTask::DoWork()
 	{
 		return;
 	}
-
+	
 	FScopeLock RefreshLock(&Chunk->BuildDataMutex);
 
 	const TArray<AChunkSection*>& ChunkSections = Chunk->GetChunkSections();

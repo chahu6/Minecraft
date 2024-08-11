@@ -1,7 +1,6 @@
 #include "Chunk/Chunk.h"
 #include "Save/ChunkSaveGame.h"
 #include "World/WorldSettings.h"
-#include "Generation/TerrainGenerator.h"
 #include "Chunk/ChunkSection.h"
 #include "World/Block/Block.h"
 #include "World/Runnable/ChunkGeneratorAsyncTask.h"
@@ -13,6 +12,8 @@ AChunk::AChunk()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
 	ChunkSections.SetNum(WORLD_HEIGHT);
+
+	HeightMap.SetNum(256);
 }
 
 void AChunk::BeginPlay()
@@ -41,8 +42,6 @@ void AChunk::PostInitializeComponents()
 
 void AChunk::Destroyed()
 {
-	Super::Destroyed();
-
 	// 删除任务
 	if (ChunkGeneratorTask)
 	{
@@ -51,7 +50,7 @@ void AChunk::Destroyed()
 		ChunkGeneratorTask = nullptr;
 	}
 
-	for (const auto ChunkSection : ChunkSections)
+	for (AChunkSection* ChunkSection : ChunkSections)
 	{
 		if (ChunkSection)
 		{
@@ -60,6 +59,8 @@ void AChunk::Destroyed()
 	}
 
 	ChunkSections.Empty();
+
+	Super::Destroyed();
 }
 
 AChunkSection* AChunk::GetChunkSection(double Voxel_Z)
@@ -69,7 +70,7 @@ AChunkSection* AChunk::GetChunkSection(double Voxel_Z)
 
 void AChunk::Dirty()
 {
-	for (const auto ChunkSection : ChunkSections)
+	for (AChunkSection* ChunkSection : ChunkSections)
 	{
 		ChunkSection->SetDirty(true);
 	}
@@ -121,12 +122,10 @@ bool AChunk::IsDone()
 	return false;
 }
 
-void AChunk::Load(ITerrainGenerator* Generator)
+void AChunk::UpdateBlock()
 {
-	Generator->GenerateChunk(this);
-
 	// 计算每个ChunkSection是否为空或Air
-	for (const auto ChunkSection : ChunkSections)
+	for (AChunkSection* ChunkSection : ChunkSections)
 	{
 		ChunkSection->RecalculateEmpty();
 	}

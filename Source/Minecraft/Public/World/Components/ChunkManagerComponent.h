@@ -19,7 +19,12 @@ public:
 
 	AChunk* GetChunk(const FVector2D& Key);
 
-	void LoadChunk(const FVector2D& ChunkVoxelPosition);
+	bool LoadChunk(const FVector2D& ChunkVoxelPosition);
+
+	AChunk* operator[](const FVector2D& Position)
+	{
+		return _AllChunks.FindChecked(Position);
+	}
 
 private:
 	void Rebuild_Adjacent_Chunks(const FVector2D& ChunkVoxelWorldPosition);

@@ -5,7 +5,6 @@
 #include "Interfaces/ChunkInterface.h"
 #include "Chunk.generated.h"
 
-class ITerrainGenerator;
 class AChunkSection;
 class FChunkGeneratorAsyncTask;
 struct FBlockData;
@@ -41,7 +40,7 @@ public:
 
 	bool IsDone();
 
-	void Load(ITerrainGenerator* Generator);
+	void UpdateBlock();
 
 	void Render();
 
@@ -51,6 +50,8 @@ public:
 private:
 	UPROPERTY()
 	TArray<AChunkSection*> ChunkSections;
+
+	TArray<uint8> HeightMap;
 
 	FAsyncTask<FChunkGeneratorAsyncTask>* ChunkGeneratorTask = nullptr;
 
@@ -63,4 +64,5 @@ private:
 public:
 	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }
 	FORCEINLINE const TArray<AChunkSection*>& GetChunkSections() const { return ChunkSections; }
+	FORCEINLINE TArray<uint8>& GetHeightMap() { return HeightMap; }
 };

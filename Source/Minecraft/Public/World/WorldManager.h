@@ -7,7 +7,7 @@
 
 class AChunk;
 class AChunkSection;
-class UClassicOverWorldGenerator;
+class UTerrainComponent;
 class UChunkManagerComponent;
 struct FBlockPos;
 struct FBlockData;
@@ -54,6 +54,8 @@ private:
 
 	void AddChunk();
 
+	void LoadChunk(const FVector2D& ChunkPosition);
+
 	void RemoveChunk();
 
 	void RenderChunksAsync();
@@ -66,11 +68,11 @@ public:
 	TQueue<AChunk*, EQueueMode::Mpsc> TaskQueue;
 
 protected:
-	UPROPERTY()
-	TObjectPtr<UClassicOverWorldGenerator> TerrainGeneratorss;
-
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UChunkManagerComponent> ChunkManager;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UTerrainComponent> TerrainManager;
 
 	UPROPERTY(EditAnywhere)
 	int32 ChunkRenderingRange = 8;
@@ -89,6 +91,5 @@ protected:
 	FTimerHandle LoadingTimerHandle;
 
 public:
-	FORCEINLINE UClassicOverWorldGenerator* GetTerrainGenerator() const { return TerrainGeneratorss; }
 	FORCEINLINE FVector2D GetDefaultCharacterPosition() const { return DefaultCharacterPosition; }
 };

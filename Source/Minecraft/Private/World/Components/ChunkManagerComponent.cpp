@@ -1,8 +1,7 @@
-#include "World/ChunkManagerComponent.h"
+#include "World/Components/ChunkManagerComponent.h"
 #include "Chunk/Chunk.h"
 #include "World/WorldSettings.h"
 #include "World/WorldManager.h"
-#include "Generation/ClassicOverWorldGenerator.h"
 
 UChunkManagerComponent::UChunkManagerComponent()
 {
@@ -25,7 +24,7 @@ AChunk* UChunkManagerComponent::GetChunk(const FVector2D& Key)
 	return nullptr;
 }
 
-void UChunkManagerComponent::LoadChunk(const FVector2D& ChunkVoxelPosition)
+bool UChunkManagerComponent::LoadChunk(const FVector2D& ChunkVoxelPosition)
 {
 	AChunk* Chunk = GetChunk(ChunkVoxelPosition);
 	if (Chunk == nullptr)
@@ -36,13 +35,14 @@ void UChunkManagerComponent::LoadChunk(const FVector2D& ChunkVoxelPosition)
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Owner = GetOwner();
 			Chunk = World->SpawnActor<AChunk>(AChunk::StaticClass(), { ChunkVoxelPosition.X * ChunkSize, ChunkVoxelPosition.Y * ChunkSize, 0.0 }, FRotator::ZeroRotator, SpawnParams);
-			Chunk->Load(Cast<ITerrainGenerator>(WorldManager->GetTerrainGenerator()));
 			_AllChunks.Add(ChunkVoxelPosition, Chunk);
 
 			// 加载新的区块时，让新区块的四个面的区块也加载
 			Rebuild_Adjacent_Chunks(ChunkVoxelPosition);
+			return true;
 		}
 	}
+	return false;
 }
 
 void UChunkManagerComponent::Rebuild_Adjacent_Chunks(const FVector2D& ChunkVoxelWorldPosition)

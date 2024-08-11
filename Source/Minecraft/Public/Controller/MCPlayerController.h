@@ -33,9 +33,10 @@ public:
 	void SetPrograssPercent(float Percent);
 
 public:
+#if 0
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* CreateTextureFromArray();
-
+#endif
 private:
 	void ShowDebugInfo();
 
