@@ -84,7 +84,6 @@ void UInteractiveComponent::UseItem()
 		{
 			PlaceBlock(BlockHitResult, MainHandItemData.ID);
 		}
-
 	}
 }
 
@@ -108,6 +107,27 @@ void UInteractiveComponent::PlaceBlock(const FBlockHitResult& HitResult, int32 I
 		Player->ConsumeItem();
 		Player->UpdateMainHandItem();
 	}
+}
+
+bool UInteractiveComponent::DestroyBlock(const FBlockHitResult& HitResult)
+{
+	bool bIsDestroyed = RemoveBlockFromWorld(HitResult.BlockPos);
+
+	if (bIsDestroyed)
+	{
+		FBlockMeta BlockMeta;
+		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(static_cast<int32>(HitResult.BlockData.ID), BlockMeta);
+		if (bSuccessed)
+		{
+			checkf(DroppedItemClass, TEXT("Uninitialize DroppedItemClass"));
+			ADroppedItem* DroppedItem = GetWorld()->SpawnActorDeferred<ADroppedItem>(DroppedItemClass, FTransform(FRotator::ZeroRotator, HitResult.BlockPos.WorldLocation() + FVector(BlockSize >> 2)));
+			DroppedItem->SetItemHandle(BlockMeta.ItemHandle);
+			DroppedItem->FinishSpawning(DroppedItem->GetActorTransform());
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool UInteractiveComponent::RemoveBlockFromWorld(const FBlockPos& BlockPos)
@@ -205,27 +225,6 @@ void UInteractiveComponent::ResetBlockRemoving()
 		DestroyPercent = 0.0f;
 		UpdateDestroyProgress(CurBlockDamageMP);
 	}
-}
-
-bool UInteractiveComponent::DestroyBlock(const FBlockHitResult& HitResult)
-{
-	bool bIsDestroyed = RemoveBlockFromWorld(HitResult.BlockPos);
-
-	if (bIsDestroyed)
-	{
-		FBlockMeta BlockMeta;
-		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(static_cast<int32>(HitResult.BlockData.ID), BlockMeta);
-		if (bSuccessed)
-		{
-			checkf(DroppedItemClass, TEXT("Uninitialize DroppedItemClass"));
-			ADroppedItem* DroppedItem = GetWorld()->SpawnActorDeferred<ADroppedItem>(DroppedItemClass, FTransform(FRotator::ZeroRotator, HitResult.BlockPos.WorldLocation() + FVector(BlockSize >> 2)));
-			DroppedItem->SetItemHandle(BlockMeta.ItemHandle);
-			DroppedItem->FinishSpawning(DroppedItem->GetActorTransform());
-			return true;
-		}
-	}
-
-	return false;
 }
 
 bool UInteractiveComponent::RayCast(FBlockHitResult& HitResult)

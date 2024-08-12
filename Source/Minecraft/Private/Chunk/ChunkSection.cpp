@@ -58,22 +58,6 @@ void AChunkSection::SetBlock(const FVector& OffsetLocation, const FBlockData& Bl
 	Blocks[GetBlocksIndex(OffsetLocation.X, OffsetLocation.Y, OffsetLocation.Z)] = BlockData;
 }
 
-void AChunkSection::BuildMesh()
-{
-	if (bIsDirty)
-	{
-		if (!bIsEmpty)
-		{
-			ChunkMesh->ClearMeshData();
-
-			ChunkMesh->BuildMesh();
-
-			bIsReady = true;
-		}
-		bIsDirty = false;
-	}
-}
-
 void AChunkSection::Render()
 {
 	if (bIsReady)
@@ -89,6 +73,20 @@ void AChunkSection::Rebuild()
 
 	BuildMesh();
 	Render();
+}
+
+void AChunkSection::BuildMesh()
+{
+	if (bIsDirty)
+	{
+		if (!bIsEmpty)
+		{
+			ChunkMesh->BuildMesh();
+
+			bIsReady = true;
+		}
+		bIsDirty = false;
+	}
 }
 
 void AChunkSection::RecalculateEmpty()

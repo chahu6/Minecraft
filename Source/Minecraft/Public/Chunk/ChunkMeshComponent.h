@@ -48,8 +48,6 @@ public:
 
 	void BuildMesh();
 
-	void ClearMeshData();
-
 private:
 	UPROPERTY()
 	TObjectPtr<AChunkSection> ChunkSection;

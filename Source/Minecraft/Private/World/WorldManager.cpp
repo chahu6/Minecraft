@@ -56,7 +56,6 @@ void AWorldManager::Tick(float DeltaTime)
 			}
 		}
 	}
-	
 }
 
 void AWorldManager::InitialWorldChunkLoad()
@@ -120,7 +119,9 @@ void AWorldManager::LoadChunk(const FVector2D& ChunkPosition)
 {
 	if (ChunkManager->LoadChunk(ChunkPosition))
 	{
-		TerrainManager->LoadTerrainInfo(ChunkManager->GetChunk(ChunkPosition));
+		//AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [this, ChunkPosition]() {
+			TerrainManager->LoadTerrainInfo(ChunkManager->GetChunk(ChunkPosition));
+		//});
 	}
 }
 
@@ -150,7 +151,7 @@ void AWorldManager::RemoveChunk()
 
 void AWorldManager::RenderChunks()
 {
-	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [this]() {
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [this]() {
 		const TMap<FVector2D, AChunk*>& ChunksMap = ChunkManager->GetAllChunks();
 		int32 Total = ChunksMap.Num();
 		int32 Count = 0;
@@ -162,21 +163,14 @@ void AWorldManager::RenderChunks()
 			{
 				return;
 			}
-			FScopeLock RefreshLock(&Chunk->BuildDataMutex);
 
-			const TArray<AChunkSection*>& ChunkSections = Chunk->GetChunkSections();
-			for (AChunkSection* const ChunkSection : ChunkSections)
-			{
-				ChunkSection->BuildMesh();
-			}
+			Chunk->BuildMesh();
 				
 			AsyncTask(ENamedThreads::GameThread, [this, Chunk = Chunk, Total, &Count]() {
-
 				if (Chunk)
 				{
 					Chunk->Render();
 					++Count;
-					//FPlatformAtomics::InterlockedIncrement(&Count);
 					ProgressDelegate.Execute((float)Count / Total);
 				}
 			});

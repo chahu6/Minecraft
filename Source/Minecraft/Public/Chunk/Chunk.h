@@ -40,12 +40,11 @@ public:
 
 	bool IsDone();
 
-	void UpdateBlock();
+	void RecalculateEmpty();
 
 	void Render();
 
-public:
-	FCriticalSection BuildDataMutex;
+	void BuildMesh();
 
 private:
 	UPROPERTY()

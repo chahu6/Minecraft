@@ -1,5 +1,4 @@
 #include "Chunk/Chunk.h"
-#include "Save/ChunkSaveGame.h"
 #include "World/WorldSettings.h"
 #include "Chunk/ChunkSection.h"
 #include "World/Block/Block.h"
@@ -108,6 +107,7 @@ void AChunk::BuildAndRender()
 void AChunk::BuildAndRenderAsync()
 {
 	if (bIsRendering) return;
+
 	ChunkGeneratorTask = new FAsyncTask<FChunkGeneratorAsyncTask>(this);
 	ChunkGeneratorTask->StartBackgroundTask();
 }
@@ -122,7 +122,7 @@ bool AChunk::IsDone()
 	return false;
 }
 
-void AChunk::UpdateBlock()
+void AChunk::RecalculateEmpty()
 {
 	// 计算每个ChunkSection是否为空或Air
 	for (AChunkSection* ChunkSection : ChunkSections)
@@ -139,4 +139,12 @@ void AChunk::Render()
 	}
 
 	bIsRendering = true;
+}
+
+void AChunk::BuildMesh()
+{
+	for (AChunkSection* const ChunkSection : ChunkSections)
+	{
+		ChunkSection->BuildMesh();
+	}
 }

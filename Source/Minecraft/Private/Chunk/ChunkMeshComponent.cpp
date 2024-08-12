@@ -45,10 +45,6 @@ void UChunkMeshComponent::BuildMesh()
 	ChunkSection = ChunkSection == nullptr ? Cast<AChunkSection>(GetOwner()) : ChunkSection;
 	check(ChunkSection != nullptr);
 
-	FChunkMeshBuilder::BuildChunkMesh(ChunkSection, MeshDatas);
-}
-
-void UChunkMeshComponent::ClearMeshData()
-{
 	MeshDatas.Empty();
+	FChunkMeshBuilder::BuildChunkMesh(ChunkSection, MeshDatas);
 }

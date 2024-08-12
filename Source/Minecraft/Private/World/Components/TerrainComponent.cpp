@@ -27,7 +27,7 @@ void UTerrainComponent::LoadTerrainInfo(AChunk* Chunk)
 
 	LoadTerrainBlockID(Chunk);
 
-	Chunk->UpdateBlock();
+	Chunk->RecalculateEmpty();
 }
 
 void UTerrainComponent::LoadTerrainBlockID(AChunk* Chunk)
