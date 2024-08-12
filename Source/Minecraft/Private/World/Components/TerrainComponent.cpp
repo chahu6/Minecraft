@@ -7,6 +7,7 @@
 #include "Chunk/Chunk.h"
 #include "World/Block/BlockID.h"
 #include "World/Block/Block.h"
+#include "World/Generator/CaveGenerator.h"
 
 UTerrainComponent::UTerrainComponent()
 {
@@ -26,6 +27,8 @@ void UTerrainComponent::LoadTerrainInfo(AChunk* Chunk)
 	HeightGenerator::GenerateHeight(Chunk);
 
 	LoadTerrainBlockID(Chunk);
+
+	CaveGenerator::GeneratorCave(Chunk);
 
 	Chunk->RecalculateEmpty();
 }

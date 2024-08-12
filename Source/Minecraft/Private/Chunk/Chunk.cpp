@@ -86,12 +86,12 @@ FBlockData AChunk::GetBlock(int32 X, int32 Y, int32 Z)
 	return {};
 }
 
-void AChunk::SetBlock(int32 X, int32 Y, int32 Z, const FBlockData& BlockData)
+void AChunk::SetBlock(int32 OffsetX, int32 OffsetY, int32 WorldZ, const FBlockData& BlockData)
 {
-	int32 Index = Z / CHUNK_SIZE;
+	int32 Index = WorldZ / CHUNK_SIZE;
 	if (ChunkSections.IsValidIndex(Index))
 	{
-		ChunkSections[Index]->SetBlock(X, Y, Z % CHUNK_SIZE, BlockData);
+		ChunkSections[Index]->SetBlock(OffsetX, OffsetY, WorldZ % CHUNK_SIZE, BlockData);
 	}
 }
 

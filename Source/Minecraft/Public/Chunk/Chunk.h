@@ -32,7 +32,7 @@ public:
 
 	virtual FBlockData GetBlock(int32 X, int32 Y, int32 Z) override;
 
-	virtual void SetBlock(int32 X, int32 Y, int32 Z, const FBlockData& BlockData) override;
+	virtual void SetBlock(int32 OffsetX, int32 OffsetY, int32 WorldZ, const FBlockData& BlockData) override;
 
 	void BuildAndRender();
 
