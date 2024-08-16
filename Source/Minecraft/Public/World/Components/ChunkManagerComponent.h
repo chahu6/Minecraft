@@ -12,6 +12,8 @@ class MINECRAFT_API UChunkManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+	friend class AWorldManager;
+
 public:
 	UChunkManagerComponent();
 
@@ -19,11 +21,11 @@ public:
 
 	AChunk* GetChunk(const FVector2D& Key);
 
-	bool LoadChunk(const FVector2D& ChunkVoxelPosition);
+	bool CreateChunk(const FVector2D& ChunkVoxelPosition);
 
 	AChunk* operator[](const FVector2D& Position)
 	{
-		return _AllChunks.FindChecked(Position);
+		return AllChunks.FindChecked(Position);
 	}
 
 private:
@@ -33,11 +35,15 @@ private:
 
 private:
 	UPROPERTY()
-	TMap<FVector2D, AChunk*> _AllChunks;
+	TMap<FVector2D, AChunk*> AllChunks;
+
+	TArray<AChunk*> LoadingChunks;
+
+	TArray<AChunk*> RenderingChunks;
 
 	UPROPERTY()
 	TObjectPtr<AWorldManager> WorldManager;
 
 public:
-	FORCEINLINE TMap<FVector2D, AChunk*>& GetAllChunks() { return _AllChunks; }
+	FORCEINLINE TMap<FVector2D, AChunk*>& GetAllChunks() { return AllChunks; }
 };

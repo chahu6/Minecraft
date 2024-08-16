@@ -17,14 +17,14 @@ void UChunkManagerComponent::BeginPlay()
 
 AChunk* UChunkManagerComponent::GetChunk(const FVector2D& Key)
 {
-	if (_AllChunks.Contains(Key))
+	if (AllChunks.Contains(Key))
 	{
-		return _AllChunks[Key];
+		return AllChunks[Key];
 	}
 	return nullptr;
 }
 
-bool UChunkManagerComponent::LoadChunk(const FVector2D& ChunkVoxelPosition)
+bool UChunkManagerComponent::CreateChunk(const FVector2D& ChunkVoxelPosition)
 {
 	AChunk* Chunk = GetChunk(ChunkVoxelPosition);
 	if (Chunk == nullptr)
@@ -33,9 +33,12 @@ bool UChunkManagerComponent::LoadChunk(const FVector2D& ChunkVoxelPosition)
 		if (World)
 		{
 			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = GetOwner();
-			Chunk = World->SpawnActor<AChunk>(AChunk::StaticClass(), { ChunkVoxelPosition.X * ChunkSize, ChunkVoxelPosition.Y * ChunkSize, 0.0 }, FRotator::ZeroRotator, SpawnParams);
-			_AllChunks.Add(ChunkVoxelPosition, Chunk);
+			SpawnParams.Owner = WorldManager;
+			//Chunk = World->SpawnActor<AChunk>(AChunk::StaticClass(), { ChunkVoxelPosition.X * ChunkSize, ChunkVoxelPosition.Y * ChunkSize, 0.0 }, FRotator::ZeroRotator, SpawnParams);
+			Chunk = World->SpawnActorDeferred<AChunk>(AChunk::StaticClass(), FTransform(FVector(ChunkVoxelPosition.X * ChunkSize, ChunkVoxelPosition.Y * ChunkSize, 0.0)), WorldManager);
+			Chunk->SetGenerationMethod(WorldManager->ChunkGenerationMethod);
+			Chunk->FinishSpawning({}, true);
+			AllChunks.Emplace(ChunkVoxelPosition, Chunk);
 
 			// 加载新的区块时，让新区块的四个面的区块也加载
 			Rebuild_Adjacent_Chunks(ChunkVoxelPosition);

@@ -1,150 +1,96 @@
 #include "Chunk/Chunk.h"
 #include "World/WorldSettings.h"
-#include "Chunk/ChunkSection.h"
 #include "World/Block/Block.h"
 #include "World/Runnable/ChunkGeneratorAsyncTask.h"
+#include "Chunk/ChunkMeshComponent.h"
+#include "World/WorldSettings.h"
+#include "World/WorldManager.h"
+#include "Core/BlockPos.h"
 
 AChunk::AChunk()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	ChunkMeshComponent = CreateDefaultSubobject<UChunkMeshComponent>(TEXT("ChunkMeshComponent"));
+	RootComponent = ChunkMeshComponent;
+	ChunkMeshComponent->bUseAsyncCooking = true;
 
-	ChunkSections.SetNum(WORLD_HEIGHT);
+	HeightMap.Init(0, CHUNK_AREA);
 
-	HeightMap.SetNum(256);
+	Blocks.Init({}, CHUNK_VOLUME);
 }
 
 void AChunk::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		FVector ChunkSectionLocation = GetActorLocation();
-		for (int32 Z = 0; Z < WORLD_HEIGHT; ++Z)
-		{
-			ChunkSectionLocation.Z = Z * ChunkSize;
-			AChunkSection* ChunkSection = World->SpawnActor<AChunkSection>(AChunkSection::StaticClass(), ChunkSectionLocation, FRotator::ZeroRotator, SpawnParams);
-			ChunkSections[Z] = ChunkSection;
-		}
-	}
-}
-
-void AChunk::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
 }
 
 void AChunk::Destroyed()
 {
-	// 删除任务
-	if (ChunkGeneratorTask)
-	{
-		ChunkGeneratorTask->EnsureCompletion();
-		delete ChunkGeneratorTask;
-		ChunkGeneratorTask = nullptr;
-	}
-
-	for (AChunkSection* ChunkSection : ChunkSections)
-	{
-		if (ChunkSection)
-		{
-			ChunkSection->Destroy();
-		}
-	}
-
-	ChunkSections.Empty();
-
 	Super::Destroyed();
-}
-
-AChunkSection* AChunk::GetChunkSection(double Voxel_Z)
-{
-	return ChunkSections.IsValidIndex(Voxel_Z) ? ChunkSections[Voxel_Z] : nullptr;
 }
 
 void AChunk::Dirty()
 {
-	for (AChunkSection* ChunkSection : ChunkSections)
-	{
-		ChunkSection->SetDirty(true);
-	}
+	bIsDirty = true;
 }
 
-FBlockData AChunk::GetBlock(int32 X, int32 Y, int32 Z)
+FBlockData AChunk::GetBlock(int32 OffsetX, int32 OffsetY, int32 WorldZ)
 {
-	int32 Index = Z / CHUNK_SIZE;
-	if (ChunkSections.IsValidIndex(Index))
+	if (Blocks.IsValidIndex(GetBlocksIndex(OffsetX, OffsetY, WorldZ)))
 	{
-		return ChunkSections[Index]->GetBlock(X, Y, Z % CHUNK_SIZE);
+		return Blocks[GetBlocksIndex(OffsetX, OffsetY, WorldZ)];
 	}
 
 	return {};
 }
 
+FBlockData AChunk::GetBlock(const FBlockPos& BlockPos)
+{
+	FVector OffsetLocation = BlockPos.OffsetLocation();
+	
+	return GetBlock(OffsetLocation.X, OffsetLocation.Y, OffsetLocation.Z);
+}
+
 void AChunk::SetBlock(int32 OffsetX, int32 OffsetY, int32 WorldZ, const FBlockData& BlockData)
 {
-	int32 Index = WorldZ / CHUNK_SIZE;
-	if (ChunkSections.IsValidIndex(Index))
+	if (Blocks.IsValidIndex(GetBlocksIndex(OffsetX, OffsetY, WorldZ)))
 	{
-		ChunkSections[Index]->SetBlock(OffsetX, OffsetY, WorldZ % CHUNK_SIZE, BlockData);
+		Blocks[GetBlocksIndex(OffsetX, OffsetY, WorldZ)] = BlockData;
 	}
 }
 
 void AChunk::BuildAndRender()
 {
-	for (const auto ChunkSection : ChunkSections)
-	{
-		ChunkSection->BuildMesh();
-	}
+	BuildMesh();
 	Render();
 }
 
 void AChunk::BuildAndRenderAsync()
 {
-	if (bIsRendering) return;
-
-	ChunkGeneratorTask = new FAsyncTask<FChunkGeneratorAsyncTask>(this);
-	ChunkGeneratorTask->StartBackgroundTask();
-}
-
-bool AChunk::IsDone()
-{
-	if (ChunkGeneratorTask)
+	if (!bIsRendering || bIsDirty)
 	{
-		return ChunkGeneratorTask->IsDone();
+		(new FAutoDeleteAsyncTask<FChunkGeneratorAsyncTask>(this))->StartBackgroundTask();
 	}
-
-	return false;
 }
 
 void AChunk::RecalculateEmpty()
 {
 	// 计算每个ChunkSection是否为空或Air
-	for (AChunkSection* ChunkSection : ChunkSections)
-	{
-		ChunkSection->RecalculateEmpty();
-	}
+	bIsEmpty = !Blocks.ContainsByPredicate([](const FBlockData& Element) { return Element.ID != EBlockID::Air; });
 }
 
 void AChunk::Render()
 {
-	for (AChunkSection* ChunkSection : ChunkSections)
-	{
-		ChunkSection->Render();
-	}
+	ChunkMeshComponent->Render();
 
 	bIsRendering = true;
 }
 
 void AChunk::BuildMesh()
 {
-	for (AChunkSection* const ChunkSection : ChunkSections)
-	{
-		ChunkSection->BuildMesh();
-	}
+	ChunkMeshComponent->BuildMesh(GenerationMethod);
+
+	bIsDirty = false;
 }

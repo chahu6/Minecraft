@@ -8,7 +8,7 @@ class AChunk;
  */
 class MINECRAFT_API FChunkGeneratorAsyncTask : public FNonAbandonableTask
 {
-	friend class FAsyncTask<FChunkGeneratorAsyncTask>;
+	friend class FAutoDeleteAsyncTask<FChunkGeneratorAsyncTask>;
 
 public:
 	FChunkGeneratorAsyncTask() = default;

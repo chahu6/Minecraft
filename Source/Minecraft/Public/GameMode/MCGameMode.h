@@ -8,6 +8,7 @@
 
 class AMCPlayerController;
 class AMinecraftPlayer;
+class AWorldManager;
 /**
  * 
  */
@@ -33,4 +34,7 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AMinecraftPlayer> MinecraftPlayerClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AWorldManager> WorldManagerClass;
 };

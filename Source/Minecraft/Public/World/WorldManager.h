@@ -3,10 +3,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Block/BlockID.h"
+#include "World/GenerationMethod.h"
 #include "WorldManager.generated.h"
 
 class AChunk;
-class AChunkSection;
 class UTerrainComponent;
 class UChunkManagerComponent;
 struct FBlockPos;
@@ -19,21 +19,21 @@ class MINECRAFT_API AWorldManager : public AActor
 {
 	GENERATED_BODY()
 	
+	friend class UChunkManagerComponent;
+
 public:	
 	AWorldManager();
+
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 	virtual void BeginPlay() override;
 
 public:	
-	virtual void Tick(float DeltaTime) override;
-
 	// Key是Chunk在Voxel World的位置，没有乘以ChunkSize的位置
-	AChunk* GetChunk(const FVector2D& ChunkVoxelPosition);
+	AChunk* GetChunk(const FVector2D& ChunkVoxelLocation);
 
-	AChunkSection* GetChunkSection(const FVector& ChunkVoxelPosition);
-
-	AChunkSection* GetChunkSection(const FBlockPos& BlockPos);
+	AChunk* GetChunk(const FBlockPos& BlockPos);
 
 	bool DestroyBlock(const FBlockPos& BlockPos);
 
@@ -42,6 +42,8 @@ public:
 	void SetBlock(const FBlockPos& BlockPos, int32 BlockID);
 
 	FBlockData GetBlock(const FBlockPos& BlockPos);
+
+	FBlockData GetBlock(const FIntVector& BlockWorldVoxelLocation);
 
 	FProgressDelegate ProgressDelegate;
 
@@ -54,7 +56,9 @@ private:
 
 	void AddChunk();
 
-	void LoadChunk(const FVector2D& ChunkPosition);
+	void CreateChunk(const FVector2D& ChunkPosition);
+
+	void LoadChunkInfo(const FVector2D& ChunkPosition);
 
 	void RemoveChunk();
 
@@ -65,6 +69,7 @@ private:
 	void Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z);
 
 public:
+	// 渲染网格体的任务队列
 	TQueue<AChunk*, EQueueMode::Mpsc> TaskQueue;
 
 protected:
@@ -74,21 +79,29 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UTerrainComponent> TerrainManager;
 
-	UPROPERTY(EditAnywhere)
-	int32 ChunkRenderingRange = 8;
+protected:
+	UPROPERTY(EditAnywhere, Category = "Voxel")
+	int32 ChunkRenderRange = 8;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Terrain Setting")
 	int32 Seed = 0;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, Category = "Terrain Setting")
+	EGenerationMethod ChunkGenerationMethod = EGenerationMethod::Greedy;
+
+private:
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	FVector2D CharacterChunkPosition;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	FVector2D DefaultCharacterPosition;
 
-	int32 InitChunksNum = 0;
+	/*
+	* First Initializer
+	*/
+	int32 Total = 0;
 
-	FTimerHandle LoadingTimerHandle;
+	std::atomic<int32> Count = 0;
 
 public:
 	FORCEINLINE FVector2D GetDefaultCharacterPosition() const { return DefaultCharacterPosition; }

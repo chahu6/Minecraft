@@ -25,8 +25,6 @@ void HeightGenerator::GenerateHeight(AChunk* Chunk)
 
 			float Height = USimplexNoiseLibrary::FBM(World_X, World_Y);
 
-			Height /= 1.9375f;
-
 			//Height = FMath::Pow(Height * 1.2f, 0.8f);
 			//Height = HeightRemap->GetFloatValue(Height);
 

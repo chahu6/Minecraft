@@ -1,5 +1,4 @@
 #include "Controller/CameraManager/MinecraftPlayerCameraManager.h"
-#include "Chunk/ChunkSection.h"
 #include "World/WorldSettings.h"
 
 AMinecraftPlayerCameraManager::AMinecraftPlayerCameraManager()
@@ -15,25 +14,25 @@ AMinecraftPlayerCameraManager::AMinecraftPlayerCameraManager()
 
 bool AMinecraftPlayerCameraManager::IsOnFrustum(const AChunkSection* ChunkSection)
 {
-	const FRotator& Rotation = ViewTarget.POV.Rotation;
-	FVector SpereVector = ChunkSection->GetCenter() - ViewTarget.POV.Location;
+	//const FRotator& Rotation = ViewTarget.POV.Rotation;
+	//FVector SpereVector = ChunkSection->GetCenter() - ViewTarget.POV.Location;
 
-	// 超出这个近剪切平面
-	double SX = SpereVector.Dot(Rotation.Quaternion().GetRightVector());
-	if (!(SX > NearClipPlane - CHUNK_SPHERE_RADIUS * BlockSize))
-		return false;
+	//// 超出这个近剪切平面
+	//double SX = SpereVector.Dot(Rotation.Quaternion().GetRightVector());
+	//if (!(SX > NearClipPlane - CHUNK_SPHERE_RADIUS * BlockSize))
+	//	return false;
 
-	// 超出这个TOP和BOTTOM
-	double SZ = SpereVector.Dot(Rotation.Quaternion().GetUpVector());
-	double Dist = Factor_Z * CHUNK_SPHERE_RADIUS * BlockSize + SX * Tan_Z;
-	if (!(-Dist < SZ && SZ < Dist))
-		return false;
+	//// 超出这个TOP和BOTTOM
+	//double SZ = SpereVector.Dot(Rotation.Quaternion().GetUpVector());
+	//double Dist = Factor_Z * CHUNK_SPHERE_RADIUS * BlockSize + SX * Tan_Z;
+	//if (!(-Dist < SZ && SZ < Dist))
+	//	return false;
 
-	// 超出左右面
-	double SY = SpereVector.Dot(Rotation.Quaternion().GetRightVector());
-	Dist = Factor_Y * CHUNK_SPHERE_RADIUS * BlockSize + SX * Tan_Y;
-	if (!(-Dist < SY && SY < Dist))
-		return false;
+	//// 超出左右面
+	//double SY = SpereVector.Dot(Rotation.Quaternion().GetRightVector());
+	//Dist = Factor_Y * CHUNK_SPHERE_RADIUS * BlockSize + SX * Tan_Y;
+	//if (!(-Dist < SY && SY < Dist))
+	//	return false;
 		
 	return true;
 }

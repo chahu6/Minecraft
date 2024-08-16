@@ -26,6 +26,8 @@ public class LandscapeExtra : ModuleRules
 			new string[]
 			{
 				"Core",
+                "ProceduralMeshComponent",
+                "InputCore",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -40,6 +42,9 @@ public class LandscapeExtra : ModuleRules
 				"SlateCore",
                 "AssetDefinition",
                 "UnrealEd",
+				"AssetTools",
+                "ToolMenus",
+                "AdvancedPreviewScene",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

@@ -17,10 +17,9 @@ void CaveGenerator::GeneratorCave(AChunk* Chunk)
 			int32 World_Y = Y * BlockSize + ChunkLocation.Y;
 			for (int32 Z = 10; Z < HeightMap[GetHeightIndex(X, Y)] - 10; ++Z)
 			{
-				double test = USimplexNoiseLibrary::ImprovedNoise(World_X, World_Y, Z);
-				test = (test + 1) / 2;
+				double test = USimplexNoiseLibrary::ImprovedNoise(World_X, World_Y, Z * BlockSize, 0.001);
 
-				if (test > 0.4f)
+				if (test > 0.0)
 				{
 					Chunk->SetBlock(X, Y, Z, {});
 				}

@@ -1,6 +1,5 @@
 #include "World/Runnable/ChunkGeneratorAsyncTask.h"
 #include "Chunk/Chunk.h"
-#include "Chunk/ChunkSection.h"
 #include "World/WorldManager.h"
 
 FChunkGeneratorAsyncTask::FChunkGeneratorAsyncTask(AChunk* Chunk)
@@ -15,12 +14,7 @@ void FChunkGeneratorAsyncTask::DoWork()
 		return;
 	}
 
-	const TArray<AChunkSection*>& ChunkSections = Chunk->GetChunkSections();
-
-	for (AChunkSection* ChunkSection : ChunkSections)
-	{
-		ChunkSection->BuildMesh();
-	}
+	Chunk->BuildMesh();
 
 	AWorldManager* WorldManager = Cast<AWorldManager>(Chunk->GetOwner());
 	if (WorldManager)
