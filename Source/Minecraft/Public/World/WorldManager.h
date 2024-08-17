@@ -29,6 +29,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 public:	
 	// Key是Chunk在Voxel World的位置，没有乘以ChunkSize的位置
 	AChunk* GetChunk(const FVector2D& ChunkVoxelLocation);
@@ -68,6 +70,8 @@ private:
 
 	void Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z);
 
+	void RenderChunk();
+
 public:
 	// 渲染网格体的任务队列
 	TQueue<AChunk*, EQueueMode::Mpsc> TaskQueue;
@@ -88,6 +92,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Terrain Setting")
 	EGenerationMethod ChunkGenerationMethod = EGenerationMethod::Greedy;
+
+	UPROPERTY(EditAnywhere, Category = "Terrain Setting")
+	float RenderRate = 0.1f;
+
+	// 每次渲染Chunk的个数
+	UPROPERTY(EditAnywhere, Category = "Terrain Setting")
+	int32 RenderCount = 1;
+
+	FTimerHandle RenderQueueHandle;
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))

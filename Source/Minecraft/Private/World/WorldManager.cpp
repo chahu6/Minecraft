@@ -32,6 +32,14 @@ void AWorldManager::BeginPlay()
 	USimplexNoiseLibrary::SetNoiseSeed(Seed);
 
 	InitialWorldChunkLoad();
+
+	GetWorldTimerManager().SetTimer(RenderQueueHandle, this, &AWorldManager::RenderChunk, RenderRate, true);
+}
+
+void AWorldManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
 }
 
 void AWorldManager::Tick(float DeltaTime)
@@ -46,24 +54,6 @@ void AWorldManager::Tick(float DeltaTime)
 			AddChunk();
 			RemoveChunk();
 		}*/
-	}
-
-	{
-		//ScopeProfiler t("TaskQueue");
-
-		// 分帧加载
-		if (!TaskQueue.IsEmpty())
-		{
-			AChunk* Chunk = nullptr;
-			for (int32 i = 0; i < MAX_QUEUE_SIZE; ++i) // 每帧最大能加载几个
-			{
-				if (TaskQueue.Dequeue(Chunk) && nullptr != Chunk)
-				{
-					Chunk->Render();
-					Chunk->ChunkState = EChunkState::Rendered;
-				}
-			}
-		}
 	}
 }
 
@@ -400,4 +390,19 @@ void AWorldManager::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, 
 		return;
 
 	//ChunkSection->Rebuild();
+}
+
+void AWorldManager::RenderChunk()
+{
+	if (TaskQueue.IsEmpty()) return;
+
+	AChunk* Chunk = nullptr;
+	for (int32 I = 0; I < RenderCount; ++I) // 每帧最大能加载几个
+	{
+		if (TaskQueue.Dequeue(Chunk) && nullptr != Chunk)
+		{
+			Chunk->Render();
+			Chunk->ChunkState = EChunkState::Rendered;
+		}
+	}
 }

@@ -6,7 +6,6 @@
 #include "World/GenerationMethod.h"
 #include "Chunk.generated.h"
 
-class AChunkSection;
 struct FBlockData;
 class UChunkMeshComponent;
 struct FBlockPos;

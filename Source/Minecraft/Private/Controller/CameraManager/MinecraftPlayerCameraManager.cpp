@@ -12,7 +12,7 @@ AMinecraftPlayerCameraManager::AMinecraftPlayerCameraManager()
 	Tan_Z = FMath::Tan(H_FOV * 0.5f);
 }
 
-bool AMinecraftPlayerCameraManager::IsOnFrustum(const AChunkSection* ChunkSection)
+bool AMinecraftPlayerCameraManager::IsOnFrustum(AChunk* Chunk)
 {
 	//const FRotator& Rotation = ViewTarget.POV.Rotation;
 	//FVector SpereVector = ChunkSection->GetCenter() - ViewTarget.POV.Location;

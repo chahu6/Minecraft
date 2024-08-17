@@ -34,7 +34,6 @@ bool UChunkManagerComponent::CreateChunk(const FVector2D& ChunkVoxelPosition)
 		{
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Owner = WorldManager;
-			//Chunk = World->SpawnActor<AChunk>(AChunk::StaticClass(), { ChunkVoxelPosition.X * ChunkSize, ChunkVoxelPosition.Y * ChunkSize, 0.0 }, FRotator::ZeroRotator, SpawnParams);
 			Chunk = World->SpawnActorDeferred<AChunk>(AChunk::StaticClass(), FTransform(FVector(ChunkVoxelPosition.X * ChunkSize, ChunkVoxelPosition.Y * ChunkSize, 0.0)), WorldManager);
 			Chunk->SetGenerationMethod(WorldManager->ChunkGenerationMethod);
 			Chunk->FinishSpawning({}, true);

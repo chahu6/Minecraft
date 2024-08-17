@@ -4,7 +4,8 @@
 #include "Camera/PlayerCameraManager.h"
 #include "MinecraftPlayerCameraManager.generated.h"
 
-class AChunkSection;
+class AChunk;
+
 /**
  * 
  */
@@ -18,7 +19,7 @@ public:
 
 public:
 	// 要在Tick函数中用
-	bool IsOnFrustum(const AChunkSection* ChunkSection);
+	bool IsOnFrustum(AChunk* Chunk);
 
 private:
 	// 竖直方向上的FOV
