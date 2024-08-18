@@ -83,29 +83,29 @@ void UChunkMeshComponent::BuildGreedyChunkMesh()
 
 		switch (Axis)
 		{
-		case 0: // X÷·
-		{
-			MainAxisLimit = CHUNK_SIZE;
-			Axis1Limit = CHUNK_SIZE;
-			Axis2Limit = CHUNK_HEIGHT;
-			break;
-		}
-		case 1: // Y÷·
-		{
-			MainAxisLimit = CHUNK_SIZE;
-			Axis1Limit = CHUNK_HEIGHT;
-			Axis2Limit = CHUNK_SIZE;
-			break;
-		}
-		case 2: // Z÷·
-		{
-			MainAxisLimit = CHUNK_HEIGHT;
-			Axis1Limit = CHUNK_SIZE;
-			Axis2Limit = CHUNK_SIZE;
-			break;
-		}
-		default:
-			break;
+			case 0: // X÷·
+			{
+				MainAxisLimit = CHUNK_SIZE;
+				Axis1Limit = CHUNK_SIZE;
+				Axis2Limit = CHUNK_HEIGHT;
+				break;
+			}
+			case 1: // Y÷·
+			{
+				MainAxisLimit = CHUNK_SIZE;
+				Axis1Limit = CHUNK_HEIGHT;
+				Axis2Limit = CHUNK_SIZE;
+				break;
+			}
+			case 2: // Z÷·
+			{
+				MainAxisLimit = CHUNK_HEIGHT;
+				Axis1Limit = CHUNK_SIZE;
+				Axis2Limit = CHUNK_SIZE;
+				break;
+			}
+			default:
+				break;
 		}
 
 		TArray<FMask> Mask;
@@ -242,7 +242,7 @@ void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 		FVector(V2) * BlockSize,
 		FVector(V3) * BlockSize,
 		FVector(V4) * BlockSize
-		});
+	});
 
 	MeshData.Triangles.Append({
 		Index,
@@ -251,14 +251,14 @@ void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 		Index + 3,
 		Index + 1 - Mask.Normal,
 		Index + 1 + Mask.Normal
-		});
+	});
 
 	MeshData.Normals.Append({
 		Normal,
 		Normal,
 		Normal,
 		Normal
-		});
+	});
 
 	if (Normal.X || Normal.Y)
 	{
@@ -278,7 +278,7 @@ void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 		{ 0.0f, 0.0f, 0.0f, Direction },
 		{ 0.0f, 0.0f, 0.0f, Direction },
 		{ 0.0f, 0.0f, 0.0f, Direction }
-		});
+	});
 
 	if (Normal.X == 1 || Normal.X == -1)
 	{
@@ -287,7 +287,7 @@ void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 			FVector2D(0, Height),
 			FVector2D(Width, 0),
 			FVector2D(0, 0)
-			});
+		});
 	}
 	else
 	{
@@ -296,7 +296,7 @@ void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 			FVector2D(Height, 0),
 			FVector2D(0, Width),
 			FVector2D(0, 0),
-			});
+		});
 	}
 
 	MeshDatas.Add(static_cast<int32>(Mask.BlockID), MeshData);

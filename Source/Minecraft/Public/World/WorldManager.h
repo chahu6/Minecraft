@@ -84,20 +84,20 @@ protected:
 	TObjectPtr<UTerrainComponent> TerrainManager;
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Voxel")
+	UPROPERTY(EditAnywhere, Category = "World Setting")
 	int32 ChunkRenderRange = 8;
 
-	UPROPERTY(EditAnywhere, Category = "Terrain Setting")
+	UPROPERTY(EditAnywhere, Category = "World Setting")
 	int32 Seed = 0;
 
-	UPROPERTY(EditAnywhere, Category = "Terrain Setting")
+	UPROPERTY(EditAnywhere, Category = "World Setting")
 	EGenerationMethod ChunkGenerationMethod = EGenerationMethod::Greedy;
 
-	UPROPERTY(EditAnywhere, Category = "Terrain Setting")
+	UPROPERTY(EditAnywhere, Category = "World Setting")
 	float RenderRate = 0.1f;
 
 	// 每次渲染Chunk的个数
-	UPROPERTY(EditAnywhere, Category = "Terrain Setting")
+	UPROPERTY(EditAnywhere, Category = "World Setting")
 	int32 RenderCount = 1;
 
 	FTimerHandle RenderQueueHandle;

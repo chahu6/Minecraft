@@ -7,7 +7,7 @@
 void CaveGenerator::GeneratorCave(AChunk* Chunk)
 {
 	const FVector ChunkLocation = Chunk->GetActorLocation();
-	TArray<uint8>& HeightMap = Chunk->GetHeightMap();
+	TArray<int32>& HeightMap = Chunk->GetHeightMap();
 
 	for (int32 X = 0; X < CHUNK_SIZE; ++X)
 	{

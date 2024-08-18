@@ -65,7 +65,7 @@ private:
 
 	bool bIsEmpty = false;
 
-	TArray<uint8> HeightMap;
+	TArray<int32> HeightMap;
 
 	int32 Seed = -1;
 
@@ -77,6 +77,6 @@ private:
 
 public:
 	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }
-	FORCEINLINE TArray<uint8>& GetHeightMap() { return HeightMap; }
+	FORCEINLINE TArray<int32>& GetHeightMap() { return HeightMap; }
 	FORCEINLINE void SetGenerationMethod(EGenerationMethod Method) { GenerationMethod = Method; }
 };
