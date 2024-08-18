@@ -3,36 +3,39 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Block/BlockID.h"
+#include "World/GenerationMethod.h"
 #include "WorldManager.generated.h"
 
 class AChunk;
-class AChunkSection;
-class UClassicOverWorldGenerator;
+class UTerrainComponent;
 class UChunkManagerComponent;
 struct FBlockPos;
 struct FBlockData;
+
+DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
 
 UCLASS()
 class MINECRAFT_API AWorldManager : public AActor
 {
 	GENERATED_BODY()
 	
+	friend class UChunkManagerComponent;
+
 public:	
 	AWorldManager();
 
-protected:
-	virtual void PostInitializeComponents() override;
-	virtual void BeginPlay() override;
-
-public:	
 	virtual void Tick(float DeltaTime) override;
 
+protected:
+	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+public:	
 	// Key是Chunk在Voxel World的位置，没有乘以ChunkSize的位置
-	AChunk* GetChunk(const FVector2D& ChunkVoxelPosition);
+	AChunk* GetChunk(const FVector2D& ChunkVoxelLocation);
 
-	AChunkSection* GetChunkSection(const FVector& ChunkVoxelPosition);
-
-	AChunkSection* GetChunkSection(const FBlockPos& BlockPos);
+	AChunk* GetChunk(const FBlockPos& BlockPos);
 
 	bool DestroyBlock(const FBlockPos& BlockPos);
 
@@ -42,40 +45,77 @@ public:
 
 	FBlockData GetBlock(const FBlockPos& BlockPos);
 
-private:
+	FBlockData GetBlock(const FIntVector& BlockWorldVoxelLocation);
 
+	FProgressDelegate ProgressDelegate;
+
+	void RenderChunks();
+
+private:
 	void InitialWorldChunkLoad();
 
 	bool UpdatePosition();
 
 	void AddChunk();
 
+	void CreateChunk(const FVector2D& ChunkPosition);
+
+	void LoadChunkInfo(const FVector2D& ChunkPosition);
+
 	void RemoveChunk();
 
-	void RenderChunks();
+	void RenderChunksAsync();
 
 	void Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos);
 
 	void Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z);
 
+	void RenderChunk();
+
 public:
+	// 渲染网格体的任务队列
 	TQueue<AChunk*, EQueueMode::Mpsc> TaskQueue;
 
-private:
-	UPROPERTY()
-	TObjectPtr<UClassicOverWorldGenerator> TerrainGeneratorss;
-
+protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UChunkManagerComponent> ChunkManager;
 
-	UPROPERTY(EditAnywhere)
-	int32 ChunkRenderingRange = 8;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UTerrainComponent> TerrainManager;
 
-	UPROPERTY(EditAnywhere)
+protected:
+	UPROPERTY(EditAnywhere, Category = "World Setting")
+	int32 ChunkRenderRange = 8;
+
+	UPROPERTY(EditAnywhere, Category = "World Setting")
 	int32 Seed = 0;
 
-	FVector2D CharacterPosition;
+	UPROPERTY(EditAnywhere, Category = "World Setting")
+	EGenerationMethod ChunkGenerationMethod = EGenerationMethod::Greedy;
+
+	UPROPERTY(EditAnywhere, Category = "World Setting")
+	float RenderRate = 0.1f;
+
+	// 每次渲染Chunk的个数
+	UPROPERTY(EditAnywhere, Category = "World Setting")
+	int32 RenderCount = 1;
+
+	FTimerHandle RenderQueueHandle;
+
+private:
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FVector2D CharacterChunkPosition;
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FVector2D DefaultCharacterPosition;
+
+	/*
+	* First Initializer
+	*/
+	int32 Total = 0;
+
+	std::atomic<int32> Count = 0;
 
 public:
-	FORCEINLINE UClassicOverWorldGenerator* GetTerrainGenerator() const { return TerrainGeneratorss; }
+	FORCEINLINE FVector2D GetDefaultCharacterPosition() const { return DefaultCharacterPosition; }
 };

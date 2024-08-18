@@ -44,7 +44,7 @@ private:
 	TSubclassOf<UUserWidget> DebugInfoClass;
 
 	UPROPERTY()
-	class UUserWidget* DebugInfoUI;
+	TObjectPtr<UUserWidget> DebugInfoUI;
 
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> BackpackClass;
@@ -66,5 +66,5 @@ private:
 
 	// Ê®×Ö×¼ÐÇ
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
-	UTexture2D* Crosshairs;
+	TObjectPtr<UTexture2D> Crosshairs;
 };

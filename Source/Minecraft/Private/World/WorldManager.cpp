@@ -1,16 +1,18 @@
 #include "World/WorldManager.h"
 #include "World/WorldSettings.h"
 #include "Chunk/Chunk.h"
-#include "World/ChunkManagerComponent.h"
+#include "World/Components/ChunkManagerComponent.h"
 #include "SimplexNoiseLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Core/BlockPos.h"
-#include "Generation/ClassicOverWorldGenerator.h"
-#include "Chunk/ChunkSection.h"
 #include "Utils/MinecraftAssetLibrary.h"
 #include "World/Block/Block.h"
 #include "World/Behavior/BlockBehavior.h"
+#include "World/Runnable/WorldGeneratorAsyncTask.h"
+#include "World/Components/TerrainComponent.h"
+
+#include "Utils/ScopeProfiler.h"
 
 AWorldManager::AWorldManager()
 {
@@ -20,13 +22,7 @@ AWorldManager::AWorldManager()
 
 	ChunkManager = CreateDefaultSubobject<UChunkManagerComponent>(TEXT("ChunkManagerComponent"));
 
-	TerrainGeneratorss = NewObject<UClassicOverWorldGenerator>(this, TEXT("TerrainGenerator"));
-}
-
-void AWorldManager::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
+	TerrainManager = CreateDefaultSubobject<UTerrainComponent>(TEXT("TerrainComponent"));
 }
 
 void AWorldManager::BeginPlay()
@@ -36,61 +32,106 @@ void AWorldManager::BeginPlay()
 	USimplexNoiseLibrary::SetNoiseSeed(Seed);
 
 	InitialWorldChunkLoad();
+
+	GetWorldTimerManager().SetTimer(RenderQueueHandle, this, &AWorldManager::RenderChunk, RenderRate, true);
+}
+
+void AWorldManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
 }
 
 void AWorldManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	bool bIsUpdated = UpdatePosition();
-	if (bIsUpdated)
+	
 	{
-		AddChunk();
-		RemoveChunk();
-		RenderChunks();
-	}
+		//ScopeProfiler t("Update");
 
-	if (!TaskQueue.IsEmpty())
-	{
-		for (int32 i = 0; i < MAX_QUEUE_SIZE; ++i)
+		/*if (UpdatePosition())
 		{
-			AChunk* Chunk = nullptr;
-
-			if (!TaskQueue.Dequeue(Chunk)) break;
-
-			if (Chunk)
-			{
-				Chunk->Render();
-			}
-		}
+			AddChunk();
+			RemoveChunk();
+		}*/
 	}
 }
 
 void AWorldManager::InitialWorldChunkLoad()
 {
-	FVector2D NewLocation2D(UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation());
-	
-	CharacterPosition.X = FMath::Floor(NewLocation2D.X / ChunkSize);
-	CharacterPosition.Y = FMath::Floor(NewLocation2D.Y / ChunkSize);
+	DefaultCharacterPosition = FVector2D(FMath::RandRange(-100.f, 100.f));
+	FVector2D NewLocation2D = DefaultCharacterPosition;
 
-	for (int32 X = -ChunkRenderingRange; X <= ChunkRenderingRange; ++X)
+	CharacterChunkPosition.X = FMath::Floor(NewLocation2D.X / ChunkSize);
+	CharacterChunkPosition.Y = FMath::Floor(NewLocation2D.Y / ChunkSize);
+
 	{
-		for (int32 Y = -ChunkRenderingRange; Y <= ChunkRenderingRange; ++Y)
+		// 初始化
+		CreateChunk(CharacterChunkPosition);
+		LoadChunkInfo(CharacterChunkPosition);
+		AChunk* Chunk = ChunkManager->GetChunk(CharacterChunkPosition);
+		if (IsValid(Chunk))
 		{
-			FVector2D Temp = CharacterPosition + FVector2D(X, Y);
-			ChunkManager->LoadChunk(Temp);
+			Chunk->BuildAndRender();
 		}
 	}
 
-	RenderChunks();
+	FVector2D ChunkPosition;
+	for (int32 ChunkX = -ChunkRenderRange; ChunkX <= ChunkRenderRange; ++ChunkX)
+	{
+		for (int32 ChunkY = -ChunkRenderRange; ChunkY <= ChunkRenderRange; ++ChunkY)
+		{
+			ChunkPosition = CharacterChunkPosition + FVector2D(ChunkX, ChunkY);
+			CreateChunk(ChunkPosition);
+		}
+	}
+
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]() {
+		FVector2D ChunkLoc;
+		for (int32 ChunkX = -ChunkRenderRange; ChunkX <= ChunkRenderRange; ++ChunkX)
+		{
+			for (int32 ChunkY = -ChunkRenderRange; ChunkY <= ChunkRenderRange; ++ChunkY)
+			{
+				ChunkLoc = CharacterChunkPosition + FVector2D(ChunkX, ChunkY);
+				LoadChunkInfo(ChunkLoc);
+			}
+		}
+
+		Total = ChunkManager->LoadingChunks.Num(); // !!!
+		Count = 0;
+		AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]() {
+			ParallelFor(ChunkManager->LoadingChunks.Num(), [&](int32 Index) {
+				AChunk* Chunk = ChunkManager->LoadingChunks[Index];
+
+				if (!IsValid(Chunk))
+				{
+					return;
+				}
+
+				Chunk->BuildMesh();
+
+				TaskQueue.Enqueue(Chunk);
+				AsyncTask(ENamedThreads::GameThread, [&]() {
+					Count++;
+					ProgressDelegate.ExecuteIfBound(Count.load() / (float)Total);
+					GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), Count.load() / (float)Total));
+				});
+			}, EParallelForFlags::BackgroundPriority);
+		});
+	});
 }
 
 bool AWorldManager::UpdatePosition()
 {
-	FVector2D NewLocation2D(UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation());
-	if (!UKismetMathLibrary::EqualEqual_Vector2DVector2D(CharacterPosition * ChunkSize, NewLocation2D, ChunkSize_Half))
+	APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0);
+	if (Pawn == nullptr) return false;
+
+	FVector2D NewLocation2D;
+	NewLocation2D.X = FMath::Floor(Pawn->GetActorLocation().X / ChunkSize);
+	NewLocation2D.Y = FMath::Floor(Pawn->GetActorLocation().Y / ChunkSize);
+	if (!NewLocation2D.Equals(CharacterChunkPosition, 0.001f))
 	{
-		CharacterPosition = NewLocation2D / ChunkSize;
+		CharacterChunkPosition = NewLocation2D;
 		return true;
 	}
 
@@ -99,96 +140,137 @@ bool AWorldManager::UpdatePosition()
 
 void AWorldManager::AddChunk()
 {
-	const int32 ChunkPositionX = CharacterPosition.X;
-	const int32 ChunkPositionY = CharacterPosition.Y;
+	const int32 ChunkPositionX = CharacterChunkPosition.X;
+	const int32 ChunkPositionY = CharacterChunkPosition.Y;
 
-	const int32 MinRenderingRangeX = ChunkPositionX - ChunkRenderingRange;
-	const int32 MaxRenderingRangeX = ChunkPositionX + ChunkRenderingRange;
+	const int32 MinRenderingRangeX = ChunkPositionX - ChunkRenderRange;
+	const int32 MaxRenderingRangeX = ChunkPositionX + ChunkRenderRange;
 
-	const int32 MinRenderingRangeY = ChunkPositionY - ChunkRenderingRange;
-	const int32 MaxRenderingRangeY = ChunkPositionY + ChunkRenderingRange;
+	const int32 MinRenderingRangeY = ChunkPositionY - ChunkRenderRange;
+	const int32 MaxRenderingRangeY = ChunkPositionY + ChunkRenderRange;
 
-	for (int32 X = MinRenderingRangeX; X <= MaxRenderingRangeX; ++X)
+	static int32 Test = 0;
 	{
-		for (int32 Y = MinRenderingRangeY; Y <= MaxRenderingRangeY; ++Y)
+		ScopeProfiler t("AddChunk");
+
+		for (int32 X = MinRenderingRangeX; X <= MaxRenderingRangeX; ++X)
 		{
-			FVector2D ChunkPosition(X, Y);
-			ChunkManager->LoadChunk(ChunkPosition);
+			for (int32 Y = MinRenderingRangeY; Y <= MaxRenderingRangeY; ++Y)
+			{
+				CreateChunk(FVector2D(X, Y));
+				GEngine->AddOnScreenDebugMessage(10, 5.f, FColor::Green, FString::Printf(TEXT("%d"), ++Test));
+			}
 		}
+	}
+
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [=]() {
+		for (int32 X = MinRenderingRangeX; X <= MaxRenderingRangeX; ++X)
+		{
+			for (int32 Y = MinRenderingRangeY; Y <= MaxRenderingRangeY; ++Y)
+			{
+				LoadChunkInfo(FVector2D(X, Y));
+			}
+		}
+
+		RenderChunksAsync();
+	});
+}
+
+void AWorldManager::CreateChunk(const FVector2D& ChunkPosition)
+{
+	ChunkManager->CreateChunk(ChunkPosition);
+}
+
+void AWorldManager::LoadChunkInfo(const FVector2D& ChunkPosition)
+{
+	AChunk* Chunk = ChunkManager->GetChunk(ChunkPosition);
+	if (Chunk && Chunk->ChunkState == EChunkState::None)
+	{
+		TerrainManager->LoadTerrainInfo(Chunk);
+		ChunkManager->LoadingChunks.Add(Chunk);
+		Chunk->ChunkState = EChunkState::Loaded;
 	}
 }
 
 void AWorldManager::RemoveChunk()
 {
-	const int32 ChunkPositionX = CharacterPosition.X;
-	const int32 ChunkPositionY = CharacterPosition.Y;
+	const int32 ChunkPositionX = CharacterChunkPosition.X;
+	const int32 ChunkPositionY = CharacterChunkPosition.Y;
 
-	const int32 MinRenderingRangeX = ChunkPositionX - ChunkRenderingRange;
-	const int32 MaxRenderingRangeX = ChunkPositionX + ChunkRenderingRange;
+	const int32 MinRenderingRangeX = ChunkPositionX - ChunkRenderRange;
+	const int32 MaxRenderingRangeX = ChunkPositionX + ChunkRenderRange;
 
-	const int32 MinRenderingRangeY = ChunkPositionY - ChunkRenderingRange;
-	const int32 MaxRenderingRangeY = ChunkPositionY + ChunkRenderingRange;
+	const int32 MinRenderingRangeY = ChunkPositionY - ChunkRenderRange;
+	const int32 MaxRenderingRangeY = ChunkPositionY + ChunkRenderRange;
 
-	auto& ChunksMap = ChunkManager->GetAllChunks();
+	TMap<FVector2D, AChunk*>& ChunksMap = ChunkManager->GetAllChunks();
 	for (auto Itr = ChunksMap.CreateConstIterator(); Itr; ++Itr)
 	{
 		FVector2D ChunkLocation = Itr.Key();
 		bool bIsRemove = MinRenderingRangeX <= ChunkLocation.X && ChunkLocation.X <= MaxRenderingRangeX && MinRenderingRangeY <= ChunkLocation.Y && ChunkLocation.Y <= MaxRenderingRangeY;
 		if (!bIsRemove)
 		{
-			if (Itr.Value()->IsDone())
-			{
-				Itr.Value()->Destroy();
-				ChunksMap.Remove(ChunkLocation);
-			}
+			Itr.Value()->Destroy();
+			ChunksMap.Remove(ChunkLocation);
 		}
 	}
 }
 
 void AWorldManager::RenderChunks()
 {
-	const auto& ChunksMap = ChunkManager->GetAllChunks();
-	for (const auto& Elem : ChunksMap)
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [this]() {
+		const TMap<FVector2D, AChunk*>& ChunksMap = ChunkManager->GetAllChunks();
+		int32 Total = ChunksMap.Num();
+		std::atomic<int32> Count = 0;
+		for (const TPair<FVector2D, AChunk*>& Elem : ChunksMap)
+		{
+			AChunk* Chunk = Elem.Value;
+
+			if (!IsValid(Chunk))
+			{
+				return;
+			}
+
+			Chunk->BuildMesh();
+				
+			AsyncTask(ENamedThreads::GameThread, [this, Chunk = Chunk, Total, &Count]() {
+				if (Chunk)
+				{
+					Chunk->Render();
+					Count.fetch_add(1);
+					ProgressDelegate.Execute((float)Count / Total);
+				}
+			});
+		}
+	});
+}
+
+void AWorldManager::RenderChunksAsync()
+{
+	const TMap<FVector2D, AChunk*>& ChunksMap = ChunkManager->GetAllChunks();
+	for (const TPair<FVector2D, AChunk*>& Elem : ChunksMap)
 	{
 		Elem.Value->BuildAndRenderAsync();
 	}
 }
 
-AChunk* AWorldManager::GetChunk(const FVector2D& ChunkVoxelPosition)
+AChunk* AWorldManager::GetChunk(const FVector2D& ChunkVoxelLocation)
 {
-	return ChunkManager->GetChunk(ChunkVoxelPosition);
+	return ChunkManager == nullptr ? nullptr : ChunkManager->GetChunk(ChunkVoxelLocation);
 }
 
-AChunkSection* AWorldManager::GetChunkSection(const FVector& ChunkVoxelPosition)
+AChunk* AWorldManager::GetChunk(const FBlockPos& BlockPos)
 {
-	AChunk* Chunk = GetChunk(FVector2D(ChunkVoxelPosition));
-	if (Chunk)
-	{
-		return Chunk->GetChunkSection(ChunkVoxelPosition.Z);
-	}
+	int32 ChunkWorldX = FMath::Floor(BlockPos.X_VOXEL_WORLD / CHUNK_SIZE);
+	int32 ChunkWorldY = FMath::Floor(BlockPos.Y_VOXEL_WORLD / CHUNK_SIZE);
 
-	return nullptr;
-}
-
-AChunkSection* AWorldManager::GetChunkSection(const FBlockPos& BlockPos)
-{
-	int32 ChunkWorld_X = FMath::Floor(BlockPos.X_VOXEL_WORLD / CHUNK_SIZE);
-	int32 ChunkWorld_Y = FMath::Floor(BlockPos.Y_VOXEL_WORLD / CHUNK_SIZE);
-	int32 ChunkWorld_Z = FMath::Floor(BlockPos.Z_VOXEL_WORLD / CHUNK_SIZE);
-
-	AChunk* Chunk = GetChunk(FVector2D(ChunkWorld_X, ChunkWorld_Y));
-	if (Chunk)
-	{
-		return Chunk->GetChunkSection(ChunkWorld_Z);
-	}
-
-	return nullptr;
+	return GetChunk(FVector2D(ChunkWorldX, ChunkWorldY));
 }
 
 bool AWorldManager::DestroyBlock(const FBlockPos& BlockPos)
 {
-	AChunkSection* ChunkSection = GetChunkSection(BlockPos);
-	if (ChunkSection == nullptr) return false;
+	//AChunkSection* ChunkSection = GetChunkSection(BlockPos);
+	//if (ChunkSection == nullptr) return false;
 
 	FBlockData BlockData = GetBlock(BlockPos);
 	if (!BlockData.IsValid()) return false;
@@ -197,11 +279,11 @@ bool AWorldManager::DestroyBlock(const FBlockPos& BlockPos)
 	if (!UMinecraftAssetLibrary::GetBlockMeta(BlockData.BlockID(), BlockMeta)) return false;
 
 	BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnDestroy(this, BlockPos.WorldLocation(), BlockMeta.DestroySound);
-	ChunkSection->SetBlock(BlockPos.OffsetLocation(), {});
+	//ChunkSection->SetBlock(BlockPos.OffsetLocation(), {});
 
 	// 重新计算空值
-	ChunkSection->RecalculateEmpty();
-	ChunkSection->Rebuild();
+	//ChunkSection->RecalculateEmpty();
+	//ChunkSection->Rebuild();
 	Rebuild_Adjacent_Chunks(BlockPos);
 
 	return true;
@@ -209,15 +291,15 @@ bool AWorldManager::DestroyBlock(const FBlockPos& BlockPos)
 
 void AWorldManager::SetBlock(const FBlockPos& BlockPos, EBlockID BlockID)
 {
-	AChunkSection* ChunkSection = GetChunkSection(BlockPos);
-	if (ChunkSection)
+	//AChunkSection* ChunkSection = GetChunkSection(BlockPos);
+	//if (ChunkSection)
 	{
-		ChunkSection->SetBlock(BlockPos.OffsetLocation(), { BlockID, 0 });
-		if (ChunkSection->IsEmpty())
-		{
-			ChunkSection->SetEmpty(false);
-		}
-		ChunkSection->Rebuild();
+		//ChunkSection->SetBlock(BlockPos.OffsetLocation(), { BlockID, 0 });
+		//if (ChunkSection->IsEmpty())
+		//{
+		//	ChunkSection->SetEmpty(false);
+		//}
+		//ChunkSection->Rebuild();
 	}
 }
 
@@ -228,12 +310,33 @@ void AWorldManager::SetBlock(const FBlockPos& BlockPos, int32 BlockID)
 
 FBlockData AWorldManager::GetBlock(const FBlockPos& BlockPos)
 {
-	AChunkSection* ChunkSection = GetChunkSection(BlockPos);
-	if (ChunkSection)
+	AChunk* Chunk = GetChunk(BlockPos);
+	if (Chunk)
 	{
-		return ChunkSection->GetBlock(BlockPos);
+		return Chunk->GetBlock(BlockPos);
 	}
 	return {};
+}
+
+FBlockData AWorldManager::GetBlock(const FIntVector& BlockWorldVoxelLocation)
+{
+	// static_cast<float>() 转成float考虑到负数
+	const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / CHUNK_SIZE);
+	const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / CHUNK_SIZE);
+
+	AChunk* Chunk = GetChunk(FVector2D(ChunkVoxelLocationX, ChunkVoxelLocationY));
+
+	if (Chunk)
+	{
+		FIntVector OffsetLocation = BlockWorldVoxelLocation - FIntVector(ChunkVoxelLocationX, ChunkVoxelLocationY, 0) * CHUNK_SIZE;
+
+		const int32 OffsetX = OffsetLocation.X % CHUNK_SIZE;
+		const int32 OffsetY = OffsetLocation.Y % CHUNK_SIZE;
+		const int32 WorldZ = OffsetLocation.Z;
+		return Chunk->GetBlock(OffsetX, OffsetY, WorldZ);
+	}
+
+	return FBlockData();
 }
 
 void AWorldManager::Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos)
@@ -281,10 +384,25 @@ void AWorldManager::Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos)
 
 void AWorldManager::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z)
 {
-	AChunkSection* ChunkSection = GetChunkSection(FVector(Chunk_World_X, Chunk_World_Y, Chunk_World_Z));
+	//AChunkSection* ChunkSection = GetChunkSection(FVector(Chunk_World_X, Chunk_World_Y, Chunk_World_Z));
 
-	if (ChunkSection == nullptr)
+	//if (ChunkSection == nullptr)
 		return;
 
-	ChunkSection->Rebuild();
+	//ChunkSection->Rebuild();
+}
+
+void AWorldManager::RenderChunk()
+{
+	if (TaskQueue.IsEmpty()) return;
+
+	AChunk* Chunk = nullptr;
+	for (int32 I = 0; I < RenderCount; ++I) // 每帧最大能加载几个
+	{
+		if (TaskQueue.Dequeue(Chunk) && nullptr != Chunk)
+		{
+			Chunk->Render();
+			Chunk->ChunkState = EChunkState::Rendered;
+		}
+	}
 }

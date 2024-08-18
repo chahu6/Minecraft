@@ -17,5 +17,5 @@ class MINECRAFT_API UChunkSaveGame : public USaveGame
 	
 public:
 	UPROPERTY()
-	TArray<EBlockID> Blocks;
+	TArray<int32> Blocks;
 };

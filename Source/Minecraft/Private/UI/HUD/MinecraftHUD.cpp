@@ -12,7 +12,7 @@ void AMinecraftHUD::BeginPlay()
 void AMinecraftHUD::DrawHUD()
 {
 	Super::DrawHUD();
-
+	
 	DrawCrosshairs();
 }
 

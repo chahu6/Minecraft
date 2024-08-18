@@ -23,7 +23,7 @@ class MINECRAFT_API IChunkInterface
 	GENERATED_BODY()
 
 public:
-	virtual FBlockData GetBlock(int32 X, int32 Y, int32 Z) = 0;
+	//virtual FBlockData GetBlock(int32 X, int32 Y, int32 Z) = 0;
 
-	virtual void SetBlock(int32 X, int32 Y, int32 Z, const FBlockData& BlockData) = 0;
+	//virtual void SetBlock(int32 X, int32 Y, int32 Z, const FBlockData& BlockData) = 0;
 };

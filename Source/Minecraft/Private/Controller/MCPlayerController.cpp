@@ -4,8 +4,8 @@
 #include "Controller/CameraManager/MinecraftPlayerCameraManager.h"
 #include "SimplexNoiseLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Generation/Noise/NormalNoise.h"
-#include "Math/Spline.h"
+#include "UI/Widget/ProgressBarWidget.h"
+#include "Components/ProgressBar.h"
 
 AMCPlayerController::AMCPlayerController()
 {
@@ -49,6 +49,31 @@ void AMCPlayerController::OpenBackpack_Implementation()
 	}
 }
 
+void AMCPlayerController::AddPrograssWidget()
+{
+	if (ProgressBarWidgetClass)
+	{
+		ProgressBarWidget = CreateWidget<UProgressBarWidget>(this, ProgressBarWidgetClass);
+		ProgressBarWidget->AddToViewport();
+	}
+}
+
+void AMCPlayerController::RemovePrograssWidget()
+{
+	if (ProgressBarWidget)
+	{
+		ProgressBarWidget->RemoveFromParent();
+	}
+}
+
+void AMCPlayerController::SetPrograssPercent(float Percent)
+{
+	if (ProgressBarWidget && ProgressBarWidget->ProgressBar)
+	{
+		ProgressBarWidget->ProgressBar->SetPercent(Percent);
+	}
+}
+#if 0
 UTexture2D* AMCPlayerController::CreateTextureFromArray()
 {
 	USimplexNoiseLibrary::SetNoiseSeed(Seed);
@@ -99,7 +124,7 @@ UTexture2D* AMCPlayerController::CreateTextureFromArray()
 
 	return TheTexture2D;
 }
-
+#endif
 void AMCPlayerController::ShowDebugInfo()
 {
 	if (bIsDebug)

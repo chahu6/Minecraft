@@ -1,14 +1,13 @@
 #pragma once
 
 // 一个Chunk的单位尺寸
-constexpr int32 CHUNK_SIZE		=	16,
-				CHUNK_AREA		=	CHUNK_SIZE * CHUNK_SIZE,
-				CHUNK_VOLUME	=	CHUNK_AREA * CHUNK_SIZE,
-				CHUNK			=	CHUNK_AREA * 256;
+constexpr int32 CHUNK_SIZE		= 16,
+				CHUNK_HEIGHT	= 256,
+				CHUNK_AREA		= CHUNK_SIZE * CHUNK_SIZE,
+				CHUNK_SECTION_VOLUME = CHUNK_AREA * CHUNK_SIZE,
+				CHUNK_VOLUME		 = CHUNK_AREA * CHUNK_HEIGHT;
 
 constexpr float	CHUNK_SPHERE_RADIUS = CHUNK_SIZE * 0.5f * 1.7321f;
-
-constexpr int32 MAX_QUEUE_SIZE  =	8;
 
 // 手能伸长的最大长度
 constexpr int32 MAX_RAY_DIST	=	5;

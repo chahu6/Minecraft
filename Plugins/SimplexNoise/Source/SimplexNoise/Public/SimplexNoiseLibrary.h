@@ -59,6 +59,7 @@ public:
 
 public:
 	static double FBM(int32 X, int32 Y, int32 Octaves = 5, double Lacunarity = 2.0, double Persistance = 0.5, double Factor = 0.0001);
+
 private:
 	inline static double Fade(double t) { return t * t * t * (t * (t * 6 - 15) + 10); }
 	inline static double Lerp(double t, double a, double b) { return a + t * (b - a); }

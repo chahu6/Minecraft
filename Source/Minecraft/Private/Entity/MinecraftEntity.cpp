@@ -21,12 +21,6 @@ void AMinecraftEntity::BeginPlay()
 	}
 }
 
-void AMinecraftEntity::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void AMinecraftEntity::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);

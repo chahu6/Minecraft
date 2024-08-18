@@ -2,7 +2,7 @@
 #include "World/WorldSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "World/WorldManager.h"
-#include "Chunk/ChunkSection.h"
+//#include "Chunk/ChunkSection.h"
 #include "Entity/MinecraftPlayer.h"
 #include "Utils/MinecraftAssetLibrary.h"
 #include "World/Block/Block.h"
@@ -84,7 +84,6 @@ void UInteractiveComponent::UseItem()
 		{
 			PlaceBlock(BlockHitResult, MainHandItemData.ID);
 		}
-
 	}
 }
 
@@ -108,6 +107,27 @@ void UInteractiveComponent::PlaceBlock(const FBlockHitResult& HitResult, int32 I
 		Player->ConsumeItem();
 		Player->UpdateMainHandItem();
 	}
+}
+
+bool UInteractiveComponent::DestroyBlock(const FBlockHitResult& HitResult)
+{
+	bool bIsDestroyed = RemoveBlockFromWorld(HitResult.BlockPos);
+
+	if (bIsDestroyed)
+	{
+		FBlockMeta BlockMeta;
+		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(static_cast<int32>(HitResult.BlockData.ID), BlockMeta);
+		if (bSuccessed)
+		{
+			checkf(DroppedItemClass, TEXT("Uninitialize DroppedItemClass"));
+			ADroppedItem* DroppedItem = GetWorld()->SpawnActorDeferred<ADroppedItem>(DroppedItemClass, FTransform(FRotator::ZeroRotator, HitResult.BlockPos.WorldLocation() + FVector(BlockSize >> 2)));
+			DroppedItem->SetItemHandle(BlockMeta.ItemHandle);
+			DroppedItem->FinishSpawning(DroppedItem->GetActorTransform());
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool UInteractiveComponent::RemoveBlockFromWorld(const FBlockPos& BlockPos)
@@ -205,27 +225,6 @@ void UInteractiveComponent::ResetBlockRemoving()
 		DestroyPercent = 0.0f;
 		UpdateDestroyProgress(CurBlockDamageMP);
 	}
-}
-
-bool UInteractiveComponent::DestroyBlock(const FBlockHitResult& HitResult)
-{
-	bool bIsDestroyed = RemoveBlockFromWorld(HitResult.BlockPos);
-
-	if (bIsDestroyed)
-	{
-		FBlockMeta BlockMeta;
-		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(static_cast<int32>(HitResult.BlockData.ID), BlockMeta);
-		if (bSuccessed)
-		{
-			checkf(DroppedItemClass, TEXT("Uninitialize DroppedItemClass"));
-			ADroppedItem* DroppedItem = GetWorld()->SpawnActorDeferred<ADroppedItem>(DroppedItemClass, FTransform(FRotator::ZeroRotator, HitResult.BlockPos.WorldLocation() + FVector(BlockSize >> 2)));
-			DroppedItem->SetItemHandle(BlockMeta.ItemHandle);
-			DroppedItem->FinishSpawning(DroppedItem->GetActorTransform());
-			return true;
-		}
-	}
-
-	return false;
 }
 
 bool UInteractiveComponent::RayCast(FBlockHitResult& HitResult)
@@ -357,22 +356,22 @@ FBlockData UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, 
 	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 	if (WorldManager)
 	{
-		AChunkSection* ChunkSection = WorldManager->GetChunkSection(ChunkVoexlWorldPosition);
+		//AChunkSection* ChunkSection = WorldManager->GetChunkSection(ChunkVoexlWorldPosition);
 
-		// 在游玩时，因为地形一直是随着玩家的位置加载的所以完整游戏中，不因该为空
-		if (ChunkSection == nullptr) return {};
+		//// 在游玩时，因为地形一直是随着玩家的位置加载的所以完整游戏中，不因该为空
+		//if (ChunkSection == nullptr) return {};
 
-		int32 Local_X = VoxelWorldPosition.X - ChunkWorld_X * CHUNK_SIZE;
-		int32 Local_Y = VoxelWorldPosition.Y - ChunkWorld_Y * CHUNK_SIZE;
-		int32 Local_Z = VoxelWorldPosition.Z - ChunkWorld_Z * CHUNK_SIZE;
+		//int32 Local_X = VoxelWorldPosition.X - ChunkWorld_X * CHUNK_SIZE;
+		//int32 Local_Y = VoxelWorldPosition.Y - ChunkWorld_Y * CHUNK_SIZE;
+		//int32 Local_Z = VoxelWorldPosition.Z - ChunkWorld_Z * CHUNK_SIZE;
 
-		int32 BlockIndex = Local_X + Local_Y * CHUNK_SIZE + Local_Z * CHUNK_AREA;
+		//int32 BlockIndex = Local_X + Local_Y * CHUNK_SIZE + Local_Z * CHUNK_AREA;
 
-		OutHitResult.BlockData = ChunkSection->GetBlock(BlockIndex);
-		OutHitResult.BlockPos.SetOffsetLocation(Local_X, Local_Y, Local_Z);
-		OutHitResult.BlockPos.SetVoxelWorldLocation(VoxelWorldPosition.X, VoxelWorldPosition.Y, VoxelWorldPosition.Z);
+		//OutHitResult.BlockData = ChunkSection->GetBlock(BlockIndex);
+		//OutHitResult.BlockPos.SetOffsetLocation(Local_X, Local_Y, Local_Z);
+		//OutHitResult.BlockPos.SetVoxelWorldLocation(VoxelWorldPosition.X, VoxelWorldPosition.Y, VoxelWorldPosition.Z);
 
-		return OutHitResult.BlockData;
+		//return OutHitResult.BlockData;
 	}
 
 	return {};

@@ -2,12 +2,9 @@
 #include "SlateOptMacros.h"
 #include "Slate/SlateVectorArtInstanceData.h"
 
-BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
-
 void SStaticMeshWidget::Construct(const FArguments& InArgs)
 {
 }
-END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 int32 SStaticMeshWidget::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {
@@ -18,7 +15,7 @@ int32 SStaticMeshWidget::OnPaint(const FPaintArgs& Args, const FGeometry& Allott
 
         FSlateInstanceBufferData SlateInstanceBufferData;
         FSlateVectorArtInstanceData SlateVectorArtInstaceData;
-        SlateVectorArtInstaceData.SetPosition(FVector2D::ZeroVector);
+        SlateVectorArtInstaceData.SetPosition(ScreenPosition);
         SlateVectorArtInstaceData.SetScale(Scale);
         SlateInstanceBufferData.Add(TArray<UE::Math::TVector4<float>>::ElementType(SlateVectorArtInstaceData.GetData()));
         const_cast<SStaticMeshWidget*>(this)->UpdatePerInstanceBuffer(StaticMeshIndex, SlateInstanceBufferData);

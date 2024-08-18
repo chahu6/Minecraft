@@ -5,6 +5,9 @@
 #include "InputActionValue.h"
 #include "MinecraftEntity.generated.h"
 
+class UInputMappingContext;
+class UInputAction;
+
 UCLASS()
 class MINECRAFT_API AMinecraftEntity : public ACharacter
 {
@@ -12,19 +15,19 @@ class MINECRAFT_API AMinecraftEntity : public ACharacter
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputMappingContext* DefaultMappingContext;
+	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* JumpAction;
+	TObjectPtr<UInputAction> JumpAction;
 
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* MoveAction;
+	TObjectPtr<UInputAction> MoveAction;
 
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* LookAction;
+	TObjectPtr<UInputAction> LookAction;
 
 public:
 	AMinecraftEntity();
@@ -33,8 +36,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	virtual void Tick(float DeltaTime) override;
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:

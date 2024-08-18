@@ -8,9 +8,9 @@ public class Minecraft : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "SlateCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "SlateCore", "ProceduralMeshComponent" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "SimplexNoise", "ProceduralMeshComponent", "Eigen" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "SimplexNoise", "Eigen" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
