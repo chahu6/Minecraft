@@ -29,9 +29,9 @@ void AMCGameMode::OnPostLogin(AController* NewPlayer)
 {
 	if (AMCPlayerController* PlayerController = Cast<AMCPlayerController>(NewPlayer))
 	{
-		//PlayerController->SetPrograssPercent(0.f);
-		//PlayerController->AddPrograssWidget();
-		//EnterWorld(PlayerController);
+		PlayerController->SetPrograssPercent(0.f);
+		PlayerController->AddPrograssWidget();
+		EnterWorld(PlayerController);
 	}
 }
 
@@ -66,7 +66,7 @@ void AMCGameMode::EnterWorld(AMCPlayerController* NewPlayer)
 			PlayerCharacter->FinishSpawning(FTransform(FVector(DefaultCharacterPosition, 15000.f)));
 
 			FHitResult HitResult;
-			GetWorld()->LineTraceSingleByChannel(HitResult, FVector(DefaultCharacterPosition, 10000.0f), FVector(DefaultCharacterPosition, -1000.f), ECollisionChannel::ECC_Visibility);
+			GetWorld()->LineTraceSingleByChannel(HitResult, FVector(DefaultCharacterPosition, 100000.0f), FVector(DefaultCharacterPosition, -1000.f), ECollisionChannel::ECC_Visibility);
 			if (HitResult.bBlockingHit)
 			{
 				PlayerCharacter->SetActorLocation(HitResult.ImpactPoint + FVector(0.f, 0.f, 2 * PlayerCharacter->GetDefaultHalfHeight()));

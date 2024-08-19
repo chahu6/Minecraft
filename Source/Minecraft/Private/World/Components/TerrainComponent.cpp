@@ -34,7 +34,7 @@ void UTerrainComponent::BeginPlay()
 
 void UTerrainComponent::LoadTerrainInfo(AChunk* Chunk)
 {
-	if (Chunk == nullptr) return;
+	if (Chunk == nullptr || Chunk->ChunkState != EChunkState::None) return;
 
 	//HeightGenerator::GenerateHeight(Chunk);
 	GenerateHeight(Chunk);
@@ -44,6 +44,8 @@ void UTerrainComponent::LoadTerrainInfo(AChunk* Chunk)
 	CaveGenerator::GeneratorCave(Chunk);
 
 	Chunk->RecalculateEmpty();
+
+	Chunk->ChunkState = EChunkState::Loaded;
 }
 
 void UTerrainComponent::LoadTerrainBlockID(AChunk* Chunk)

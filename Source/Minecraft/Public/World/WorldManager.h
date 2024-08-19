@@ -33,7 +33,7 @@ protected:
 
 public:	
 	// Key是Chunk在Voxel World的位置，没有乘以ChunkSize的位置
-	AChunk* GetChunk(const FVector2D& ChunkVoxelLocation);
+	AChunk* GetChunk(const FIntPoint& ChunkVoxelLocation);
 
 	AChunk* GetChunk(const FBlockPos& BlockPos);
 
@@ -58,9 +58,9 @@ private:
 
 	void AddChunk();
 
-	void CreateChunk(const FVector2D& ChunkPosition);
+	void CreateChunk(const FIntPoint& ChunkPosition);
 
-	void LoadChunkInfo(const FVector2D& ChunkPosition);
+	void LoadChunkInfo(const FIntPoint& ChunkPosition);
 
 	void RemoveChunk();
 
@@ -104,7 +104,7 @@ protected:
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FVector2D CharacterChunkPosition;
+	FIntPoint CharacterChunkPosition;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	FVector2D DefaultCharacterPosition;

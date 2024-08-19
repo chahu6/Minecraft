@@ -19,14 +19,9 @@ public:
 
 	virtual void BeginPlay() override;
 
-	AChunk* GetChunk(const FVector2D& Key);
+	AChunk* GetChunk(const FIntPoint& Key);
 
-	bool CreateChunk(const FVector2D& ChunkVoxelPosition);
-
-	AChunk* operator[](const FVector2D& Position)
-	{
-		return AllChunks.FindChecked(Position);
-	}
+	bool CreateChunk(const FIntPoint& ChunkVoxelPosition);
 
 private:
 	void Rebuild_Adjacent_Chunks(const FVector2D& ChunkVoxelWorldPosition);
@@ -35,15 +30,8 @@ private:
 
 private:
 	UPROPERTY()
-	TMap<FVector2D, AChunk*> AllChunks;
-
-	TArray<AChunk*> LoadingChunks;
-
-	TArray<AChunk*> RenderingChunks;
+	TMap<FIntPoint, AChunk*> AllChunks;
 
 	UPROPERTY()
 	TObjectPtr<AWorldManager> WorldManager;
-
-public:
-	FORCEINLINE TMap<FVector2D, AChunk*>& GetAllChunks() { return AllChunks; }
 };
