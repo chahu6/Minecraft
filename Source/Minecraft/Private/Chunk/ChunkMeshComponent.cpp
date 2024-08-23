@@ -28,10 +28,10 @@ void UChunkMeshComponent::Render()
 	FBlockMeta BlockMeta;
 	for (auto MeshData = MeshDatas.CreateConstIterator(); MeshData; ++MeshData)
 	{
-		if (MeshData->Value.Vertices.IsEmpty()) continue;
+		if (MeshData->Value->Vertices.IsEmpty()) continue;
 
 		//ProduralMesh->ClearAllMeshSections();
-		CreateMeshSection_LinearColor(MeshData->Key, MeshData->Value.Vertices, MeshData->Value.Triangles, MeshData->Value.Normals, MeshData->Value.UV0, MeshData->Value.VertexColors, MeshData->Value.Tangents, true);
+		CreateMeshSection_LinearColor(MeshData->Key, MeshData->Value->Vertices, MeshData->Value->Triangles, MeshData->Value->Normals, MeshData->Value->UV0, MeshData->Value->VertexColors, MeshData->Value->Tangents, true);
 
 		if (UMinecraftAssetLibrary::GetBlockMeta(MeshData->Key, BlockMeta))
 		{
@@ -51,8 +51,6 @@ void UChunkMeshComponent::BuildMesh(EGenerationMethod GenerationMethod)
 		break;
 	case EGenerationMethod::Greedy:
 		BuildGreedyChunkMesh();
-		break;
-	default:
 		break;
 	}
 	
@@ -154,11 +152,6 @@ void UChunkMeshComponent::BuildGreedyChunkMesh()
 						ChunkItr[Axis2] = j;
 
 						int32 Width;
-
-						//while (i + Width < Axis1Limit && CompareMask(Mask[N + Width], CurrentMask))
-						//{
-						//	++Width;
-						//}
 						for (Width = 1; i + Width < Axis1Limit && CompareMask(Mask[N + Width], CurrentMask); ++Width)
 						{
 						}
@@ -229,22 +222,26 @@ void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 	const FVector Normal = FVector(AxisMask * Mask.Normal);
 	float Direction = 0.f;
 
-	FMeshData MeshData;
-	if (MeshDatas.Contains(static_cast<int32>(Mask.BlockID)))
+	TSharedPtr<FMeshData> MeshData = nullptr;
+	if (MeshDatas.Contains(StaticCast<int32>(Mask.BlockID)))
 	{
-		MeshData = MeshDatas[static_cast<int32>(Mask.BlockID)];
+		MeshData = MeshDatas[StaticCast<int32>(Mask.BlockID)];
+	}
+	else
+	{
+		MeshData = MeshDatas.Add(StaticCast<int32>(Mask.BlockID), MakeShared<FMeshData>());
 	}
 
-	int32 Index = MeshData.Vertices.Num();
+	int32 Index = MeshData->Vertices.Num();
 
-	MeshData.Vertices.Append({
+	MeshData->Vertices.Append({
 		FVector(V1) * BlockSize,
 		FVector(V2) * BlockSize,
 		FVector(V3) * BlockSize,
 		FVector(V4) * BlockSize
 	});
 
-	MeshData.Triangles.Append({
+	MeshData->Triangles.Append({
 		Index,
 		Index + 2 + Mask.Normal,
 		Index + 2 - Mask.Normal,
@@ -253,7 +250,7 @@ void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 		Index + 1 + Mask.Normal
 	});
 
-	MeshData.Normals.Append({
+	MeshData->Normals.Append({
 		Normal,
 		Normal,
 		Normal,
@@ -273,7 +270,7 @@ void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 		Direction = 0.8f;
 	}
 
-	MeshData.VertexColors.Append({
+	MeshData->VertexColors.Append({
 		{ 0.0f, 0.0f, 0.0f, Direction },
 		{ 0.0f, 0.0f, 0.0f, Direction },
 		{ 0.0f, 0.0f, 0.0f, Direction },
@@ -282,7 +279,7 @@ void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 
 	if (Normal.X == 1 || Normal.X == -1)
 	{
-		MeshData.UV0.Append({
+		MeshData->UV0.Append({
 			FVector2D(Width, Height),
 			FVector2D(0, Height),
 			FVector2D(Width, 0),
@@ -291,29 +288,18 @@ void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 	}
 	else
 	{
-		MeshData.UV0.Append({
+		MeshData->UV0.Append({
 			FVector2D(Height, Width),
 			FVector2D(Height, 0),
 			FVector2D(0, Width),
 			FVector2D(0, 0),
 		});
 	}
-
-	MeshDatas.Add(static_cast<int32>(Mask.BlockID), MeshData);
 }
 
 void UChunkMeshComponent::BuildChunkMesh()
 {
 	int32 Index = 0;
-
-	TArray<FVector> Vertices_Tmp;
-	Vertices_Tmp.SetNum(4);
-
-	TArray<int32> Triangles_Tmp;
-	Triangles_Tmp.SetNum(6);
-
-	TArray<FLinearColor> VertexColors_Tmp;
-	VertexColors_Tmp.SetNum(4);
 
 	FVector ChunkLocation = Chunk->GetActorLocation();
 
@@ -330,15 +316,15 @@ void UChunkMeshComponent::BuildChunkMesh()
 				if (BlockData.ID < EBlockID::Stone)
 					continue;
 
-				FMeshData TempMeshData;
+				TSharedPtr<FMeshData> MeshData = nullptr;
 
 				int32 BlockID = static_cast<int32>(BlockData.ID);
 				if (MeshDatas.Contains(BlockID))
 				{
-					TempMeshData = MeshDatas[BlockID];
+					MeshData = MeshDatas[BlockID];
 				}
 
-				Index = TempMeshData.Vertices.Num();
+				Index = MeshData->Vertices.Num();
 
 				// World Voxel Position
 				int32 BlockWorldVoxelLocationX = X + ChunkLocation.X / BlockSize;
@@ -353,32 +339,35 @@ void UChunkMeshComponent::BuildChunkMesh()
 					int32 Location_Z = Z * BlockSize;
 
 					// 顶点
-					Vertices_Tmp[0] = FVector(Location_X, Location_Y, Location_Z + BlockSize);
-					Vertices_Tmp[1] = FVector(Location_X, Location_Y + BlockSize, Location_Z + BlockSize);
-					Vertices_Tmp[2] = FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z + BlockSize);
-					Vertices_Tmp[3] = FVector(Location_X + BlockSize, Location_Y, Location_Z + BlockSize);
-					TempMeshData.Vertices.Append(Vertices_Tmp);
+					MeshData->Vertices.Append({
+						FVector(Location_X, Location_Y, Location_Z + BlockSize),
+						FVector(Location_X, Location_Y + BlockSize, Location_Z + BlockSize),
+						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z + BlockSize),
+						FVector(Location_X + BlockSize, Location_Y, Location_Z + BlockSize)
+					});
 
 					// 索引
-					Triangles_Tmp[0] = Index + 0;
-					Triangles_Tmp[1] = Index + 1;
-					Triangles_Tmp[2] = Index + 2;
-					Triangles_Tmp[3] = Index + 2;
-					Triangles_Tmp[4] = Index + 3;
-					Triangles_Tmp[5] = Index + 0;
-					TempMeshData.Triangles.Append(Triangles_Tmp);
+					MeshData->Triangles.Append({
+						Index + 0,
+						Index + 1,
+						Index + 2,
+						Index + 2,
+						Index + 3,
+						Index + 0
+					});
 
 					// 顶点颜色
 					float Direction = UKismetMathLibrary::MapRangeClamped(StaticCast<float>(EFaceType::Up), 0.0, 5.0, 0.0, 1.0);
-					VertexColors_Tmp[0] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[1] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[2] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[3] = { 0.0f, 0.0f, 0.0f, Direction };
-					TempMeshData.VertexColors.Append(VertexColors_Tmp);
+					MeshData->VertexColors.Append({
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction }
+					});
 
 					// UV
 					const FVector2D bUVs[] = { FVector2D(0.0, 1.0),FVector2D(1.0, 1.0) ,FVector2D(1.0, 0.0) ,FVector2D(0.0, 0.0) };
-					TempMeshData.UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
+					MeshData->UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
 
 					Index += 4;
 				}
@@ -391,32 +380,35 @@ void UChunkMeshComponent::BuildChunkMesh()
 					int32 Location_Z = Z * BlockSize;
 
 					// 顶点
-					Vertices_Tmp[0] = FVector(Location_X, Location_Y, Location_Z);
-					Vertices_Tmp[1] = FVector(Location_X, Location_Y + BlockSize, Location_Z);
-					Vertices_Tmp[2] = FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z);
-					Vertices_Tmp[3] = FVector(Location_X + BlockSize, Location_Y, Location_Z);
-					TempMeshData.Vertices.Append(Vertices_Tmp);
+					MeshData->Vertices.Append({
+						FVector(Location_X, Location_Y, Location_Z),
+						FVector(Location_X, Location_Y + BlockSize, Location_Z),
+						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z),
+						FVector(Location_X + BlockSize, Location_Y, Location_Z)
+					});
 
 					// 索引
-					Triangles_Tmp[0] = Index + 0;
-					Triangles_Tmp[1] = Index + 2;
-					Triangles_Tmp[2] = Index + 1;
-					Triangles_Tmp[3] = Index + 3;
-					Triangles_Tmp[4] = Index + 2;
-					Triangles_Tmp[5] = Index + 0;
-					TempMeshData.Triangles.Append(Triangles_Tmp);
+					MeshData->Triangles.Append({
+						Index + 0,
+						Index + 2,
+						Index + 1,
+						Index + 3,
+						Index + 2,
+						Index + 0
+					});
 
 					// 顶点颜色
 					float Direction = UKismetMathLibrary::MapRangeClamped(StaticCast<float>(EFaceType::Down), 0.0, 5.0, 0.0, 1.0);
-					VertexColors_Tmp[0] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[1] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[2] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[3] = { 0.0f, 0.0f, 0.0f, Direction };
-					TempMeshData.VertexColors.Append(VertexColors_Tmp);
+					MeshData->VertexColors.Append({
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction }
+					});
 
 					// UV
 					const FVector2D bUVs[] = { FVector2D(0.0, 1.0),FVector2D(1.0, 1.0) ,FVector2D(1.0, 0.0) ,FVector2D(0.0, 0.0) };
-					TempMeshData.UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
+					MeshData->UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
 
 					Index += 4;
 				}
@@ -429,32 +421,35 @@ void UChunkMeshComponent::BuildChunkMesh()
 					int32 Location_Z = Z * BlockSize;
 
 					// 顶点
-					Vertices_Tmp[0] = FVector(Location_X, Location_Y, Location_Z);
-					Vertices_Tmp[1] = FVector(Location_X, Location_Y, Location_Z + BlockSize);
-					Vertices_Tmp[2] = FVector(Location_X + BlockSize, Location_Y, Location_Z + BlockSize);
-					Vertices_Tmp[3] = FVector(Location_X + BlockSize, Location_Y, Location_Z);
-					TempMeshData.Vertices.Append(Vertices_Tmp);
+					MeshData->Vertices.Append({
+						FVector(Location_X, Location_Y, Location_Z),
+						FVector(Location_X, Location_Y, Location_Z + BlockSize),
+						FVector(Location_X + BlockSize, Location_Y, Location_Z + BlockSize),
+						FVector(Location_X + BlockSize, Location_Y, Location_Z)
+					});
 
 					// 索引
-					Triangles_Tmp[0] = Index + 0;
-					Triangles_Tmp[1] = Index + 1;
-					Triangles_Tmp[2] = Index + 3;
-					Triangles_Tmp[3] = Index + 1;
-					Triangles_Tmp[4] = Index + 2;
-					Triangles_Tmp[5] = Index + 3;
-					TempMeshData.Triangles.Append(Triangles_Tmp);
+					MeshData->Triangles.Append({
+						Index + 0,
+						Index + 1,
+						Index + 3,
+						Index + 1,
+						Index + 2,
+						Index + 3
+					});
 
 					// 顶点颜色
 					float Direction = UKismetMathLibrary::MapRangeClamped(StaticCast<float>(EFaceType::Left), 0.0, 5.0, 0.0, 1.0);
-					VertexColors_Tmp[0] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[1] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[2] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[3] = { 0.0f, 0.0f, 0.0f, Direction };
-					TempMeshData.VertexColors.Append(VertexColors_Tmp);
+					MeshData->VertexColors.Append({
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction }
+					});
 
 					// UV
 					const FVector2D bUVs[] = { FVector2D(1.0, 1.0) ,FVector2D(1.0, 0.0) ,FVector2D(0.0, 0.0) ,FVector2D(0.0, 1.0) };
-					TempMeshData.UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
+					MeshData->UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
 
 					Index += 4;
 				}
@@ -467,32 +462,36 @@ void UChunkMeshComponent::BuildChunkMesh()
 					int32 Location_Z = Z * BlockSize;
 
 					// 顶点
-					Vertices_Tmp[0] = FVector(Location_X, Location_Y + BlockSize, Location_Z);
-					Vertices_Tmp[1] = FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z);
-					Vertices_Tmp[2] = FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z + BlockSize);
-					Vertices_Tmp[3] = FVector(Location_X, Location_Y + BlockSize, Location_Z + BlockSize);
-					TempMeshData.Vertices.Append(Vertices_Tmp);
+					MeshData->Vertices.Append({
+						FVector(Location_X, Location_Y + BlockSize, Location_Z),
+						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z),
+						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z + BlockSize),
+						FVector(Location_X, Location_Y + BlockSize, Location_Z + BlockSize)
+					});
 
 					// 索引
-					Triangles_Tmp[0] = Index + 0;
-					Triangles_Tmp[1] = Index + 1;
-					Triangles_Tmp[2] = Index + 2;
-					Triangles_Tmp[3] = Index + 2;
-					Triangles_Tmp[4] = Index + 3;
-					Triangles_Tmp[5] = Index + 0;
-					TempMeshData.Triangles.Append(Triangles_Tmp);
+					MeshData->Triangles.Append({
+						Index + 0,
+						Index + 1,
+						Index + 2,
+						Index + 2,
+						Index + 3,
+						Index + 0
+					});
 
 					// 顶点颜色
 					float Direction = UKismetMathLibrary::MapRangeClamped(StaticCast<float>(EFaceType::Right), 0.0, 5.0, 0.0, 1.0);
-					VertexColors_Tmp[0] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[1] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[2] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[3] = { 0.0f, 0.0f, 0.0f, Direction };
-					TempMeshData.VertexColors.Append(VertexColors_Tmp);
+
+					MeshData->VertexColors.Append({
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction }
+					});
 
 					// UV
 					const FVector2D bUVs[] = { FVector2D(0.0, 1.0),FVector2D(1.0, 1.0) ,FVector2D(1.0, 0.0) ,FVector2D(0.0, 0.0) };
-					TempMeshData.UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
+					MeshData->UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
 
 					Index += 4;
 				}
@@ -505,32 +504,35 @@ void UChunkMeshComponent::BuildChunkMesh()
 					int32 Location_Z = Z * BlockSize;
 
 					// 顶点
-					Vertices_Tmp[0] = FVector(Location_X + BlockSize, Location_Y, Location_Z);
-					Vertices_Tmp[1] = FVector(Location_X + BlockSize, Location_Y, Location_Z + BlockSize);
-					Vertices_Tmp[2] = FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z + BlockSize);
-					Vertices_Tmp[3] = FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z);
-					TempMeshData.Vertices.Append(Vertices_Tmp);
+					MeshData->Vertices.Append({
+						FVector(Location_X + BlockSize, Location_Y, Location_Z),
+						FVector(Location_X + BlockSize, Location_Y, Location_Z + BlockSize),
+						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z + BlockSize),
+						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z)
+					});
 
 					// 索引
-					Triangles_Tmp[0] = Index + 0;
-					Triangles_Tmp[1] = Index + 1;
-					Triangles_Tmp[2] = Index + 3;
-					Triangles_Tmp[3] = Index + 1;
-					Triangles_Tmp[4] = Index + 2;
-					Triangles_Tmp[5] = Index + 3;
-					TempMeshData.Triangles.Append(Triangles_Tmp);
+					MeshData->Triangles.Append({
+						Index + 0,
+						Index + 1,
+						Index + 3,
+						Index + 1,
+						Index + 2,
+						Index + 3
+					});
 
 					// 顶点颜色
 					float Direction = UKismetMathLibrary::MapRangeClamped(StaticCast<float>(EFaceType::Forward), 0.0, 5.0, 0.0, 1.0);
-					VertexColors_Tmp[0] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[1] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[2] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[3] = { 0.0f, 0.0f, 0.0f, Direction };
-					TempMeshData.VertexColors.Append(VertexColors_Tmp);
+					MeshData->VertexColors.Append({
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+					});
 
 					// UV
 					const FVector2D bUVs[] = { FVector2D(1.0, 1.0), FVector2D(1.0, 0.0), FVector2D(0.0, 0.0), FVector2D(0.0, 1.0) };
-					TempMeshData.UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
+					MeshData->UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
 
 					Index += 4;
 				}
@@ -543,38 +545,41 @@ void UChunkMeshComponent::BuildChunkMesh()
 					int32 Location_Z = Z * BlockSize;
 
 					// 顶点
-					Vertices_Tmp[0] = FVector(Location_X, Location_Y, Location_Z);
-					Vertices_Tmp[1] = FVector(Location_X, Location_Y + BlockSize, Location_Z);
-					Vertices_Tmp[2] = FVector(Location_X, Location_Y + BlockSize, Location_Z + BlockSize);
-					Vertices_Tmp[3] = FVector(Location_X, Location_Y, Location_Z + BlockSize);
-					TempMeshData.Vertices.Append(Vertices_Tmp);
+					MeshData->Vertices.Append({
+						FVector(Location_X, Location_Y, Location_Z),
+						FVector(Location_X, Location_Y + BlockSize, Location_Z),
+						FVector(Location_X, Location_Y + BlockSize, Location_Z + BlockSize),
+						FVector(Location_X, Location_Y, Location_Z + BlockSize)
+					});
 
 					// 索引
-					Triangles_Tmp[0] = Index + 0;
-					Triangles_Tmp[1] = Index + 1;
-					Triangles_Tmp[2] = Index + 2;
-					Triangles_Tmp[3] = Index + 2;
-					Triangles_Tmp[4] = Index + 3;
-					Triangles_Tmp[5] = Index + 0;
-					TempMeshData.Triangles.Append(Triangles_Tmp);
+					MeshData->Triangles.Append({
+						Index + 0,
+						Index + 1,
+						Index + 2,
+						Index + 2,
+						Index + 3,
+						Index + 0
+					});
 
 					// 顶点颜色
 					float Direction = UKismetMathLibrary::MapRangeClamped(StaticCast<float>(EFaceType::BackGround), 0.0, 5.0, 0.0, 1.0);
-					VertexColors_Tmp[0] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[1] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[2] = { 0.0f, 0.0f, 0.0f, Direction };
-					VertexColors_Tmp[3] = { 0.0f, 0.0f, 0.0f, Direction };
-					TempMeshData.VertexColors.Append(VertexColors_Tmp);
+					MeshData->VertexColors.Append({
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+						{ 0.0f, 0.0f, 0.0f, Direction },
+					});
 
 					// UV
 					const FVector2D bUVs[] = { FVector2D(0.0, 1.0),FVector2D(1.0, 1.0) ,FVector2D(1.0, 0.0) ,FVector2D(0.0, 0.0) };
-					TempMeshData.UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
+					MeshData->UV0.Append(bUVs, sizeof(bUVs) / sizeof(bUVs[0]));
 
 					Index += 4;
 				}
 
 				check(BlockID != 0);
-				MeshDatas.Add(BlockID, TempMeshData);
+				MeshDatas.Add(BlockID, MeshData);
 			}
 		}
 	}

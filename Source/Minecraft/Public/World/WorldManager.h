@@ -9,7 +9,6 @@
 class AChunk;
 class UTerrainComponent;
 class UChunkManagerComponent;
-struct FBlockPos;
 struct FBlockData;
 
 DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
@@ -33,17 +32,11 @@ protected:
 
 public:	
 	// Key是Chunk在Voxel World的位置，没有乘以ChunkSize的位置
-	AChunk* GetChunk(const FVector2D& ChunkVoxelLocation);
+	AChunk* GetChunk(const FIntPoint& ChunkVoxelLocation);
 
-	AChunk* GetChunk(const FBlockPos& BlockPos);
+	bool DestroyBlock(const FIntVector& BlockWorldVoxelLocation);
 
-	bool DestroyBlock(const FBlockPos& BlockPos);
-
-	void SetBlock(const FBlockPos& BlockPos, EBlockID BlockID);
-
-	void SetBlock(const FBlockPos& BlockPos, int32 BlockID);
-
-	FBlockData GetBlock(const FBlockPos& BlockPos);
+	void SetBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID);
 
 	FBlockData GetBlock(const FIntVector& BlockWorldVoxelLocation);
 
@@ -58,15 +51,15 @@ private:
 
 	void AddChunk();
 
-	void CreateChunk(const FVector2D& ChunkPosition);
+	void CreateChunk(const FIntPoint& ChunkPosition);
 
-	void LoadChunkInfo(const FVector2D& ChunkPosition);
+	void LoadChunkInfo(const FIntPoint& ChunkPosition);
 
 	void RemoveChunk();
 
 	void RenderChunksAsync();
 
-	void Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos);
+	//void Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos);
 
 	void Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z);
 
@@ -104,7 +97,7 @@ protected:
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FVector2D CharacterChunkPosition;
+	FIntPoint CharacterChunkPosition;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	FVector2D DefaultCharacterPosition;

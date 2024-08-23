@@ -78,5 +78,5 @@ private:
 	UPROPERTY()
 	TObjectPtr<AChunk> Chunk;
 
-	TMap<int32, FMeshData> MeshDatas;
+	TMap<int32, TSharedPtr<FMeshData>> MeshDatas;
 };

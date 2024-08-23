@@ -1,13 +1,11 @@
 ﻿#include "Components/Interactive/InteractiveComponent.h"
-#include "World/WorldSettings.h"
-#include "Kismet/GameplayStatics.h"
-#include "World/WorldManager.h"
-//#include "Chunk/ChunkSection.h"
 #include "Entity/MinecraftPlayer.h"
-#include "Utils/MinecraftAssetLibrary.h"
-#include "World/Block/Block.h"
 #include "Item/DroppedItem.h"
+#include "Kismet/GameplayStatics.h"
+#include "Utils/MinecraftAssetLibrary.h"
+#include "World/WorldManager.h"
 #include "World/Behavior/BlockBehavior.h"
+#include "World/WorldSettings.h"
 
 UInteractiveComponent::UInteractiveComponent()
 {
@@ -54,10 +52,17 @@ void UInteractiveComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (RayCast(BlockHitResult))
+	if (RayCast())
 	{
+		FIntVector MarkerLocation;
+		WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, MarkerLocation);
+		MarkerLocation *= BlockSize;
+		MarkerLocation.X += BlockSize >> 1;
+		MarkerLocation.Y += BlockSize >> 1;
+		MarkerLocation.Z += BlockSize >> 1;
+
 		Marker->SetVisibility(true);
-		Marker->SetWorldLocation(BlockHitResult.BlockPos.WorldLocation() + BlockSize / 2.0f);
+		Marker->SetWorldLocation(FVector(MarkerLocation));
 	}
 	else
 	{
@@ -73,24 +78,61 @@ void UInteractiveComponent::UpdateDestroyProgress(float Value)
 	}
 }
 
+void UInteractiveComponent::WorldLocToBlockVoxelLoc(const FVector& WorldLocation, const FVector& WorldNormal, FIntVector& BlockVoxelLocation)
+{
+	FVector Location = WorldLocation - WorldNormal;
+	Location.X = FMath::FloorToInt32(Location.X);
+	Location.Y = FMath::FloorToInt32(Location.Y);
+	Location.Z = FMath::FloorToInt32(Location.Z);
+	BlockVoxelLocation.X = FMath::FloorToInt32(Location.X / BlockSize);
+	BlockVoxelLocation.Y = FMath::FloorToInt32(Location.Y / BlockSize);
+	BlockVoxelLocation.Z = FMath::FloorToInt32(Location.Z / BlockSize);
+}
+
+FBlockData UInteractiveComponent::GetBlockDataFromLocation(const FVector& WorldLocation, const FVector& WorldNormal)
+{
+	FIntVector BlockVoxelLocation;
+	WorldLocToBlockVoxelLoc(WorldLocation, WorldNormal, BlockVoxelLocation);
+
+	return GetBlockDataFromLocation(BlockVoxelLocation);
+}
+
+FBlockData UInteractiveComponent::GetBlockDataFromLocation(const FIntVector& BlockVoxelLocation)
+{
+	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
+	if (WorldManager)
+	{
+		FBlockData BlockData = WorldManager->GetBlock(BlockVoxelLocation);
+		return BlockData;
+	}
+	return {};
+}
+
 void UInteractiveComponent::UseItem()
 {
-	if (BlockHitResult.bIsHit && Player)
+	if (BlockHitResult.bBlockingHit && Player)
 	{
 		FItemData MainHandItemData = Player->GetMainHandItem();
 		if (!MainHandItemData.IsValid()) return;
 
 		if (MainHandItemData.Type == EItemType::BuildingBlock)
 		{
-			PlaceBlock(BlockHitResult, MainHandItemData.ID);
+			PlaceBlock(MainHandItemData.ID);
 		}
 	}
 }
 
-void UInteractiveComponent::PlaceBlock(const FBlockHitResult& HitResult, int32 ItemID)
+void UInteractiveComponent::PlaceBlock(int32 ItemID)
 {
-	FBlockHitResult HitPosition;
-	FBlockData BlockData = GetBlockID(HitResult.BlockPos.VoxelWorldLocation() + HitResult.Direction, HitPosition);
+	FIntVector BlockVoxelLocation;
+	WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, BlockVoxelLocation);
+
+	BlockVoxelLocation.X += BlockHitResult.ImpactNormal.X;
+	BlockVoxelLocation.Y += BlockHitResult.ImpactNormal.Y;
+	BlockVoxelLocation.Z += BlockHitResult.ImpactNormal.Z;
+
+	FBlockData BlockData = GetBlockDataFromLocation(BlockVoxelLocation);
+
 	if (BlockData.IsValid()) return;
 
 	FBlockMeta BlockMeta;
@@ -102,25 +144,44 @@ void UInteractiveComponent::PlaceBlock(const FBlockHitResult& HitResult, int32 I
 	if (WorldManager)
 	{
 		BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnBeforePlace();
-		WorldManager->SetBlock(HitPosition.BlockPos, BlockMeta.BlockID);
-		BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnAfterPlace(WorldManager, HitResult.BlockPos.WorldLocation(), BlockMeta.PlaceSound);
+		WorldManager->SetBlock(BlockVoxelLocation, BlockMeta.BlockID);
+
+		FVector WorldLocation = FVector(BlockVoxelLocation * BlockSize);
+		WorldLocation = WorldLocation + (BlockSize >> 1);
+		BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnAfterPlace(WorldManager, WorldLocation, BlockMeta.PlaceSound);
+
 		Player->ConsumeItem();
 		Player->UpdateMainHandItem();
 	}
 }
 
-bool UInteractiveComponent::DestroyBlock(const FBlockHitResult& HitResult)
+bool UInteractiveComponent::DestroyBlock(const FVector& WorldLocation, const FVector& WorldNormal)
 {
-	bool bIsDestroyed = RemoveBlockFromWorld(HitResult.BlockPos);
+	FIntVector BlockVoxelLocation;
+	WorldLocToBlockVoxelLoc(WorldLocation, WorldNormal, BlockVoxelLocation);
+
+	return DestroyBlock(BlockVoxelLocation);
+}
+
+bool UInteractiveComponent::DestroyBlock(const FIntVector& BlockVoxelLocation)
+{
+	bool bIsDestroyed = RemoveBlockFromWorld(BlockVoxelLocation);
 
 	if (bIsDestroyed)
 	{
 		FBlockMeta BlockMeta;
-		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(static_cast<int32>(HitResult.BlockData.ID), BlockMeta);
+		FBlockData BlockData = GetBlockDataFromLocation(BlockVoxelLocation);
+		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(BlockData.BlockID(), BlockMeta);
 		if (bSuccessed)
 		{
 			checkf(DroppedItemClass, TEXT("Uninitialize DroppedItemClass"));
-			ADroppedItem* DroppedItem = GetWorld()->SpawnActorDeferred<ADroppedItem>(DroppedItemClass, FTransform(FRotator::ZeroRotator, HitResult.BlockPos.WorldLocation() + FVector(BlockSize >> 2)));
+
+			FVector WorldLocation = FVector(BlockVoxelLocation * BlockSize);
+			WorldLocation.X += BlockSize >> 1;
+			WorldLocation.Y += BlockSize >> 1;
+			WorldLocation.Z += BlockSize >> 1;
+
+			ADroppedItem* DroppedItem = GetWorld()->SpawnActorDeferred<ADroppedItem>(DroppedItemClass, FTransform(FRotator::ZeroRotator, WorldLocation));
 			DroppedItem->SetItemHandle(BlockMeta.ItemHandle);
 			DroppedItem->FinishSpawning(DroppedItem->GetActorTransform());
 			return true;
@@ -130,12 +191,12 @@ bool UInteractiveComponent::DestroyBlock(const FBlockHitResult& HitResult)
 	return false;
 }
 
-bool UInteractiveComponent::RemoveBlockFromWorld(const FBlockPos& BlockPos)
+bool UInteractiveComponent::RemoveBlockFromWorld(const FIntVector& BlockVoxelLocation)
 {
 	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 	if (WorldManager)
 	{
-		return WorldManager->DestroyBlock(BlockPos);
+		return WorldManager->DestroyBlock(BlockVoxelLocation);
 	}
 
 	return false;
@@ -146,7 +207,7 @@ bool UInteractiveComponent::ClickBlock()
 	if (!bIsHittingBlock)
 	{
 		bIsHittingBlock = true;
-		CurrentHitResult = BlockHitResult;
+		LastHitLocation = BlockHitResult.ImpactPoint;
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("点击Block")));
 		return true;
 	}
@@ -156,34 +217,42 @@ bool UInteractiveComponent::ClickBlock()
 
 void UInteractiveComponent::OngoingClick()
 {
-	if (OnPlayerDamageBlock(BlockHitResult))
+	if (OnPlayerDamageBlock())
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Black, TEXT("播放挥手动画和特效"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Black, TEXT("播放挥手动画和特效"));
 	}
 }
 
-bool UInteractiveComponent::OnPlayerDamageBlock(const FBlockHitResult& HitResult)
+bool UInteractiveComponent::OnPlayerDamageBlock()
 {
-	if (!HitResult.bIsHit) return false;
+	if (!BlockHitResult.bBlockingHit)
+	{
+		bIsHittingBlock = false;
+		return false;
+	}
 
 	if (BlockHitDelay > 0)
 	{
 		--BlockHitDelay;
 		return true;
 	}
-	else if (IsHittingPosition(HitResult))
+	else if (IsHittingPosition(BlockHitResult.ImpactPoint))
 	{
-		FBlockMeta BlockMeta;
-		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(HitResult.GetBlockID(), BlockMeta);
-		if (!bSuccessed) return false;
+		FIntVector BlockVoxelLocation;
+		WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, BlockVoxelLocation);
+		FBlockData BlockData = GetBlockDataFromLocation(BlockVoxelLocation);
 
-		if (!HitResult.BlockData.IsValid())
+		if (!BlockData.IsValid())
 		{
 			bIsHittingBlock = false;
 			return false;
 		}
 		else
 		{
+			FBlockMeta BlockMeta;
+			bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(BlockData.BlockID(), BlockMeta);
+			if (!bSuccessed) return false;
+
 			CurBlockDamageMP += BlockMeta.Hardness * GetWorld()->GetDeltaSeconds();
 
 			DestroyPercent = CurBlockDamageMP / BlockMeta.Hardness;
@@ -195,7 +264,7 @@ bool UInteractiveComponent::OnPlayerDamageBlock(const FBlockHitResult& HitResult
 
 			if (DestroyPercent >= 1.0f)
 			{
-				DestroyBlock(HitResult);
+				DestroyBlock(BlockVoxelLocation);
 				bIsHittingBlock = false;
 				CurBlockDamageMP = 0.0f;
 				BlockHitDelay = 5.0f;
@@ -227,152 +296,27 @@ void UInteractiveComponent::ResetBlockRemoving()
 	}
 }
 
-bool UInteractiveComponent::RayCast(FBlockHitResult& HitResult)
+bool UInteractiveComponent::RayCast()
 {
 	if (PlayerController == nullptr) return false;
 
-	const FVector& CameraLocation = PlayerController->PlayerCameraManager->ViewTarget.POV.Location;
-	const FRotator& CameraRotation = PlayerController->PlayerCameraManager->ViewTarget.POV.Rotation;
+	const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
+	const FRotator CameraRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
 
-	// 起点与终点
-	FVector Ray_Start = CameraLocation;
-	FVector Ray_End = CameraLocation + CameraRotation.Vector() * MAX_RAY_DIST * BlockSize;
+	FVector RayEnd = CameraLocation + CameraRotation.Vector() * MAX_RAY_DIST * BlockSize;
 
-	// 起始体素位置
-	FVector Current_Voxel(FMath::Floor(Ray_Start.X / BlockSize),
-						  FMath::Floor(Ray_Start.Y / BlockSize),
-						  FMath::Floor(Ray_Start.Z / BlockSize));
-
-	// 终点体素位置
-	FVector Last_Voxel(FMath::Floor(Ray_End.X / BlockSize),
-					   FMath::Floor(Ray_End.Y / BlockSize),
-					   FMath::Floor(Ray_End.Z / BlockSize));
-
-	// 射线方向向量
-	FVector Ray = Ray_End - Ray_Start;
-
-	// 射线方向标识符: 0 X, 1 Y, 2 Z
-	int32 Step_Dir = -1;
-
-	// 清除历史记录
-	HitResult.Direction = FVector::ZeroVector;
-
-	float tMaxX, tMaxY, tMaxZ, tDeltaX, tDeltaY, tDeltaZ;
-
-	int32 dx = FMath::Sign(Ray.X);
-	if (dx != 0) tDeltaX = FMath::Min(BlockSize / (Ray.X) * dx, 10000000.0f); else tDeltaX = 10000000.0f;
-	if (dx > 0) tMaxX = tDeltaX * (1 - FMath::Frac(Ray_Start.X / BlockSize)); else tMaxX = tDeltaX * FMath::Frac(Ray_Start.X / BlockSize);
-
-	int32 dy = FMath::Sign(Ray.Y);
-	if (dy != 0) tDeltaY = FMath::Min(BlockSize / (Ray_End.Y - Ray_Start.Y) * dy, 10000000.0f); else tDeltaY = 10000000.0f;
-	if (dy > 0) tMaxY = tDeltaY * (1 - FMath::Frac(Ray_Start.Y / BlockSize)); else tMaxY = tDeltaY * FMath::Frac(Ray_Start.Y / BlockSize);
-
-	int32 dz = FMath::Sign(Ray.Z);
-	if (dz != 0) tDeltaZ = FMath::Min(BlockSize / (Ray_End.Z - Ray_Start.Z) * dz, 10000000.0f); else tDeltaZ = 10000000.0f;
-	if (dz > 0) tMaxZ = tDeltaZ * (1 - FMath::Frac(Ray_Start.Z / BlockSize)); else tMaxZ = tDeltaZ * FMath::Frac(Ray_Start.Z / BlockSize);
-
-	// 调试相关
-	if (bIsDebug)
+	if (UWorld* World = GetWorld())
 	{
-		DrawDebugLine(GetWorld(), Ray_Start, Ray_End, FColor::Red, false, -1.0f, 0U, 5);
-		DrawDebugLine(GetWorld(), Current_Voxel * BlockSize, Last_Voxel * BlockSize, FColor::Blue, false, -1.0f, 0U, 5);
-	}
-
-	while (true)
-	{
-		if (GetBlockID(Current_Voxel, HitResult).IsValid())
+		if(World->LineTraceSingleByChannel(BlockHitResult, CameraLocation, RayEnd, ECollisionChannel::ECC_Visibility))
 		{
-			HitResult.bIsHit = true;
-			if (Step_Dir == 0)
-			{
-				HitResult.Direction.X = -dx;
-			}
-			else if (Step_Dir == 1)
-			{
-				HitResult.Direction.Y = -dy;
-			}
-			else if (Step_Dir == 2)
-			{
-				HitResult.Direction.Z = -dz;
-			}
+
 			return true;
 		}
-
-		if (bIsDebug)
-		{
-			DrawDebugLine(GetWorld(), Current_Voxel * BlockSize, Last_Voxel * BlockSize, FColor::Green, false, -1.0f, 0U, 5);
-		}
-
-		if (tMaxX < tMaxY)
-		{
-			if (tMaxX < tMaxZ)
-			{
-				Current_Voxel.X += dx;
-				tMaxX += tDeltaX;
-				Step_Dir = 0;
-			}
-			else
-			{
-				Current_Voxel.Z += dz;
-				tMaxZ += tDeltaZ;
-				Step_Dir = 2;
-			}
-		}
-		else
-		{
-			if (tMaxY < tMaxZ)
-			{
-				Current_Voxel.Y += dy;
-				tMaxY += tDeltaY;
-				Step_Dir = 1;
-			}
-			else
-			{
-				Current_Voxel.Z += dz;
-				tMaxZ += tDeltaZ;
-				Step_Dir = 2;
-			}
-		}
-		if (tMaxX > 1 && tMaxY > 1 && tMaxZ > 1) break;
 	}
-
-	HitResult.bIsHit = false;
 	return false;
 }
 
-bool UInteractiveComponent::IsHittingPosition(const FBlockHitResult& HitResult)
+bool UInteractiveComponent::IsHittingPosition(const FVector& WorldLocation)
 {
-	return CurrentHitResult == HitResult;
-}
-
-FBlockData UInteractiveComponent::GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult)
-{
-	int32 ChunkWorld_X = FMath::Floor(VoxelWorldPosition.X / CHUNK_SIZE);
-	int32 ChunkWorld_Y = FMath::Floor(VoxelWorldPosition.Y / CHUNK_SIZE);
-	int32 ChunkWorld_Z = FMath::Floor(VoxelWorldPosition.Z / CHUNK_SIZE);
-
-	FVector ChunkVoexlWorldPosition(ChunkWorld_X, ChunkWorld_Y, ChunkWorld_Z);
-
-	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
-	if (WorldManager)
-	{
-		//AChunkSection* ChunkSection = WorldManager->GetChunkSection(ChunkVoexlWorldPosition);
-
-		//// 在游玩时，因为地形一直是随着玩家的位置加载的所以完整游戏中，不因该为空
-		//if (ChunkSection == nullptr) return {};
-
-		//int32 Local_X = VoxelWorldPosition.X - ChunkWorld_X * CHUNK_SIZE;
-		//int32 Local_Y = VoxelWorldPosition.Y - ChunkWorld_Y * CHUNK_SIZE;
-		//int32 Local_Z = VoxelWorldPosition.Z - ChunkWorld_Z * CHUNK_SIZE;
-
-		//int32 BlockIndex = Local_X + Local_Y * CHUNK_SIZE + Local_Z * CHUNK_AREA;
-
-		//OutHitResult.BlockData = ChunkSection->GetBlock(BlockIndex);
-		//OutHitResult.BlockPos.SetOffsetLocation(Local_X, Local_Y, Local_Z);
-		//OutHitResult.BlockPos.SetVoxelWorldLocation(VoxelWorldPosition.X, VoxelWorldPosition.Y, VoxelWorldPosition.Z);
-
-		//return OutHitResult.BlockData;
-	}
-
-	return {};
+	return LastHitLocation.Equals(WorldLocation, 0.0001);
 }

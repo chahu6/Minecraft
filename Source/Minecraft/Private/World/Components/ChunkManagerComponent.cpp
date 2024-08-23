@@ -15,7 +15,7 @@ void UChunkManagerComponent::BeginPlay()
 	WorldManager = Cast<AWorldManager>(GetOwner());
 }
 
-AChunk* UChunkManagerComponent::GetChunk(const FVector2D& Key)
+AChunk* UChunkManagerComponent::GetChunk(const FIntPoint& Key)
 {
 	if (AllChunks.Contains(Key))
 	{
@@ -24,7 +24,7 @@ AChunk* UChunkManagerComponent::GetChunk(const FVector2D& Key)
 	return nullptr;
 }
 
-bool UChunkManagerComponent::CreateChunk(const FVector2D& ChunkVoxelPosition)
+bool UChunkManagerComponent::CreateChunk(const FIntPoint& ChunkVoxelPosition)
 {
 	AChunk* Chunk = GetChunk(ChunkVoxelPosition);
 	if (Chunk == nullptr)
@@ -62,7 +62,7 @@ void UChunkManagerComponent::Rebuild_Adjacent_Chunks(const FVector2D& ChunkVoxel
 
 void UChunkManagerComponent::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y)
 {
-	AChunk* Chunk = GetChunk(FVector2D(Chunk_World_X, Chunk_World_Y));
+	AChunk* Chunk = GetChunk(FIntPoint(Chunk_World_X, Chunk_World_Y));
 
 	if (Chunk == nullptr) return;
 

@@ -24,9 +24,9 @@ public:
 
 	virtual void OnBeforePlace();
 
-	virtual void OnAfterPlace(AWorldManager* WorldManager, const FVector& Location, USoundBase* Sound);
+	virtual void OnAfterPlace(AWorldManager* WorldManager, const FVector& WorldLocation, USoundBase* Sound);
 
-	virtual void OnDestroy(AWorldManager* WorldManager, const FVector& Location, USoundBase* Sound);
+	virtual void OnDestroy(AWorldManager* WorldManager, const FVector& WorldLocation, USoundBase* Sound);
 
 	virtual void OnUpdate() {};
 };
