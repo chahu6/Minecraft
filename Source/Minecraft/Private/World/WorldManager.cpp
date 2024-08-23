@@ -8,35 +8,10 @@
 #include "Utils/MinecraftAssetLibrary.h"
 #include "World/Block/Block.h"
 #include "World/Behavior/BlockBehavior.h"
-#include "World/Runnable/WorldGeneratorAsyncTask.h"
+#include "World/Runnable/TerrainDataAsyncTask.h"
 #include "World/Components/TerrainComponent.h"
 
 #include "Utils/ScopeProfiler.h"
-
-class FTerrainDataTask
-{
-	friend class FAutoDeleteAsyncTask<FTerrainDataTask>;
-
-	FORCEINLINE TStatId GetStatId() const
-	{
-		RETURN_QUICK_DECLARE_CYCLE_STAT(FTerrainDataTask, STATGROUP_ThreadPoolAsyncTasks);
-	}
-
-	void DoWork()
-	{
-
-	}
-
-	bool CanAbandon()
-	{
-		return true;
-	}
-
-	void Abandon()
-	{
-
-	}
-};
 
 AWorldManager::AWorldManager()
 {
@@ -62,6 +37,19 @@ void AWorldManager::BeginPlay()
 
 void AWorldManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	if (TerrainDataAsyncTask)
+	{
+		TerrainDataAsyncTask->TryAbandonTask();
+		TerrainDataAsyncTask->EnsureCompletion();
+		delete TerrainDataAsyncTask;
+		TerrainDataAsyncTask = nullptr;
+	}
+
+	if (ChunkManager)
+	{
+		ChunkManager->EnsureCompletion();
+	}
+
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -104,8 +92,11 @@ void AWorldManager::InitialWorldChunkLoad()
 			CreateChunk(ChunkPosition);
 		}
 	}
-	
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]() {
+
+	TerrainDataAsyncTask = new FAsyncTask<FTerrainDataAsyncTask>(this);
+	TerrainDataAsyncTask->StartBackgroundTask();
+
+	/*AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]() {
 		FIntPoint ChunkLoc;
 		for (int32 ChunkX = -ChunkRenderRange; ChunkX <= ChunkRenderRange; ++ChunkX)
 		{
@@ -138,7 +129,7 @@ void AWorldManager::InitialWorldChunkLoad()
 				});
 			}
 		});
-	});
+	});*/
 }
 
 bool AWorldManager::UpdatePosition()
@@ -226,35 +217,6 @@ void AWorldManager::RemoveChunk()
 			ChunksMap.Remove(ChunkLocation);
 		}
 	}
-}
-
-void AWorldManager::RenderChunks()
-{
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [this]() {
-		const TMap<FIntPoint, AChunk*>& ChunksMap = ChunkManager->AllChunks;
-		int32 Total = ChunksMap.Num();
-		std::atomic<int32> Count = 0;
-		for (const TPair<FVector2D, AChunk*>& Elem : ChunksMap)
-		{
-			AChunk* Chunk = Elem.Value;
-
-			if (!IsValid(Chunk))
-			{
-				return;
-			}
-
-			Chunk->BuildMesh();
-				
-			AsyncTask(ENamedThreads::GameThread, [this, Chunk = Chunk, Total, &Count]() {
-				if (Chunk)
-				{
-					Chunk->Render();
-					Count.fetch_add(1);
-					ProgressDelegate.Execute((float)Count / Total);
-				}
-			});
-		}
-	});
 }
 
 void AWorldManager::RenderChunksAsync()

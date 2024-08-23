@@ -25,6 +25,8 @@ void UChunkMeshComponent::BeginPlay()
 
 void UChunkMeshComponent::Render()
 {
+	if (Chunk->bIsStopped) return;
+
 	FBlockMeta BlockMeta;
 	for (auto MeshData = MeshDatas.CreateConstIterator(); MeshData; ++MeshData)
 	{
@@ -42,6 +44,8 @@ void UChunkMeshComponent::Render()
 
 void UChunkMeshComponent::BuildMesh(EGenerationMethod GenerationMethod)
 {
+	if (Chunk->bIsStopped) return;
+
 	MeshDatas.Empty();
 
 	switch (GenerationMethod)
@@ -117,6 +121,8 @@ void UChunkMeshComponent::BuildGreedyChunkMesh()
 			{
 				for (ChunkItr[Axis1] = 0; ChunkItr[Axis1] < Axis1Limit; ++ChunkItr[Axis1])
 				{
+					if (Chunk->bIsStopped) return;
+
 					const FBlockData CurrentBlock = WorldManager->GetBlock(ChunkItr + FIntVector(ChunkWorldLocation / BlockSize));
 					const FBlockData CompareBlock = WorldManager->GetBlock((ChunkItr + AxisMask) + FIntVector(ChunkWorldLocation / BlockSize));
 
@@ -145,6 +151,8 @@ void UChunkMeshComponent::BuildGreedyChunkMesh()
 			{
 				for (int32 i = 0; i < Axis1Limit;)
 				{
+					if (Chunk->bIsStopped) return;
+
 					if (Mask[N].Normal != 0)
 					{
 						const FMask CurrentMask = Mask[N];

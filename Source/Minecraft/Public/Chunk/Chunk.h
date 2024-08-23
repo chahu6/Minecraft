@@ -8,6 +8,7 @@
 
 struct FBlockData;
 class UChunkMeshComponent;
+class FChunkGeneratorAsyncTask;
 
 UENUM()
 enum class EChunkState : uint8
@@ -21,14 +22,14 @@ UCLASS()
 class MINECRAFT_API AChunk : public AActor, public IChunkInterface
 {
 	GENERATED_BODY()
+
+	friend class UChunkMeshComponent;
 	
 public:	
 	AChunk();
 
 protected:
-	virtual void BeginPlay() override;
-
-	virtual void Destroyed() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
 	// 将所有的ChunkSection都设置为脏数据，Chunk是脏数据代表所属的ChunkSection也是脏数据
@@ -47,6 +48,10 @@ public:
 	void Render();
 
 	void BuildMesh();
+
+	void EnsureCompletion();
+
+	void StopBuildMesh();
 
 	EChunkState ChunkState = EChunkState::None;
 
@@ -71,6 +76,10 @@ private:
 	bool bIsRendering = false;
 
 	bool bIsDirty = false;
+
+	FAsyncTask<FChunkGeneratorAsyncTask>* ChunkGeneratorTask = nullptr;
+
+	bool bIsStopped = false;
 
 public:
 	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }

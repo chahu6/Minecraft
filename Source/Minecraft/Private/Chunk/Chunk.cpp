@@ -19,15 +19,27 @@ AChunk::AChunk()
 	Blocks.Init({}, CHUNK_VOLUME);
 }
 
-void AChunk::BeginPlay()
+void AChunk::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::BeginPlay();
+	EnsureCompletion();
 
+	Super::EndPlay(EndPlayReason);
 }
 
-void AChunk::Destroyed()
+void AChunk::EnsureCompletion()
 {
-	Super::Destroyed();
+	if (ChunkGeneratorTask)
+	{
+		ChunkGeneratorTask->TryAbandonTask();
+		ChunkGeneratorTask->EnsureCompletion();
+		delete ChunkGeneratorTask;
+		ChunkGeneratorTask = nullptr;
+	}
+}
+
+void AChunk::StopBuildMesh()
+{
+	bIsStopped = true;
 }
 
 void AChunk::Dirty()
@@ -63,7 +75,8 @@ void AChunk::BuildAndRenderAsync()
 {
 	if (ChunkState != EChunkState::Loaded) return;
 
-	(new FAutoDeleteAsyncTask<FChunkGeneratorAsyncTask>(this))->StartBackgroundTask();
+	ChunkGeneratorTask = new FAsyncTask<FChunkGeneratorAsyncTask>(this);
+	ChunkGeneratorTask->StartBackgroundTask();
 }
 
 void AChunk::RecalculateEmpty()
