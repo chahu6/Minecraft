@@ -8,7 +8,6 @@
 
 struct FBlockData;
 class UChunkMeshComponent;
-struct FBlockPos;
 
 UENUM()
 enum class EChunkState : uint8
@@ -36,8 +35,6 @@ public:
 	void Dirty();
 
 	FBlockData GetBlock(int32 OffsetX, int32 OffsetY, int32 WorldZ);
-
-	FBlockData GetBlock(const FBlockPos& BlockPos);
 
 	void SetBlock(int32 OffsetX, int32 OffsetY, int32 WorldZ, const FBlockData& BlockData);
 

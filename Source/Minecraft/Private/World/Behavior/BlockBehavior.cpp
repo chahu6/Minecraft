@@ -15,12 +15,12 @@ void UBlockBehavior::OnBeforePlace()
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("UBlockBehavior::OnBeforePlace()")));
 }
 
-void UBlockBehavior::OnAfterPlace(AWorldManager* WorldManager, const FVector& Location, USoundBase* Sound)
+void UBlockBehavior::OnAfterPlace(AWorldManager* WorldManager, const FVector& WorldLocation, USoundBase* Sound)
 {
-	UGameplayStatics::PlaySoundAtLocation(WorldManager, Sound, Location);
+	UGameplayStatics::PlaySoundAtLocation(WorldManager, Sound, WorldLocation);
 }
 
-void UBlockBehavior::OnDestroy(AWorldManager* WorldManager, const FVector& Location, USoundBase* Sound)
+void UBlockBehavior::OnDestroy(AWorldManager* WorldManager, const FVector& WorldLocation, USoundBase* Sound)
 {
-	UGameplayStatics::PlaySoundAtLocation(WorldManager, Sound, Location);
+	UGameplayStatics::PlaySoundAtLocation(WorldManager, Sound, WorldLocation);
 }

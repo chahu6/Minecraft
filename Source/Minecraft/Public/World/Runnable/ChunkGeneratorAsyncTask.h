@@ -11,11 +11,7 @@ class MINECRAFT_API FChunkGeneratorAsyncTask : public FNonAbandonableTask
 	friend class FAutoDeleteAsyncTask<FChunkGeneratorAsyncTask>;
 
 public:
-	FChunkGeneratorAsyncTask() = default;
-
 	FChunkGeneratorAsyncTask(AChunk* Chunk);
-
-	~FChunkGeneratorAsyncTask() = default;
 
 public:
 	FORCEINLINE TStatId GetStatId() const

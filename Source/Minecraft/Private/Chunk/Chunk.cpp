@@ -5,7 +5,6 @@
 #include "Chunk/ChunkMeshComponent.h"
 #include "World/WorldSettings.h"
 #include "World/WorldManager.h"
-#include "Core/BlockPos.h"
 
 AChunk::AChunk()
 {
@@ -44,13 +43,6 @@ FBlockData AChunk::GetBlock(int32 OffsetX, int32 OffsetY, int32 WorldZ)
 	}
 
 	return {};
-}
-
-FBlockData AChunk::GetBlock(const FBlockPos& BlockPos)
-{
-	FVector OffsetLocation = BlockPos.OffsetLocation();
-	
-	return GetBlock(OffsetLocation.X, OffsetLocation.Y, OffsetLocation.Z);
 }
 
 void AChunk::SetBlock(int32 OffsetX, int32 OffsetY, int32 WorldZ, const FBlockData& BlockData)

@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "HitResult/BlockHitResult.h"
+#include "World/Block/Block.h"
 #include "InteractiveComponent.generated.h"
 
 class AMinecraftPlayer;
@@ -36,27 +36,30 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-public:	
-	bool DestroyBlock(const FBlockHitResult& HitResult);
-
 private:
+	bool DestroyBlock(const FVector& WorldLocation, const FVector& WorldNormal);
+	bool DestroyBlock(const FIntVector& BlockVoxelLocation);
+
+	FBlockData GetBlockDataFromLocation(const FVector& WorldLocation, const FVector& WorldNormal);
+	FBlockData GetBlockDataFromLocation(const FIntVector& BlockVoxelLocation);
+
+	void WorldLocToBlockVoxelLoc(const FVector& WorldLocation, const FVector& WorldNormal, FIntVector& BlockVoxelLocation);
+
 	void UseItem();
 
-	void PlaceBlock(const FBlockHitResult& HitResult, int32 ItemID);
+	void PlaceBlock(int32 ItemID);
 
-	bool RemoveBlockFromWorld(const FBlockPos& BlockPos);
+	bool RemoveBlockFromWorld(const FIntVector& BlockVoxelLocation);
 
 	void OngoingClick();
-	bool OnPlayerDamageBlock(const FBlockHitResult& HitResult);
+	bool OnPlayerDamageBlock();
 	bool ClickBlock();
 
 	void ResetBlockRemoving();
 
-	bool RayCast(FBlockHitResult& HitResult);
+	bool RayCast();
 
-	bool IsHittingPosition(const FBlockHitResult& HitResult);
-
-	FBlockData GetBlockID(const FVector& VoxelWorldPosition, FBlockHitResult& OutHitResult);
+	bool IsHittingPosition(const FVector& WorldLocation);
 
 	bool InitMarkComponent(USceneComponent* Parent);
 
@@ -82,20 +85,16 @@ private:
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> DestroyMaterial;
 
-	FBlockHitResult BlockHitResult;
-
 	UPROPERTY(EditAnywhere, Category = "Debug")
 	bool bIsDebug = false;
 
+private:
 	bool bIsHittingBlock = false;
 	int32 BlockHitDelay = 0;
 	float CurBlockDamageMP = 0.0f;
 	float DestroyPercent = 0.0f;
 
-	FBlockPos CurrentBlock;
+	FVector LastHitLocation;
 
-	FBlockHitResult CurrentHitResult;
-
-public:
-	[[nodiscard]] FORCEINLINE const FBlockHitResult& GetBlockHitResult() const { return BlockHitResult; }
+	FHitResult BlockHitResult;
 };

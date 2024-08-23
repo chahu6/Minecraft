@@ -5,7 +5,6 @@
 #include "SimplexNoiseLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Core/BlockPos.h"
 #include "Utils/MinecraftAssetLibrary.h"
 #include "World/Block/Block.h"
 #include "World/Behavior/BlockBehavior.h"
@@ -13,6 +12,31 @@
 #include "World/Components/TerrainComponent.h"
 
 #include "Utils/ScopeProfiler.h"
+
+class FTerrainDataTask
+{
+	friend class FAutoDeleteAsyncTask<FTerrainDataTask>;
+
+	FORCEINLINE TStatId GetStatId() const
+	{
+		RETURN_QUICK_DECLARE_CYCLE_STAT(FTerrainDataTask, STATGROUP_ThreadPoolAsyncTasks);
+	}
+
+	void DoWork()
+	{
+
+	}
+
+	bool CanAbandon()
+	{
+		return true;
+	}
+
+	void Abandon()
+	{
+
+	}
+};
 
 AWorldManager::AWorldManager()
 {
@@ -39,18 +63,17 @@ void AWorldManager::BeginPlay()
 void AWorldManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-
 }
 
 void AWorldManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (UpdatePosition())
+	/*if (UpdatePosition())
 	{
 		AddChunk();
 		RemoveChunk();
-	}
+	}*/
 }
 
 void AWorldManager::InitialWorldChunkLoad()
@@ -245,66 +268,50 @@ void AWorldManager::RenderChunksAsync()
 
 AChunk* AWorldManager::GetChunk(const FIntPoint& ChunkVoxelLocation)
 {
-	return ChunkManager == nullptr ? nullptr : ChunkManager->GetChunk(ChunkVoxelLocation);
+	return ChunkManager->GetChunk(ChunkVoxelLocation);
 }
 
-AChunk* AWorldManager::GetChunk(const FBlockPos& BlockPos)
+bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation)
 {
-	int32 ChunkWorldX = FMath::Floor(BlockPos.X_VOXEL_WORLD / CHUNK_SIZE);
-	int32 ChunkWorldY = FMath::Floor(BlockPos.Y_VOXEL_WORLD / CHUNK_SIZE);
-
-	return GetChunk(FIntPoint(ChunkWorldX, ChunkWorldY));
-}
-
-bool AWorldManager::DestroyBlock(const FBlockPos& BlockPos)
-{
-	//AChunkSection* ChunkSection = GetChunkSection(BlockPos);
-	//if (ChunkSection == nullptr) return false;
-
-	FBlockData BlockData = GetBlock(BlockPos);
+	FBlockData BlockData = GetBlock(BlockWorldVoxelLocation);
 	if (!BlockData.IsValid()) return false;
 
 	FBlockMeta BlockMeta;
 	if (!UMinecraftAssetLibrary::GetBlockMeta(BlockData.BlockID(), BlockMeta)) return false;
 
-	BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnDestroy(this, BlockPos.WorldLocation(), BlockMeta.DestroySound);
-	//ChunkSection->SetBlock(BlockPos.OffsetLocation(), {});
+	FVector WorldLocation = FVector(BlockWorldVoxelLocation * BlockSize);
+	WorldLocation.X += BlockSize >> 1;
+	WorldLocation.Y += BlockSize >> 1;
+	WorldLocation.Z += BlockSize >> 1;
+
+	BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnDestroy(this, WorldLocation, BlockMeta.DestroySound);
+	SetBlock(BlockWorldVoxelLocation, {});
 
 	// 重新计算空值
 	//ChunkSection->RecalculateEmpty();
 	//ChunkSection->Rebuild();
-	Rebuild_Adjacent_Chunks(BlockPos);
+	//Rebuild_Adjacent_Chunks(BlockPos);
 
 	return true;
 }
 
-void AWorldManager::SetBlock(const FBlockPos& BlockPos, EBlockID BlockID)
+void AWorldManager::SetBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID)
 {
-	//AChunkSection* ChunkSection = GetChunkSection(BlockPos);
-	//if (ChunkSection)
-	{
-		//ChunkSection->SetBlock(BlockPos.OffsetLocation(), { BlockID, 0 });
-		//if (ChunkSection->IsEmpty())
-		//{
-		//	ChunkSection->SetEmpty(false);
-		//}
-		//ChunkSection->Rebuild();
-	}
-}
+	// static_cast<float>() 转成float考虑到负数
+	const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / CHUNK_SIZE);
+	const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / CHUNK_SIZE);
 
-void AWorldManager::SetBlock(const FBlockPos& BlockPos, int32 BlockID)
-{
-	SetBlock(BlockPos, static_cast<EBlockID>(BlockID));
-}
-
-FBlockData AWorldManager::GetBlock(const FBlockPos& BlockPos)
-{
-	AChunk* Chunk = GetChunk(BlockPos);
+	AChunk* Chunk = GetChunk(FIntPoint(ChunkVoxelLocationX, ChunkVoxelLocationY));
 	if (Chunk)
 	{
-		return Chunk->GetBlock(BlockPos);
+		FIntVector OffsetLocation = BlockWorldVoxelLocation - FIntVector(ChunkVoxelLocationX, ChunkVoxelLocationY, 0) * CHUNK_SIZE;
+
+		const int32 OffsetX = OffsetLocation.X % CHUNK_SIZE;
+		const int32 OffsetY = OffsetLocation.Y % CHUNK_SIZE;
+		const int32 WorldZ = OffsetLocation.Z;
+
+		Chunk->SetBlock(OffsetX, OffsetY, WorldZ, { static_cast<EBlockID>(BlockID), 0 });
 	}
-	return {};
 }
 
 FBlockData AWorldManager::GetBlock(const FIntVector& BlockWorldVoxelLocation)
@@ -328,48 +335,48 @@ FBlockData AWorldManager::GetBlock(const FIntVector& BlockWorldVoxelLocation)
 	return FBlockData();
 }
 
-void AWorldManager::Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos)
-{
-	// 获取Voxel位置
-	int32 Voxel_Local_X = BlockPos.X_OFFSET;
-	int32 Voxel_Local_Y = BlockPos.Y_OFFSET;
-	int32 Voxel_Local_Z = BlockPos.Z_OFFSET;
-
-	// 获取Chunk所在Voxel位置
-	int32 Chunk_World_X = FMath::Floor(BlockPos.X_VOXEL_WORLD / CHUNK_SIZE);
-	int32 Chunk_World_Y = FMath::Floor(BlockPos.Y_VOXEL_WORLD / CHUNK_SIZE);
-	int32 Chunk_World_Z = FMath::Floor(BlockPos.Z_VOXEL_WORLD / CHUNK_SIZE);
-
-	// X轴
-	if (Voxel_Local_X == 0)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X - 1, Chunk_World_Y, Chunk_World_Z);
-	}
-	else if (Voxel_Local_X == CHUNK_SIZE - 1)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X + 1, Chunk_World_Y, Chunk_World_Z);
-	}
-
-	// Y轴
-	if (Voxel_Local_Y == 0)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y - 1, Chunk_World_Z);
-	}
-	else if (Voxel_Local_Y == CHUNK_SIZE - 1)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y + 1, Chunk_World_Z);
-	}
-
-	// Z轴
-	if (Voxel_Local_Z == 0)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y, Chunk_World_Z - 1);
-	}
-	else if (Voxel_Local_Z == CHUNK_SIZE - 1)
-	{
-		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y, Chunk_World_Z + 1);
-	}
-}
+//void AWorldManager::Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos)
+//{
+//	// 获取Voxel位置
+//	int32 Voxel_Local_X = BlockPos.X_OFFSET;
+//	int32 Voxel_Local_Y = BlockPos.Y_OFFSET;
+//	int32 Voxel_Local_Z = BlockPos.Z_OFFSET;
+//
+//	// 获取Chunk所在Voxel位置
+//	int32 Chunk_World_X = FMath::Floor(BlockPos.X_VOXEL_WORLD / CHUNK_SIZE);
+//	int32 Chunk_World_Y = FMath::Floor(BlockPos.Y_VOXEL_WORLD / CHUNK_SIZE);
+//	int32 Chunk_World_Z = FMath::Floor(BlockPos.Z_VOXEL_WORLD / CHUNK_SIZE);
+//
+//	// X轴
+//	if (Voxel_Local_X == 0)
+//	{
+//		Rebuild_Adj_Chunk(Chunk_World_X - 1, Chunk_World_Y, Chunk_World_Z);
+//	}
+//	else if (Voxel_Local_X == CHUNK_SIZE - 1)
+//	{
+//		Rebuild_Adj_Chunk(Chunk_World_X + 1, Chunk_World_Y, Chunk_World_Z);
+//	}
+//
+//	// Y轴
+//	if (Voxel_Local_Y == 0)
+//	{
+//		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y - 1, Chunk_World_Z);
+//	}
+//	else if (Voxel_Local_Y == CHUNK_SIZE - 1)
+//	{
+//		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y + 1, Chunk_World_Z);
+//	}
+//
+//	// Z轴
+//	if (Voxel_Local_Z == 0)
+//	{
+//		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y, Chunk_World_Z - 1);
+//	}
+//	else if (Voxel_Local_Z == CHUNK_SIZE - 1)
+//	{
+//		Rebuild_Adj_Chunk(Chunk_World_X, Chunk_World_Y, Chunk_World_Z + 1);
+//	}
+//}
 
 void AWorldManager::Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z)
 {
