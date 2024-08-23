@@ -29,9 +29,9 @@ void AMCGameMode::OnPostLogin(AController* NewPlayer)
 {
 	if (AMCPlayerController* PlayerController = Cast<AMCPlayerController>(NewPlayer))
 	{
-		PlayerController->SetPrograssPercent(0.f);
-		PlayerController->AddPrograssWidget();
-		EnterWorld(PlayerController);
+		//PlayerController->SetPrograssPercent(0.f);
+		//PlayerController->AddPrograssWidget();
+		//EnterWorld(PlayerController);
 	}
 }
 

@@ -2,29 +2,38 @@
 
 #include "CoreMinimal.h"
 
-class AChunk;
+class AWorldManager;
 /**
- *
+ * 
  */
-//class MINECRAFT_API FTerrainDataAsyncTask : public FNonAbandonableTask
-//{
-//	friend class FAutoDeleteAsyncTask<FTerrainDataAsyncTask>;
-//
-//public:
-//	FTerrainDataAsyncTask() = default;
-//
-//	FTerrainDataAsyncTask(AChunk* Chunk);
-//
-//	~FTerrainDataAsyncTask() = default;
-//
-//public:
-//	FORCEINLINE TStatId GetStatId() const
-//	{
-//		RETURN_QUICK_DECLARE_CYCLE_STAT(FTerrainDataAsyncTask, STATGROUP_ThreadPoolAsyncTasks);
-//	}
-//
-//	void DoWork();
-//
-//private:
-//	AChunk* Chunk = nullptr;
-//};
+class FTerrainDataAsyncTask
+{
+	friend class FAsyncTask<FTerrainDataAsyncTask>;
+
+public:
+	FTerrainDataAsyncTask(AWorldManager* InWorldManager)
+	{
+		WorldManager = InWorldManager;
+	}
+
+	FORCEINLINE TStatId GetStatId() const
+	{
+		RETURN_QUICK_DECLARE_CYCLE_STAT(FTerrainDataAsyncTask, STATGROUP_ThreadPoolAsyncTasks);
+	}
+
+	void DoWork();
+
+	bool CanAbandon()
+	{
+		return true;
+	}
+
+	void Abandon()
+	{
+		bIsStopped = true;
+	}
+
+private:
+	AWorldManager* WorldManager = nullptr;
+	bool bIsStopped = false;
+};

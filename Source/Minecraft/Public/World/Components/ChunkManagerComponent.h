@@ -23,6 +23,8 @@ public:
 
 	bool CreateChunk(const FIntPoint& ChunkVoxelPosition);
 
+	void EnsureCompletion();
+
 private:
 	void Rebuild_Adjacent_Chunks(const FVector2D& ChunkVoxelWorldPosition);
 
@@ -34,4 +36,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<AWorldManager> WorldManager;
+public:
+	FORCEINLINE int32 GetAllChunksNum() const { return AllChunks.Num(); }
 };

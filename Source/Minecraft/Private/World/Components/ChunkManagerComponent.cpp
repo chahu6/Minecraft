@@ -47,6 +47,17 @@ bool UChunkManagerComponent::CreateChunk(const FIntPoint& ChunkVoxelPosition)
 	return false;
 }
 
+void UChunkManagerComponent::EnsureCompletion()
+{
+	for (auto Itr = AllChunks.CreateConstIterator(); Itr; ++Itr)
+	{
+		if (Itr->Value)
+		{
+			Itr->Value->EnsureCompletion();
+		}
+	}
+}
+
 void UChunkManagerComponent::Rebuild_Adjacent_Chunks(const FVector2D& ChunkVoxelWorldPosition)
 {
 	// XÖá

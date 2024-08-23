@@ -6,21 +6,28 @@ class AChunk;
 /**
  *
  */
-class MINECRAFT_API FChunkGeneratorAsyncTask : public FNonAbandonableTask
+class MINECRAFT_API FChunkGeneratorAsyncTask
 {
-	friend class FAutoDeleteAsyncTask<FChunkGeneratorAsyncTask>;
+	friend class FAsyncTask<FChunkGeneratorAsyncTask>;
 
 public:
 	FChunkGeneratorAsyncTask(AChunk* Chunk);
 
-public:
+	bool CanAbandon()
+	{
+		return true;
+	}
+
+	void Abandon();
+
+	void DoWork();
+
 	FORCEINLINE TStatId GetStatId() const
 	{
 		RETURN_QUICK_DECLARE_CYCLE_STAT(FChunkGeneratorAsyncTask, STATGROUP_ThreadPoolAsyncTasks);
 	}
 
-	void DoWork();
-
 private:
 	AChunk* Chunk = nullptr;
+	bool bIsStopped = false;
 };

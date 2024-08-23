@@ -19,6 +19,7 @@ class MINECRAFT_API AWorldManager : public AActor
 	GENERATED_BODY()
 	
 	friend class UChunkManagerComponent;
+	friend class FTerrainDataAsyncTask;
 
 public:	
 	AWorldManager();
@@ -41,8 +42,6 @@ public:
 	FBlockData GetBlock(const FIntVector& BlockWorldVoxelLocation);
 
 	FProgressDelegate ProgressDelegate;
-
-	void RenderChunks();
 
 private:
 	void InitialWorldChunkLoad();
@@ -108,6 +107,8 @@ private:
 	int32 Total = 0;
 
 	std::atomic<int32> Count = 0;
+
+	FAsyncTask<FTerrainDataAsyncTask>* TerrainDataAsyncTask = nullptr;
 
 public:
 	FORCEINLINE FVector2D GetDefaultCharacterPosition() const { return DefaultCharacterPosition; }
