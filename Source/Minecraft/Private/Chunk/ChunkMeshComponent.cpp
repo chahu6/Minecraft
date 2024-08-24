@@ -27,12 +27,12 @@ void UChunkMeshComponent::Render()
 {
 	if (Chunk->bIsStopped) return;
 
+	ClearAllMeshSections();
 	FBlockMeta BlockMeta;
 	for (auto MeshData = MeshDatas.CreateConstIterator(); MeshData; ++MeshData)
 	{
 		if (MeshData->Value->Vertices.IsEmpty()) continue;
 
-		//ProduralMesh->ClearAllMeshSections();
 		CreateMeshSection_LinearColor(MeshData->Key, MeshData->Value->Vertices, MeshData->Value->Triangles, MeshData->Value->Normals, MeshData->Value->UV0, MeshData->Value->VertexColors, MeshData->Value->Tangents, true);
 
 		if (UMinecraftAssetLibrary::GetBlockMeta(MeshData->Key, BlockMeta))
@@ -57,7 +57,6 @@ void UChunkMeshComponent::BuildMesh(EGenerationMethod GenerationMethod)
 		BuildGreedyChunkMesh();
 		break;
 	}
-	
 }
 
 void UChunkMeshComponent::BuildGreedyChunkMesh()
