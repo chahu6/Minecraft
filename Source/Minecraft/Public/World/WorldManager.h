@@ -35,7 +35,11 @@ public:
 	// Key是Chunk在Voxel World的位置，没有乘以ChunkSize的位置
 	AChunk* GetChunk(const FIntPoint& ChunkVoxelLocation);
 
+	AChunk* GetChunk(const FIntVector& BlockWorldVoxelLocation);
+
 	bool DestroyBlock(const FIntVector& BlockWorldVoxelLocation);
+
+	void PlaceBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID);
 
 	void SetBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID);
 

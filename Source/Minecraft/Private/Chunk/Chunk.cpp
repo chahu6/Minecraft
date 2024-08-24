@@ -73,10 +73,16 @@ void AChunk::BuildAndRender()
 
 void AChunk::BuildAndRenderAsync()
 {
-	if (ChunkState != EChunkState::Loaded) return;
+	if (ChunkState != EChunkState::Loaded && ChunkState != EChunkState::Rebuild) return;
 
 	ChunkGeneratorTask = new FAsyncTask<FChunkGeneratorAsyncTask>(this);
 	ChunkGeneratorTask->StartBackgroundTask();
+}
+
+void AChunk::Rebuild()
+{
+	ChunkState = EChunkState::Rebuild;
+	BuildAndRender();
 }
 
 void AChunk::RecalculateEmpty()
@@ -87,7 +93,7 @@ void AChunk::RecalculateEmpty()
 
 void AChunk::Render()
 {
-	if (ChunkState != EChunkState::Loaded) return;
+	if (ChunkState != EChunkState::Loaded && ChunkState != EChunkState::Rebuild) return;
 
 	ChunkMeshComponent->Render();
 	ChunkState = EChunkState::Rendered;

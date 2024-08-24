@@ -56,6 +56,7 @@ AMinecraftPlayer::AMinecraftPlayer()
 
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
 	ItemMesh->SetupAttachment(FirstCamera);
+	ItemMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
 
 	SphereOverlap = CreateDefaultSubobject<USphereComponent>(TEXT("SphereOverlap"));
 	SphereOverlap->SetupAttachment(RootComponent);

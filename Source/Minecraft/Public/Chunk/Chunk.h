@@ -15,6 +15,7 @@ enum class EChunkState : uint8
 {
 	None,
 	Loaded,
+	Rebuild,
 	Rendered
 };
 
@@ -42,6 +43,8 @@ public:
 	void BuildAndRender();
 
 	void BuildAndRenderAsync();
+
+	void Rebuild();
 
 	void RecalculateEmpty();
 

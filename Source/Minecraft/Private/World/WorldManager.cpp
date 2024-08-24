@@ -11,8 +11,6 @@
 #include "World/Runnable/TerrainDataAsyncTask.h"
 #include "World/Components/TerrainComponent.h"
 
-#include "Utils/ScopeProfiler.h"
-
 AWorldManager::AWorldManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -95,41 +93,6 @@ void AWorldManager::InitialWorldChunkLoad()
 
 	TerrainDataAsyncTask = new FAsyncTask<FTerrainDataAsyncTask>(this);
 	TerrainDataAsyncTask->StartBackgroundTask();
-
-	/*AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]() {
-		FIntPoint ChunkLoc;
-		for (int32 ChunkX = -ChunkRenderRange; ChunkX <= ChunkRenderRange; ++ChunkX)
-		{
-			for (int32 ChunkY = -ChunkRenderRange; ChunkY <= ChunkRenderRange; ++ChunkY)
-			{
-				ChunkLoc = CharacterChunkPosition + FIntPoint(ChunkX, ChunkY);
-				LoadChunkInfo(ChunkLoc);
-			}
-		}
-
-		Total = ChunkManager->AllChunks.Num();
-		Count = 0;
-		AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]() {
-			for (auto Itr = ChunkManager->AllChunks.CreateConstIterator(); Itr; ++Itr)
-			{
-				AChunk* Chunk = Itr->Value;
-				if (!IsValid(Chunk))
-				{
-					return;
-				}
-
-				Chunk->BuildMesh();
-
-				TaskQueue.Enqueue(Chunk);
-
-				AsyncTask(ENamedThreads::GameThread, [&]() {
-					Count++;
-					ProgressDelegate.ExecuteIfBound(Count.load() / (float)Total);
-					GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Red, FString::Printf(TEXT("%f"), Count.load() / (float)Total));
-				});
-			}
-		});
-	});*/
 }
 
 bool AWorldManager::UpdatePosition()
@@ -233,6 +196,15 @@ AChunk* AWorldManager::GetChunk(const FIntPoint& ChunkVoxelLocation)
 	return ChunkManager->GetChunk(ChunkVoxelLocation);
 }
 
+AChunk* AWorldManager::GetChunk(const FIntVector& BlockWorldVoxelLocation)
+{
+	// static_cast<float>() 转成float考虑到负数
+	const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / CHUNK_SIZE);
+	const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / CHUNK_SIZE);
+
+	return GetChunk(FIntPoint(ChunkVoxelLocationX, ChunkVoxelLocationY));
+}
+
 bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation)
 {
 	FBlockData BlockData = GetBlock(BlockWorldVoxelLocation);
@@ -249,12 +221,27 @@ bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation)
 	BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnDestroy(this, WorldLocation, BlockMeta.DestroySound);
 	SetBlock(BlockWorldVoxelLocation, {});
 
+	AChunk* Chunk = GetChunk(BlockWorldVoxelLocation);
+	if (Chunk == nullptr) return false;
+
 	// 重新计算空值
-	//ChunkSection->RecalculateEmpty();
-	//ChunkSection->Rebuild();
+	Chunk->RecalculateEmpty();
+	Chunk->Rebuild();
 	//Rebuild_Adjacent_Chunks(BlockPos);
 
 	return true;
+}
+
+void AWorldManager::PlaceBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID)
+{
+	SetBlock(BlockWorldVoxelLocation, BlockID);
+
+	AChunk* Chunk = GetChunk(BlockWorldVoxelLocation);
+	if (Chunk == nullptr) return;
+
+	// 重新计算空值
+	Chunk->RecalculateEmpty();
+	Chunk->Rebuild();
 }
 
 void AWorldManager::SetBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID)

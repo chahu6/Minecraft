@@ -87,6 +87,9 @@ void UInteractiveComponent::WorldLocToBlockVoxelLoc(const FVector& WorldLocation
 	BlockVoxelLocation.X = FMath::FloorToInt32(Location.X / BlockSize);
 	BlockVoxelLocation.Y = FMath::FloorToInt32(Location.Y / BlockSize);
 	BlockVoxelLocation.Z = FMath::FloorToInt32(Location.Z / BlockSize);
+	GEngine->AddOnScreenDebugMessage(24, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *WorldLocation.ToString()));
+	GEngine->AddOnScreenDebugMessage(25, 5.f, FColor::Green, FString::Printf(TEXT("%s"), *WorldNormal.ToString()));
+	GEngine->AddOnScreenDebugMessage(26, 5.f, FColor::Blue, FString::Printf(TEXT("%s"), *BlockVoxelLocation.ToString()));
 }
 
 FBlockData UInteractiveComponent::GetBlockDataFromLocation(const FVector& WorldLocation, const FVector& WorldNormal)
@@ -144,7 +147,7 @@ void UInteractiveComponent::PlaceBlock(int32 ItemID)
 	if (WorldManager)
 	{
 		BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnBeforePlace();
-		WorldManager->SetBlock(BlockVoxelLocation, BlockMeta.BlockID);
+		WorldManager->PlaceBlock(BlockVoxelLocation, BlockMeta.BlockID);
 
 		FVector WorldLocation = FVector(BlockVoxelLocation * BlockSize);
 		WorldLocation = WorldLocation + (BlockSize >> 1);
@@ -165,12 +168,14 @@ bool UInteractiveComponent::DestroyBlock(const FVector& WorldLocation, const FVe
 
 bool UInteractiveComponent::DestroyBlock(const FIntVector& BlockVoxelLocation)
 {
+	FBlockData BlockData = GetBlockDataFromLocation(BlockVoxelLocation);
+	if (!BlockData.IsValid()) return false;
+
 	bool bIsDestroyed = RemoveBlockFromWorld(BlockVoxelLocation);
 
 	if (bIsDestroyed)
 	{
 		FBlockMeta BlockMeta;
-		FBlockData BlockData = GetBlockDataFromLocation(BlockVoxelLocation);
 		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(BlockData.BlockID(), BlockMeta);
 		if (bSuccessed)
 		{
@@ -318,5 +323,5 @@ bool UInteractiveComponent::RayCast()
 
 bool UInteractiveComponent::IsHittingPosition(const FVector& WorldLocation)
 {
-	return LastHitLocation.Equals(WorldLocation, 0.0001);
+	return LastHitLocation.Equals(WorldLocation, 0.01);
 }
