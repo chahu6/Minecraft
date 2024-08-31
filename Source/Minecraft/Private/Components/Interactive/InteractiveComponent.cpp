@@ -212,7 +212,7 @@ bool UInteractiveComponent::ClickBlock()
 	if (!bIsHittingBlock)
 	{
 		bIsHittingBlock = true;
-		LastHitLocation = BlockHitResult.ImpactPoint;
+		WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, LastHitBlockLocation);
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("点击Block")));
 		return true;
 	}
@@ -236,15 +236,16 @@ bool UInteractiveComponent::OnPlayerDamageBlock()
 		return false;
 	}
 
+	FIntVector BlockVoxelLocation;
+	WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, BlockVoxelLocation);
+
 	if (BlockHitDelay > 0)
 	{
 		--BlockHitDelay;
 		return true;
 	}
-	else if (IsHittingPosition(BlockHitResult.ImpactPoint))
+	else if (IsHittingPosition(BlockVoxelLocation))
 	{
-		FIntVector BlockVoxelLocation;
-		WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, BlockVoxelLocation);
 		FBlockData BlockData = GetBlockDataFromLocation(BlockVoxelLocation);
 
 		if (!BlockData.IsValid())
@@ -321,7 +322,7 @@ bool UInteractiveComponent::RayCast()
 	return false;
 }
 
-bool UInteractiveComponent::IsHittingPosition(const FVector& WorldLocation)
+bool UInteractiveComponent::IsHittingPosition(const FIntVector& BlockVoxelLocation)
 {
-	return LastHitLocation.Equals(WorldLocation, 0.01);
+	return LastHitBlockLocation == BlockVoxelLocation;
 }

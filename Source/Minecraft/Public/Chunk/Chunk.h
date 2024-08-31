@@ -42,9 +42,9 @@ public:
 
 	void BuildAndRender();
 
-	void BuildAndRenderAsync();
-
 	void Rebuild();
+
+	void BuildAndRenderAsync();
 
 	void RecalculateEmpty();
 

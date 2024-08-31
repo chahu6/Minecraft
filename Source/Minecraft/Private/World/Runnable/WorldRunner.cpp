@@ -13,6 +13,7 @@ FWorldRunner::~FWorldRunner()
 {
 	if (WorldRunnerThread)
 	{
+		WorldRunnerThread->WaitForCompletion();
 		delete WorldRunnerThread;
 		WorldRunnerThread = nullptr;
 	}
@@ -25,6 +26,7 @@ bool FWorldRunner::Init()
 
 uint32 FWorldRunner::Run()
 {
+	
 	return 0;
 }
 

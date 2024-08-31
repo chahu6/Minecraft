@@ -55,6 +55,16 @@ void AWorldManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!DirtyChunkQueue.IsEmpty())
+	{
+		AChunk* DirtyChunk = nullptr;
+		DirtyChunkQueue.Dequeue(DirtyChunk);
+		if (DirtyChunk != nullptr)
+		{
+			DirtyChunk->Render();
+		}
+	}
+
 	/*if (UpdatePosition())
 	{
 		AddChunk();
@@ -224,8 +234,6 @@ bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation)
 	AChunk* Chunk = GetChunk(BlockWorldVoxelLocation);
 	if (Chunk == nullptr) return false;
 
-	// 重新计算空值
-	Chunk->RecalculateEmpty();
 	Chunk->Rebuild();
 	//Rebuild_Adjacent_Chunks(BlockPos);
 
@@ -239,8 +247,6 @@ void AWorldManager::PlaceBlock(const FIntVector& BlockWorldVoxelLocation, int32 
 	AChunk* Chunk = GetChunk(BlockWorldVoxelLocation);
 	if (Chunk == nullptr) return;
 
-	// 重新计算空值
-	Chunk->RecalculateEmpty();
 	Chunk->Rebuild();
 }
 

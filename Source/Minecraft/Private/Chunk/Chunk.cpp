@@ -71,18 +71,24 @@ void AChunk::BuildAndRender()
 	Render();
 }
 
+void AChunk::Rebuild()
+{
+	ChunkState = EChunkState::Rebuild;
+	if (ChunkGeneratorTask)
+	{
+		ChunkGeneratorTask->EnsureCompletion();
+		delete ChunkGeneratorTask;
+		ChunkGeneratorTask = nullptr;
+	}
+	BuildAndRenderAsync();
+}
+
 void AChunk::BuildAndRenderAsync()
 {
 	if (ChunkState != EChunkState::Loaded && ChunkState != EChunkState::Rebuild) return;
 
 	ChunkGeneratorTask = new FAsyncTask<FChunkGeneratorAsyncTask>(this);
 	ChunkGeneratorTask->StartBackgroundTask();
-}
-
-void AChunk::Rebuild()
-{
-	ChunkState = EChunkState::Rebuild;
-	BuildAndRender();
 }
 
 void AChunk::RecalculateEmpty()
