@@ -59,7 +59,7 @@ private:
 
 	bool RayCast();
 
-	bool IsHittingPosition(const FVector& WorldLocation);
+	bool IsHittingPosition(const FIntVector& BlockVoxelLocation);
 
 	bool InitMarkComponent(USceneComponent* Parent);
 
@@ -94,7 +94,7 @@ private:
 	float CurBlockDamageMP = 0.0f;
 	float DestroyPercent = 0.0f;
 
-	FVector LastHitLocation;
+	FIntVector LastHitBlockLocation;
 
 	FHitResult BlockHitResult;
 };

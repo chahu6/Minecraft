@@ -134,11 +134,25 @@ void UChunkMeshComponent::BuildGreedyChunkMesh()
 					}
 					else if (bCurrentBlockOpaque)
 					{
-						Mask[N++] = FMask{ CurrentBlock.ID, 1 };
+						if (ChunkItr[Axis] == -1)
+						{
+							Mask[N++] = FMask{ EBlockID::Air, 0 };
+						}
+						else
+						{
+							Mask[N++] = FMask{ CurrentBlock.ID, 1 };
+						}
 					}
 					else
 					{
-						Mask[N++] = FMask{ CompareBlock.ID, -1 };
+						if (ChunkItr[Axis] == MainAxisLimit - 1)
+						{
+							Mask[N++] = FMask{ EBlockID::Air, 0 };
+						}
+						else
+						{
+							Mask[N++] = FMask{ CompareBlock.ID, -1 };
+						}
 					}
 				}
 			}

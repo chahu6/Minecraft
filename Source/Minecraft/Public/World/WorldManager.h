@@ -41,13 +41,13 @@ public:
 
 	void PlaceBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID);
 
-	void SetBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID);
-
 	FBlockData GetBlock(const FIntVector& BlockWorldVoxelLocation);
 
 	FProgressDelegate ProgressDelegate;
 
 private:
+	void SetBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID);
+
 	void InitialWorldChunkLoad();
 
 	bool UpdatePosition();
@@ -71,6 +71,8 @@ private:
 public:
 	// 渲染网格体的任务队列
 	TQueue<AChunk*, EQueueMode::Mpsc> TaskQueue;
+
+	TQueue<AChunk*, EQueueMode::Mpsc> DirtyChunkQueue;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
