@@ -1,4 +1,4 @@
-#include "Chunk/ChunkMeshComponent.h"
+#include "Chunk/BlockMeshComponent.h"
 #include "Chunk/Chunk.h"
 #include "World/MinecraftSettings.h"
 #include "World/Block/Block.h"
@@ -6,8 +6,9 @@
 #include "World/WorldManager.h"
 #include "World/WorldSettings.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Chunk/MeshData.h"
 
-UChunkMeshComponent::UChunkMeshComponent(const FObjectInitializer& ObjectInitializer)
+UBlockMeshComponent::UBlockMeshComponent(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = false; // False
@@ -16,14 +17,31 @@ UChunkMeshComponent::UChunkMeshComponent(const FObjectInitializer& ObjectInitial
 	SetCastShadow(false);
 }
 
-void UChunkMeshComponent::BeginPlay()
+void UBlockMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 	Chunk = Chunk == nullptr ? Cast<AChunk>(GetOwner()) : Chunk;
 }
 
-void UChunkMeshComponent::Render()
+void UBlockMeshComponent::BuildMesh(EGenerationMethod GenerationMethod)
+{
+	if (Chunk->bIsStopped) return;
+
+	MeshDatas.Empty();
+
+	switch (GenerationMethod)
+	{
+	case EGenerationMethod::Normal:
+		BuildChunkMesh();
+		break;
+	case EGenerationMethod::Greedy:
+		BuildGreedyChunkMesh();
+		break;
+	}
+}
+
+void UBlockMeshComponent::Render()
 {
 	if (Chunk->bIsStopped) return;
 
@@ -42,24 +60,7 @@ void UChunkMeshComponent::Render()
 	}
 }
 
-void UChunkMeshComponent::BuildMesh(EGenerationMethod GenerationMethod)
-{
-	if (Chunk->bIsStopped) return;
-
-	MeshDatas.Empty();
-
-	switch (GenerationMethod)
-	{
-	case EGenerationMethod::Normal:
-		BuildChunkMesh();
-		break;
-	case EGenerationMethod::Greedy:
-		BuildGreedyChunkMesh();
-		break;
-	}
-}
-
-void UChunkMeshComponent::BuildGreedyChunkMesh()
+void UBlockMeshComponent::BuildGreedyChunkMesh()
 {
 	AWorldManager* WorldManager = Chunk->GetOwner<AWorldManager>();
 
@@ -125,8 +126,8 @@ void UChunkMeshComponent::BuildGreedyChunkMesh()
 					const FBlockData CurrentBlock = WorldManager->GetBlock(ChunkItr + FIntVector(ChunkWorldLocation / BlockSize));
 					const FBlockData CompareBlock = WorldManager->GetBlock((ChunkItr + AxisMask) + FIntVector(ChunkWorldLocation / BlockSize));
 
-					const bool bCurrentBlockOpaque = CurrentBlock.ID != EBlockID::Air;
-					const bool bCompareBlockOpaque = CompareBlock.ID != EBlockID::Air;
+					const bool bCurrentBlockOpaque = CurrentBlock.ID != EBlockID::Air && !CurrentBlock.IsPlant();
+					const bool bCompareBlockOpaque = CompareBlock.ID != EBlockID::Air && !CompareBlock.IsPlant();
 
 					if (bCurrentBlockOpaque == bCompareBlockOpaque)
 					{
@@ -231,12 +232,12 @@ void UChunkMeshComponent::BuildGreedyChunkMesh()
 	}
 }
 
-bool UChunkMeshComponent::CompareMask(const FMask& M1, const FMask& M2)
+bool UBlockMeshComponent::CompareMask(const FMask& M1, const FMask& M2)
 {
 	return M1.BlockID == M2.BlockID && M1.Normal == M2.Normal;
 }
 
-void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMask, const int32 Width, const int32 Height, const FIntVector& V1, const FIntVector& V2, const FIntVector& V3, const FIntVector& V4)
+void UBlockMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMask, const int32 Width, const int32 Height, const FIntVector& V1, const FIntVector& V2, const FIntVector& V3, const FIntVector& V4)
 {
 	if (Mask.BlockID == EBlockID::Air) return;
 
@@ -318,7 +319,7 @@ void UChunkMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 	}
 }
 
-void UChunkMeshComponent::BuildChunkMesh()
+void UBlockMeshComponent::BuildChunkMesh()
 {
 	int32 Index = 0;
 
@@ -606,7 +607,7 @@ void UChunkMeshComponent::BuildChunkMesh()
 	}
 }
 
-bool UChunkMeshComponent::IsVoid(const FIntVector& BlockWorldVoxelLocation, AWorldManager* WorldManager)
+bool UBlockMeshComponent::IsVoid(const FIntVector& BlockWorldVoxelLocation, AWorldManager* WorldManager)
 {
 	if (WorldManager->GetBlock(BlockWorldVoxelLocation).IsValid())
 	{

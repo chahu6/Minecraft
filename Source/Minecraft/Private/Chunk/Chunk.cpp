@@ -2,7 +2,8 @@
 #include "World/WorldSettings.h"
 #include "World/Block/Block.h"
 #include "World/Runnable/ChunkGeneratorAsyncTask.h"
-#include "Chunk/ChunkMeshComponent.h"
+#include "Chunk/BlockMeshComponent.h"
+#include "Chunk/PlantMeshComponent.h"
 #include "World/WorldSettings.h"
 #include "World/WorldManager.h"
 
@@ -10,12 +11,17 @@ AChunk::AChunk()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	ChunkMeshComponent = CreateDefaultSubobject<UChunkMeshComponent>(TEXT("ChunkMeshComponent"));
-	RootComponent = ChunkMeshComponent;
-	ChunkMeshComponent->bUseAsyncCooking = true;
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+
+	BlockMeshComponent = CreateDefaultSubobject<UBlockMeshComponent>(TEXT("BlockMeshComponent"));
+	BlockMeshComponent->SetupAttachment(RootComponent);
+	BlockMeshComponent->bUseAsyncCooking = true;
+
+	PlantMeshComponent = CreateDefaultSubobject<UPlantMeshComponent>(TEXT("PlantMeshComponent"));
+	PlantMeshComponent->SetupAttachment(RootComponent);
+	PlantMeshComponent->bUseAsyncCooking = true;
 
 	HeightMap.Init(0, CHUNK_AREA);
-
 	Blocks.Init({}, CHUNK_VOLUME);
 }
 
@@ -73,7 +79,7 @@ void AChunk::BuildAndRender()
 
 void AChunk::Rebuild()
 {
-	ChunkState = EChunkState::Rebuild;
+	SetChunkState(EChunkState::Rebuild);
 	if (ChunkGeneratorTask)
 	{
 		ChunkGeneratorTask->EnsureCompletion();
@@ -97,19 +103,28 @@ void AChunk::RecalculateEmpty()
 	bIsEmpty = !Blocks.ContainsByPredicate([](const FBlockData& Element) { return Element.ID != EBlockID::Air; });
 }
 
+void AChunk::BuildMesh()
+{
+	// 方块Mesh
+	BlockMeshComponent->BuildMesh(GenerationMethod);
+
+	// 植物Mesh
+	PlantMeshComponent->BuildMesh();
+
+	bIsDirty = false;
+}
+
 void AChunk::Render()
 {
 	if (ChunkState != EChunkState::Loaded && ChunkState != EChunkState::Rebuild) return;
 
-	ChunkMeshComponent->Render();
-	ChunkState = EChunkState::Rendered;
+	// 方块Mesh
+	BlockMeshComponent->Render();
+
+	// 植物Mesh
+	PlantMeshComponent->Render();
+
+	SetChunkState(EChunkState::Rendered);
 
 	bIsRendering = true;
-}
-
-void AChunk::BuildMesh()
-{
-	ChunkMeshComponent->BuildMesh(GenerationMethod);
-
-	bIsDirty = false;
 }

@@ -4,7 +4,7 @@
 #include "ProceduralMeshComponent.h"
 #include "World/Block/BlockID.h"
 #include "World/GenerationMethod.h"
-#include "ChunkMeshComponent.generated.h"
+#include "BlockMeshComponent.generated.h"
 
 class AChunk;
 class AWorldManager;
@@ -28,34 +28,21 @@ struct FMask
 	int8 Normal = 0;
 };
 
-USTRUCT(BlueprintType)
-struct FMeshData
-{
-	GENERATED_USTRUCT_BODY();
-
-	TArray<FVector> Vertices;
-	TArray<int32> Triangles;
-	TArray<FVector> Normals;
-	TArray<FVector2D> UV0;
-	TArray<FLinearColor> VertexColors;
-	TArray<FProcMeshTangent> Tangents;
-};
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MINECRAFT_API UChunkMeshComponent : public UProceduralMeshComponent
+class MINECRAFT_API UBlockMeshComponent : public UProceduralMeshComponent
 {
 	GENERATED_BODY()
 
 public:	
-	UChunkMeshComponent(const FObjectInitializer& ObjectInitializer);
+	UBlockMeshComponent(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void BeginPlay() override;
 
 public:
-	void Render();
-
 	void BuildMesh(EGenerationMethod GenerationMethod);
+
+	void Render();
 
 private:
 	/**
@@ -78,5 +65,5 @@ private:
 	UPROPERTY()
 	TObjectPtr<AChunk> Chunk;
 
-	TMap<int32, TSharedPtr<FMeshData>> MeshDatas;
+	TMap<int32, TSharedPtr<struct FMeshData>> MeshDatas;
 };

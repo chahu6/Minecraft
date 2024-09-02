@@ -12,7 +12,8 @@
 				"Engine",
 				"UMG",
 				"DeveloperSettings",
-				"CoreUObject"
+				"CoreUObject",
+				"ProceduralMeshComponent"
 			]
 		}
 	],

@@ -43,6 +43,8 @@ public:
 private:
 	void GenerateHeight(AChunk* Chunk);
 
+	void GeneratePlant(AChunk* Chunk);
+
 	float FBM(float InX, float InY, const TArray<FVector2D>& InOctaveOffsets, ETerrainFBMType InFBMType) const;
 
 protected:
