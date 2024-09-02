@@ -10,6 +10,7 @@
 #include "World/Generator/CaveGenerator.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "SimplexNoiseLibrary.h"
+#include "Math/PoissonDiscSampling.h"
 
 UTerrainComponent::UTerrainComponent()
 {
@@ -34,7 +35,7 @@ void UTerrainComponent::BeginPlay()
 
 void UTerrainComponent::LoadTerrainInfo(AChunk* Chunk)
 {
-	if (Chunk == nullptr || Chunk->ChunkState != EChunkState::None) return;
+	if (Chunk == nullptr || Chunk->GetChunkState() != EChunkState::None) return;
 
 	GenerateHeight(Chunk);
 
@@ -42,7 +43,22 @@ void UTerrainComponent::LoadTerrainInfo(AChunk* Chunk)
 
 	CaveGenerator::GeneratorCave(Chunk);
 
-	Chunk->ChunkState = EChunkState::Loaded;
+	{
+		TArray<FVector2D> Points;
+		PoissonDiscSampling::GeneratePoints(Points, 1.414f, { 16, 16 }, 3);
+
+		TArray<int32>& HeightMap = Chunk->GetHeightMap();
+		
+		for (const FVector2D& Point : Points)
+		{
+			int32 X = FMath::TruncToInt32(Point.X);
+			int32 Y = FMath::TruncToInt32(Point.Y);
+			int32 Z = HeightMap[GetHeightIndex(X, Y)];
+			Chunk->SetBlock(X, Y, Z + 1, { EBlockID::Grass, 0 });
+		}
+	}
+
+	Chunk->SetChunkState(EChunkState::Loaded);
 }
 
 void UTerrainComponent::LoadTerrainBlockID(AChunk* Chunk)
@@ -51,7 +67,7 @@ void UTerrainComponent::LoadTerrainBlockID(AChunk* Chunk)
 	int32 MaxHeight = 0;
 
 	TArray<int32>& HeightMap = Chunk->GetHeightMap();
-
+	
 	for (int32 i = 0; i < HeightMap.Num(); ++i)
 	{
 		if (HeightMap[i] > MaxHeight)
@@ -80,7 +96,7 @@ void UTerrainComponent::LoadTerrainBlockID(AChunk* Chunk)
 				}
 				else if (Z == Height)
 				{
-					Chunk->SetBlock(X, Y, Z, { EBlockID::Grass, 0 });
+					Chunk->SetBlock(X, Y, Z, { EBlockID::GrassBlock, 0 });
 				}
 				else if (Z > Height - 3)
 				{
@@ -200,6 +216,11 @@ void UTerrainComponent::GenerateHeight(AChunk* Chunk)
 	}
 }
 
+void UTerrainComponent::GeneratePlant(AChunk* Chunk)
+{
+
+}
+
 float UTerrainComponent::FBM(float InX, float InY, const TArray<FVector2D>& InOctaveOffsets, ETerrainFBMType InFBMType) const
 {
 	float NoiseValue = 0.0f;
@@ -242,4 +263,3 @@ float UTerrainComponent::FBM(float InX, float InY, const TArray<FVector2D>& InOc
 
 	return NoiseValue;
 }
-

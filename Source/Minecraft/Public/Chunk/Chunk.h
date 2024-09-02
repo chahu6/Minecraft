@@ -7,7 +7,6 @@
 #include "Chunk.generated.h"
 
 struct FBlockData;
-class UChunkMeshComponent;
 class FChunkGeneratorAsyncTask;
 
 UENUM()
@@ -24,7 +23,8 @@ class MINECRAFT_API AChunk : public AActor, public IChunkInterface
 {
 	GENERATED_BODY()
 
-	friend class UChunkMeshComponent;
+	friend class UBlockMeshComponent;
+	friend class UPlantMeshComponent;
 	
 public:	
 	AChunk();
@@ -48,15 +48,13 @@ public:
 
 	void RecalculateEmpty();
 
-	void Render();
-
 	void BuildMesh();
+
+	void Render();
 
 	void EnsureCompletion();
 
 	void StopBuildMesh();
-
-	EChunkState ChunkState = EChunkState::None;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Setting")
@@ -64,7 +62,10 @@ protected:
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UChunkMeshComponent> ChunkMeshComponent;
+	TObjectPtr<UBlockMeshComponent> BlockMeshComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPlantMeshComponent> PlantMeshComponent;
 
 	TArray<FBlockData> Blocks;
 
@@ -84,8 +85,12 @@ private:
 
 	bool bIsStopped = false;
 
+	EChunkState ChunkState = EChunkState::None;
+
 public:
 	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }
 	FORCEINLINE TArray<int32>& GetHeightMap() { return HeightMap; }
 	FORCEINLINE void SetGenerationMethod(EGenerationMethod Method) { GenerationMethod = Method; }
+	FORCEINLINE void SetChunkState(EChunkState NewChunkState) { ChunkState = NewChunkState; }
+	FORCEINLINE EChunkState GetChunkState() const { return ChunkState; }
 };

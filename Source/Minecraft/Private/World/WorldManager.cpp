@@ -162,7 +162,7 @@ void AWorldManager::CreateChunk(const FIntPoint& ChunkPosition)
 void AWorldManager::LoadChunkInfo(const FIntPoint& ChunkPosition)
 {
 	AChunk* Chunk = ChunkManager->GetChunk(ChunkPosition);
-	if (Chunk && Chunk->ChunkState == EChunkState::None)
+	if (Chunk && Chunk->GetChunkState() == EChunkState::None)
 	{
 		TerrainManager->LoadTerrainInfo(Chunk);
 	}

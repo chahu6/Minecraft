@@ -29,6 +29,11 @@ struct FBlockData
 	{
 		return static_cast<int32>(ID);
 	}
+
+	FORCEINLINE bool IsPlant() const
+	{
+		return ID == EBlockID::Rose || ID == EBlockID::Grass;
+	}
 };
 
 USTRUCT(BlueprintType)
