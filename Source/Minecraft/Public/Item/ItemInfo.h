@@ -1,8 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/DataTable.h"
 #include "Item/ItemType.h"
+#include "Engine/DataTable.h"
+#include "GameplayTagContainer.h"
 #include "ItemInfo.generated.h"
 
 USTRUCT(BlueprintType)
@@ -12,6 +13,9 @@ struct FItemInstance : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 ID = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag ItemTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsStack = true;
@@ -44,6 +48,9 @@ struct FItemData : public FTableRowBase
 	int32 ID = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag ItemTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 Quantity = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -73,8 +80,22 @@ struct FItemData : public FTableRowBase
 		Quantity = 0;
 	}
 
-	bool IsValid()
+	FORCEINLINE bool IsValid()
 	{
 		return ID > 0;
+	}
+
+	void CopyItemInstance(const FItemInstance& ItemInstance)
+	{
+		ID = ItemInstance.ID;
+		ItemTag = ItemInstance.ItemTag;
+		bIsStack = ItemInstance.bIsStack;
+		Discription = ItemInstance.Discription;
+		Icon = ItemInstance.Icon;
+		MaxCount = ItemInstance.MaxCount;
+		Name = ItemInstance.Name;
+		Mesh = ItemInstance.Mesh;
+		Type = ItemInstance.Type;
+		Quantity = 1;
 	}
 };

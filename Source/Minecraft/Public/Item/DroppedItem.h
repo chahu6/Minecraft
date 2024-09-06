@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Info/ItemInfo.h"
+#include "ItemInfo.h"
 #include "DroppedItem.generated.h"
 
 class UBoxComponent;
@@ -68,6 +68,5 @@ private:
 	float InterpSeepd = 15.0f;
 
 public:
-	FORCEINLINE FItemData& GetItemData() { return ItemData; }
 	FORCEINLINE void SetItemHandle(const FDataTableRowHandle& NewItemHandle) { ItemHandle = NewItemHandle; }
 };

@@ -4,6 +4,8 @@
 #include "MinecraftAssetManager.h"
 #include "World/MinecraftSettings.h"
 #include "Engine/DataTable.h"
+#include "MinecraftGameplayTags.h"
+#include "Components/Crafting/CraftingComponent.h"
 
 UMinecraftAssetManager& UMinecraftAssetManager::Get()
 {
@@ -16,6 +18,10 @@ UMinecraftAssetManager& UMinecraftAssetManager::Get()
 void UMinecraftAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
+
+	FMinecraftGameplayTags::InitializeNativeGameplayTags();
+
+	UCraftingComponent::InitialItemRecipes();
 
 	const UMinecraftSettings* Setting = GetDefault<UMinecraftSettings>();
 	check(Setting);

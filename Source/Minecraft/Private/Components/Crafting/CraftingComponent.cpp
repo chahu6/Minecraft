@@ -1,77 +1,138 @@
 #include "Components/Crafting/CraftingComponent.h"
+#include "World/Block/BlockID.h"
+#include "Item/ItemID.h"
+#include "Utils/MinecraftAssetLibrary.h"
+
+TMap<FString, FItemOutput> UCraftingComponent::ItemRecipes;
 
 UCraftingComponent::UCraftingComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
-	Items.SetNum(Dimension * Dimension);
-
-	//Recipes.Emplace()
 }
 
 void UCraftingComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	Items.SetNum(Dimension * Dimension);
 }
 
-//void UCraftingComponent::CreateItem(int32 Index, const FItemStack& ItemStack)
-//{
-//	if (Items.IsValidIndex(Index))
-//	{
-//		Items[Index] = ItemStack;
-//	}
-//
-//	OnCraftingItemStart.Broadcast();
-//}
-//
-//bool UCraftingComponent::TransferSlot(int32 Index, const FItemStack& HangItemStack, FItemStack& NewItemStack)
-//{
-//	if (IsValidIndex(Index))
-//	{
-//		if (HangItemStack.ID == Items[Index].ID)
-//		{
-//
-//		}
-//		else
-//		{
-//			FItemStack ItemStack_Temp;
-//			ItemStack_Temp = Items[Index];
-//			Items[Index] = HangItemStack;
-//			NewItemStack = ItemStack_Temp;
-//		}
-//
-//		OnCraftingItemStart.Broadcast();
-//		return true;
-//	}
-//
-//	return false;
-//}
-//
-//void UCraftingComponent::CreateItemOutput(const FItemStack& ItemStack)
-//{
-//	OnCraftingItemCompleted.Broadcast();
-//}
-//
-//bool UCraftingComponent::IsValidIndex(int32 Index)
-//{
-//	return Items.IsValidIndex(Index);
-//}
-//
-//FItemStack UCraftingComponent::GetItem(int32 Index)
-//{
-//	if (IsValidIndex(Index))
-//	{
-//		return Items[Index];
-//	}
-//
-//	return FItemStack();
-//}
-//
-//void UCraftingComponent::SetItem(const FItemStack& ItemStack, int32 Index)
-//{
-//	Items[Index] = ItemStack;
-//}
+void UCraftingComponent::InitialItemRecipes()
+{
+	ItemRecipes.Add(FString::Printf(TEXT("A%dB*C*D*"), EBlockID::Oak_Wood), { (int32)EBlockID::Oak_Planks, 4 });
+}
+
+void UCraftingComponent::TryAddItem_Implementation(int32 Index, FItemData& InItemData)
+{
+	if (Items.IsValidIndex(Index) && InItemData.IsValid())
+	{
+		FItemData& ItemData = Items[Index];
+		if (ItemData.ID > 0 && ItemData.ID == InItemData.ID && ItemData.bIsStack)
+		{
+			int32 Sum = ItemData.Quantity + InItemData.Quantity;
+			if (ItemData.MaxCount >= Sum)
+			{
+				ItemData.Quantity = Sum;
+				InItemData.Clear();
+			}
+			else
+			{
+				ItemData.Quantity = ItemData.MaxCount;
+				InItemData.Quantity = Sum - ItemData.MaxCount;
+			}
+		}
+		else if (ItemData.ID > 0)
+		{
+			FItemData TempItemData = ItemData;
+			ItemData = InItemData;
+			InItemData = TempItemData;
+		}
+		else
+		{
+			ItemData = InItemData;
+			InItemData.Clear();
+		}
+
+		MakeRecipe();
+		OnCraftingItem.Broadcast();
+	}
+	else
+	{
+
+	}
+}
+
+void UCraftingComponent::RemoveItem_Implementation(int32 Index, FItemData& OutItemData)
+{
+	if (Items.IsValidIndex(Index))
+	{
+		OutItemData = Items[Index];
+		Items[Index].Clear();
+
+		MakeRecipe();
+		OnCraftingItem.Broadcast();
+	}
+	else
+	{
+		OutItemData.Clear();
+	}
+}
+
+void UCraftingComponent::TransferItem_Implementation(int32 Index, FItemData& OutItemData)
+{
+	if (Items.IsValidIndex(Index))
+	{
+		FItemData TempItemData = OutItemData;
+		OutItemData = Items[Index];
+		Items[Index] = TempItemData;
+
+		MakeRecipe();
+		OnCraftingItem.Broadcast();
+	}
+}
+
+void UCraftingComponent::MakeRecipe()
+{
+	FString Formula;
+
+	for (int32 X = 0; X < Items.Num(); ++X)
+	{
+		FItemData ItemData = Items[X];
+		Formula.AppendChar('A' + X);
+		if (ItemData.ID > 0)
+		{
+			Formula.AppendInt(ItemData.ID);
+		}
+		else
+		{
+			Formula.AppendChar('*');
+		}
+	}
+
+	FItemOutput ItemOutput = GetRecipeOutput(Formula);
+	if (ItemOutput.ItemID > 0)
+	{
+		FItemInstance ItemInstance;
+		if (UMinecraftAssetLibrary::GetItemInstance(ItemOutput.ItemID, ItemInstance))
+		{
+			OutputItemData.CopyItemInstance(ItemInstance);
+			OutputItemData.Quantity = ItemOutput.Quantity;
+		}
+	}
+	else
+	{
+		OutputItemData.Clear();
+	}
+}
+
+FItemOutput UCraftingComponent::GetRecipeOutput(const FString& Formula)
+{
+	if (FItemOutput* ItemOutput = ItemRecipes.Find(Formula))
+	{
+		return *ItemOutput;
+	}
+	return {};
+}
 
 void UCraftingComponent::IncreaseItemAmount(int32 Index)
 {
@@ -82,30 +143,3 @@ void UCraftingComponent::DecreaseItemAmount(int32 Index)
 {
 
 }
-
-//void UCraftingComponent::RemoveItem(int32 Index)
-//{
-//	if (IsValidIndex(Index))
-//	{
-//		Items[Index].Clear();
-//	}
-//}
-
-//bool UCraftingComponent::TryAddItem(const FItemStack& ItemStack, int32 Index)
-//{
-//	if (IsValidIndex(Index))
-//	{
-//		SetItem(ItemStack, Index);
-//		return true;
-//	}
-//	else
-//	{
-//		if (ItemStack.ID == GetItem(Index).ID)
-//		{
-//			IncreaseItemAmount(Index);
-//			return true;
-//		}
-//	}
-//
-//	return false;
-//}

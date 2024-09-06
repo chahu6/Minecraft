@@ -15,6 +15,8 @@ enum class EBlockID : int32
 	Water,
 	Grass,
 	Rose,
+	Oak_Wood,
+	Oak_Planks,
 
 	MAX
 };

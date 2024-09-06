@@ -65,7 +65,7 @@ void UInventoryComponent::RemoveItem_Implementation(int32 Index, FItemData& OutI
 	}
 }
 
-void UInventoryComponent::TransferItem(int32 Index, FItemData& OutItemData)
+void UInventoryComponent::TransferItem_Implementation(int32 Index, FItemData& OutItemData)
 {
 	if (Items.IsValidIndex(Index))
 	{

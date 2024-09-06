@@ -37,15 +37,7 @@ void ADroppedItem::SetItemData()
 	FItemInstance* ItemInstance = ItemHandle.GetRow<FItemInstance>(nullptr);
 	if (ItemInstance)
 	{
-		ItemData.ID = ItemInstance->ID;
-		ItemData.bIsStack = ItemInstance->bIsStack;
-		ItemData.Discription = ItemInstance->Discription;
-		ItemData.Icon = ItemInstance->Icon;
-		ItemData.MaxCount = ItemInstance->MaxCount;
-		ItemData.Name = ItemInstance->Name;
-		ItemData.Mesh = ItemInstance->Mesh;
-		ItemData.Type = ItemInstance->Type;
-		ItemData.Quantity = 1;
+		ItemData.CopyItemInstance(*ItemInstance);
 		MeshComponent->SetStaticMesh(ItemData.Mesh);
 	}
 	else
@@ -83,7 +75,7 @@ void ADroppedItem::Tick(float DeltaTime)
 		SetActorLocation(FMath::VInterpTo(GetActorLocation(), Player->GetActorLocation(), DeltaTime, InterpSeepd));
 		if (GetActorLocation().Equals(Player->GetActorLocation(), 10.0f))
 		{
-			if (IInteractiveInterface::Execute_AddItemToInventory(Player, this))
+			if (IInteractiveInterface::Execute_AddItemToInventory(Player, ItemData))
 			{
 				if (PickupSound)
 				{

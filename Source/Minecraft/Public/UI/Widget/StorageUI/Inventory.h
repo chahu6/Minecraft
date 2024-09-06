@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Item/Info/ItemInfo.h"
 #include "Inventory.generated.h"
 
 /**
@@ -24,7 +23,7 @@ protected:
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	class APawn* Player;
+	TObjectPtr<APawn> Player;
 
 	//UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	//class UInventoryComponent* InventoryComp;

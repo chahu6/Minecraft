@@ -228,7 +228,7 @@ bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation)
 	WorldLocation.Y += BlockSize >> 1;
 	WorldLocation.Z += BlockSize >> 1;
 
-	BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnDestroy(this, WorldLocation, BlockMeta.DestroySound);
+	if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnDestroy(this, WorldLocation, BlockMeta.DestroySound);
 	SetBlock(BlockWorldVoxelLocation, {});
 
 	AChunk* Chunk = GetChunk(BlockWorldVoxelLocation);

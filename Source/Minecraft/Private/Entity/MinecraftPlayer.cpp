@@ -7,9 +7,7 @@
 #include "Components/Inventory/BackpackComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/Crafting/CraftingComponent.h"
-#include "Item/Info/ItemInfo.h"
 #include "UI/HUD/MinecraftHUD.h"
-#include "Item/DroppedItem.h"
 #include "Components/CapsuleComponent.h"
 
 AMinecraftPlayer::AMinecraftPlayer()
@@ -230,11 +228,8 @@ void AMinecraftPlayer::ConsumeItem()
 	}
 }
 
-bool AMinecraftPlayer::AddItemToInventory_Implementation(ADroppedItem* DroppedItem)
+bool AMinecraftPlayer::AddItemToInventory_Implementation(FItemData& ItemData)
 {
-	if (DroppedItem == nullptr) return false;
-
-	FItemData& ItemData = DroppedItem->GetItemData();
 	return BackpackComponent->AddItemToInventory(ItemData);
 }
 

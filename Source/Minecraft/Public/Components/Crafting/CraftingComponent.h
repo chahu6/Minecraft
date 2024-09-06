@@ -1,16 +1,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Item/ItemInfo.h"
 #include "Components/ActorComponent.h"
-#include "Item/Info/ItemInfo.h"
+#include "Interfaces/InventoryInterface.h"
 #include "CraftingComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnCraftingItem);
 
+struct FItemOutput
+{
+	int32 ItemID = 0;
+
+	int32 Quantity = 0;
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MINECRAFT_API UCraftingComponent : public UActorComponent
+class MINECRAFT_API UCraftingComponent : public UActorComponent, public IInventoryInterface
 {
 	GENERATED_BODY()
+
+	static TMap<FString, FItemOutput> ItemRecipes;
 
 public:	
 	UCraftingComponent();
@@ -19,33 +29,24 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	//UFUNCTION(BlueprintCallable)
-	//void CreateItem(int32 Index, const FItemStack& ItemStack);
+	static void InitialItemRecipes();
 
-	//UFUNCTION(BlueprintCallable)
-	//bool TransferSlot(int32 Index, const FItemStack& HangItemStack, FItemStack& NewItemStack);
+	/** Inventory Interface */
+	virtual void TryAddItem_Implementation(int32 Index, FItemData& InItemData) override;
+	virtual void RemoveItem_Implementation(int32 Index, FItemData& OutItemData) override;
+	virtual void TransferItem_Implementation(int32 Index, FItemData& OutItemData) override;
+	/** End Inventory Interface */
 
-	//UFUNCTION(BlueprintCallable)
-	//void CreateItemOutput(const FItemStack& ItemStack);
+	void MakeRecipe();
 
-	//UFUNCTION(BlueprintCallable)
-	//void RemoveItem(int32 Index);
-
-	//bool IsValidIndex(int32 Index);
-
-	//FItemStack GetItem(int32 Index);
-
-	//void SetItem(const FItemStack& ItemStack, int32 Index);
+	FItemOutput GetRecipeOutput(const FString& Formula);
 
 	void IncreaseItemAmount(int32 Index);
 
 	void DecreaseItemAmount(int32 Index);
 
-	//bool TryAddItem(const FItemStack& ItemStack, int32 Index);
-
 public:
-	FOnCraftingItem OnCraftingItemStart;
-	FOnCraftingItem OnCraftingItemCompleted;
+	FOnCraftingItem OnCraftingItem;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties", meta = (AllowPrivateAccess = "true"))
@@ -54,7 +55,8 @@ private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemData> Items;
 
-	//static TMap<FString, FItemStack> Recipes;
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FItemData OutputItemData;
 
 public:
 	FORCEINLINE int32 GetSize() const { return Dimension; }

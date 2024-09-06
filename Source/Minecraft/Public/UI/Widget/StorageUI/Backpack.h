@@ -2,10 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Item/Info/ItemInfo.h"
+#include "Item/ItemInfo.h"
 #include "Backpack.generated.h"
 
 class UBackpackComponent;
+class UCraftingComponent;
+class AMinecraftPlayer;
+class UInventoryItem;
+
 /**
  * 
  */
@@ -34,47 +38,34 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void FlushHotbar();
 
-	UFUNCTION(BlueprintCallable)
-	void HangItemDataToMouseAndRemove(int32 Index);
-
-	UFUNCTION(BlueprintCallable)
-	void HangItemStackToCrafting(int32 Index);
-
 	UFUNCTION(BlueprintImplementableEvent)
 	void FlushCrafting();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void CraftingCompleted();
-
-private:
-	//UFUNCTION(BlueprintCallable)
-	//void UpdateHangItemStack(const FItemStack& NewItemStack);
-
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	class UInventoryItem* Armor_Helmet;
+	TObjectPtr<UInventoryItem> Armor_Helmet;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	class UInventoryItem* Armor_Chestplate;
+	TObjectPtr<UInventoryItem> Armor_Chestplate;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	class UInventoryItem* Armor_Leggings;
+	TObjectPtr<UInventoryItem> Armor_Leggings;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	class UInventoryItem* Armor_Boots;
+	TObjectPtr<UInventoryItem> Armor_Boots;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	class UInventoryItem* Off_Hand;
+	TObjectPtr<UInventoryItem> Off_Hand;
 
 private:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UBackpackComponent> Backpack;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	class UCraftingComponent* CraftingSystem;
+	TObjectPtr<UCraftingComponent> CraftingSystem;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	class AMinecraftPlayer* Player;
+	TObjectPtr<AMinecraftPlayer> Player;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	FItemData HangItemData;

@@ -6,8 +6,6 @@
 #include "UObject/Interface.h"
 #include "InteractiveInterface.generated.h"
 
-class ADroppedItem;
-
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UInteractiveInterface : public UInterface
@@ -25,5 +23,5 @@ class MINECRAFT_API IInteractiveInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent)
-	bool AddItemToInventory(ADroppedItem* DroppedItem);
+	bool AddItemToInventory(UPARAM(ref) FItemData& ItemData);
 };
