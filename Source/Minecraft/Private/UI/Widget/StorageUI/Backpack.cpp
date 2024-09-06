@@ -28,8 +28,7 @@ void UBackpack::NativePreConstruct()
 
 	if (CraftingSystem)
 	{
-		CraftingSystem->OnCraftingItemStart.AddUObject(this, &UBackpack::FlushCrafting);
-		CraftingSystem->OnCraftingItemCompleted.AddUObject(this, &UBackpack::CraftingCompleted);
+		CraftingSystem->OnCraftingItem.AddUObject(this, &UBackpack::FlushCrafting);
 	}
 }
 
@@ -82,26 +81,3 @@ void UBackpack::InitUI()
 	FlushBackpack();
 	FlushCrafting();
 }
-
-void UBackpack::HangItemDataToMouseAndRemove(int32 Index)
-{
-	if (Player)
-	{
-		UBackpackComponent* BackpackComponent = Player->GetBackpackComponent();
-		IInventoryInterface::Execute_RemoveItem(BackpackComponent, Index, HangItemData);
-	}
-}
-
-void UBackpack::HangItemStackToCrafting(int32 Index)
-{
-	if (Player)
-	{
-		UCraftingComponent* CraftingComponent = Player->GetCraftingComponent();
-		//HangItemStack = CraftingComponent->GetItem(Index);
-	}
-}
-
-//void UBackpack::UpdateHangItemStack(const FItemStack& NewItemStack)
-//{
-//	HangItemStack = NewItemStack;
-//}

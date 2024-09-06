@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Item/ItemInfo.h"
 #include "Components/ActorComponent.h"
-#include "Item/Info/ItemInfo.h"
 #include "Interfaces/InventoryInterface.h"
 #include "InventoryComponent.generated.h"
 
@@ -18,13 +18,11 @@ class MINECRAFT_API UInventoryComponent : public UActorComponent, public IInvent
 public:	
 	UInventoryComponent();
 
-	UFUNCTION(BlueprintCallable)
-	void TransferItem(int32 Index, UPARAM(ref) FItemData& OutItemData);
-
 	/** Inventory Interface */
 	virtual void TryAddItem_Implementation(int32 Index, FItemData& InItemData) override;
 	virtual void RemoveItem_Implementation(int32 Index, FItemData& OutItemData) override;
-	/** end Inventory Interface */
+	virtual void TransferItem_Implementation(int32 Index, FItemData& OutItemData) override;
+	/** End Inventory Interface */
 
 	bool AddItemToInventory(FItemData& ItemData);
 

@@ -24,6 +24,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void TryAddItem(int32 Index, UPARAM(ref) FItemData& InItemData);
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void RemoveItem(int32 Index, UPARAM(ref) FItemData& OutItemData);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void TransferItem(int32 Index, UPARAM(ref) FItemData& OutItemData);
 };

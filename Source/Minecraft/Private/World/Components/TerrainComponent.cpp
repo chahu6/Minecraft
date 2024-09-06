@@ -43,20 +43,7 @@ void UTerrainComponent::LoadTerrainInfo(AChunk* Chunk)
 
 	CaveGenerator::GeneratorCave(Chunk);
 
-	{
-		TArray<FVector2D> Points;
-		PoissonDiscSampling::GeneratePoints(Points, 1.414f, { 16, 16 }, 3);
-
-		TArray<int32>& HeightMap = Chunk->GetHeightMap();
-		
-		for (const FVector2D& Point : Points)
-		{
-			int32 X = FMath::TruncToInt32(Point.X);
-			int32 Y = FMath::TruncToInt32(Point.Y);
-			int32 Z = HeightMap[GetHeightIndex(X, Y)];
-			Chunk->SetBlock(X, Y, Z + 1, { EBlockID::Grass, 0 });
-		}
-	}
+	GeneratePlant(Chunk);
 
 	Chunk->SetChunkState(EChunkState::Loaded);
 }
@@ -218,7 +205,18 @@ void UTerrainComponent::GenerateHeight(AChunk* Chunk)
 
 void UTerrainComponent::GeneratePlant(AChunk* Chunk)
 {
+	TArray<FVector2D> Points;
+	PoissonDiscSampling::GeneratePoints(Points, 1.414f, { 16, 16 }, 3);
 
+	TArray<int32>& HeightMap = Chunk->GetHeightMap();
+
+	for (const FVector2D& Point : Points)
+	{
+		int32 X = FMath::TruncToInt32(Point.X);
+		int32 Y = FMath::TruncToInt32(Point.Y);
+		int32 Z = HeightMap[GetHeightIndex(X, Y)];
+		Chunk->SetBlock(X, Y, Z + 1, { EBlockID::Grass, 0 });
+	}
 }
 
 float UTerrainComponent::FBM(float InX, float InY, const TArray<FVector2D>& InOctaveOffsets, ETerrainFBMType InFBMType) const

@@ -13,7 +13,6 @@ class USphereComponent;
 class UInteractiveComponent;
 class UCraftingComponent;
 class UInputAction;
-class ADroppedItem;
 struct FItemData;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSwitchMainHand, int32);
@@ -60,7 +59,7 @@ public:
 	void ConsumeItem();
 
 	/** Interactive Interface */
-	virtual bool AddItemToInventory_Implementation(ADroppedItem* DroppedItem) override;
+	virtual bool AddItemToInventory_Implementation(FItemData& ItemData) override;
 	/** Interactive Interface end*/
 
 private:

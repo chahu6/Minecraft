@@ -141,17 +141,17 @@ void UInteractiveComponent::PlaceBlock(int32 ItemID)
 	FBlockMeta BlockMeta;
 	if (!UMinecraftAssetLibrary::GetBlockMeta(ItemID, BlockMeta)) return;
 
-	BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnInteract();
+	if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnInteract();
 
 	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 	if (WorldManager)
 	{
-		BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnBeforePlace();
+		if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnBeforePlace();
 		WorldManager->PlaceBlock(BlockVoxelLocation, BlockMeta.BlockID);
 
 		FVector WorldLocation = FVector(BlockVoxelLocation * BlockSize);
 		WorldLocation = WorldLocation + (BlockSize >> 1);
-		BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnAfterPlace(WorldManager, WorldLocation, BlockMeta.PlaceSound);
+		if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnAfterPlace(WorldManager, WorldLocation, BlockMeta.PlaceSound);
 
 		Player->ConsumeItem();
 		Player->UpdateMainHandItem();
