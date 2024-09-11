@@ -134,12 +134,31 @@ FItemOutput UCraftingComponent::GetRecipeOutput(const FString& Formula)
 	return {};
 }
 
+void UCraftingComponent::TryDecreaseItemAmount()
+{
+	for (int32 Index = 0; Index < Dimension * Dimension; ++Index)
+	{
+		DecreaseItemAmount(Index);
+	}
+}
+
 void UCraftingComponent::IncreaseItemAmount(int32 Index)
 {
-
+	if (Items.IsValidIndex(Index))
+	{
+		Items[Index].Quantity++;
+	}
 }
 
 void UCraftingComponent::DecreaseItemAmount(int32 Index)
 {
-
+	if (Items.IsValidIndex(Index))
+	{
+		FItemData& ItemData = Items[Index];
+		ItemData.Quantity--;
+		if (ItemData.Quantity <= 0)
+		{
+			ItemData.Clear();
+		}
+	}
 }

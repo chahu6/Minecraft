@@ -7,7 +7,6 @@
 
 class UBackpackComponent;
 class UCraftingComponent;
-class AMinecraftPlayer;
 class UInventoryItem;
 
 /**
@@ -59,13 +58,13 @@ public:
 
 private:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UBackpackComponent> Backpack;
+	TObjectPtr<UBackpackComponent> BackpackComponent;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCraftingComponent> CraftingSystem;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<AMinecraftPlayer> Player;
+	TObjectPtr<APawn> Player;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	FItemData HangItemData;

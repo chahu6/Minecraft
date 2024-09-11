@@ -5,9 +5,6 @@
 
 UMinecraftSettings::UMinecraftSettings()
 {
-	ChunkSize = 16;
-	ChunkAear = ChunkSize * ChunkSize;
-
 #if WITH_EDITOR
 	SettingsChangedDelegate.AddUObject(this, &UMinecraftSettings::OnChangedProperty);
 #endif

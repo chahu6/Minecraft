@@ -41,6 +41,9 @@ public:
 
 	FItemOutput GetRecipeOutput(const FString& Formula);
 
+	void TryDecreaseItemAmount();
+
+private:
 	void IncreaseItemAmount(int32 Index);
 
 	void DecreaseItemAmount(int32 Index);

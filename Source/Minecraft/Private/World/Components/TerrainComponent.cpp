@@ -21,7 +21,7 @@ void UTerrainComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	NewNoiseMap.Init(0.f, CHUNK_AREA);
+	NewNoiseMap.Init(0.f, WorldSettings::CHUNK_AREA);
 
 	// 偏移因素
 	OctaveOffsets.SetNum(Octaves);
@@ -63,18 +63,18 @@ void UTerrainComponent::LoadTerrainBlockID(AChunk* Chunk)
 		}
 	}
 
-	MaxHeight = MaxHeight > WATER_LEVEL ? MaxHeight : WATER_LEVEL;
+	MaxHeight = MaxHeight > WorldSettings::WATER_LEVEL ? MaxHeight : WorldSettings::WATER_LEVEL;
 
-	for (int32 Y = 0; Y < CHUNK_SIZE; ++Y)
+	for (int32 Y = 0; Y < WorldSettings::CHUNK_SIZE; ++Y)
 	{
-		for (int32 X = 0; X < CHUNK_SIZE; ++X)
+		for (int32 X = 0; X < WorldSettings::CHUNK_SIZE; ++X)
 		{
 			Height = HeightMap[GetHeightIndex(X, Y)];
 			for (int32 Z = 0; Z < MaxHeight + 1; ++Z)
 			{
 				if (Z > Height)
 				{
-					if (Z <= WATER_LEVEL)
+					if (Z <= WorldSettings::WATER_LEVEL)
 					{
 						Chunk->SetBlock(X, Y, Z, { EBlockID::Water, 0 });
 						continue;
@@ -119,15 +119,15 @@ void UTerrainComponent::GenerateHeight(AChunk* Chunk)
 
 	int32 VoxelWorldX;
 	int32 VoxelWorldY;
-	for (int32 X = 0; X < CHUNK_SIZE; ++X)
+	for (int32 X = 0; X < WorldSettings::CHUNK_SIZE; ++X)
 	{
-		for (int32 Y = 0; Y < CHUNK_SIZE; ++Y)
+		for (int32 Y = 0; Y < WorldSettings::CHUNK_SIZE; ++Y)
 		{
-			VoxelWorldX = X + ChunkLocation.X / BlockSize;
-			VoxelWorldY = Y + ChunkLocation.Y / BlockSize;
+			VoxelWorldX = X + ChunkLocation.X / WorldSettings::BlockSize;
+			VoxelWorldY = Y + ChunkLocation.Y / WorldSettings::BlockSize;
 
-			int32 World_X = X * BlockSize + ChunkLocation.X;
-			int32 World_Y = Y * BlockSize + ChunkLocation.Y;
+			int32 World_X = X * WorldSettings::BlockSize + ChunkLocation.X;
+			int32 World_Y = Y * WorldSettings::BlockSize + ChunkLocation.Y;
 
 			if (bDomainWarping)
 			{
@@ -155,7 +155,7 @@ void UTerrainComponent::GenerateHeight(AChunk* Chunk)
 	}
 
 	// 规范化为(0, 1);
-	for (int32 i = 0; i < CHUNK_AREA; ++i)
+	for (int32 i = 0; i < WorldSettings::CHUNK_AREA; ++i)
 	{
 		//NewNoiseMap[i] = UKismetMathLibrary::NormalizeToRange(NewNoiseMap[i], MinNoiseHeight, MaxNoiseHeight);
 		NewNoiseMap[i] = (NewNoiseMap[i] / MaxPossibleHeight);
@@ -197,7 +197,7 @@ void UTerrainComponent::GenerateHeight(AChunk* Chunk)
 		}
 	}*/
 
-	for (int32 i = 0; i < CHUNK_AREA; ++i)
+	for (int32 i = 0; i < WorldSettings::CHUNK_AREA; ++i)
 	{
 		HeightMap[i] = 100 + NewNoiseMap[i] * 28;
 	}
@@ -224,8 +224,8 @@ float UTerrainComponent::FBM(float InX, float InY, const TArray<FVector2D>& InOc
 	float NoiseValue = 0.0f;
 	float Amplitude = 1.0f;
 	float Frequency = 1.0f;
-	const float HalfWidth = CHUNK_SIZE * 0.5f;
-	const float HalfHeight = CHUNK_SIZE * 0.5f;
+	const float HalfWidth = WorldSettings::CHUNK_SIZE * 0.5f;
+	const float HalfHeight = WorldSettings::CHUNK_SIZE * 0.5f;
 
 	for (int32 i = 0; i < Octaves; ++i)
 	{

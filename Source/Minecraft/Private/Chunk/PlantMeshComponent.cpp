@@ -38,11 +38,11 @@ void UPlantMeshComponent::BuildMesh()
 {
 	MeshData = MakeShared<FMeshData>();
 
-	for (int32 Z = 0; Z < CHUNK_HEIGHT; ++Z)
+	for (int32 Z = 0; Z < WorldSettings::CHUNK_HEIGHT; ++Z)
 	{
-		for (int32 Y = 0; Y < CHUNK_SIZE; ++Y)
+		for (int32 Y = 0; Y < WorldSettings::CHUNK_SIZE; ++Y)
 		{
-			for (int32 X = 0; X < CHUNK_SIZE; ++X)
+			for (int32 X = 0; X < WorldSettings::CHUNK_SIZE; ++X)
 			{
 				FBlockData BlockData = Chunk->GetBlock(X, Y, Z);
 				if (BlockData.IsPlant())
@@ -50,15 +50,15 @@ void UPlantMeshComponent::BuildMesh()
 					int32 Index = MeshData->Vertices.Num();
 
 					MeshData->Vertices.Append({
-						FVector(X, Y, Z) * BlockSize,
-						FVector(X + 1, Y + 1, Z) * BlockSize,
-						FVector(X, Y, Z + 1) * BlockSize,
-						FVector(X + 1, Y + 1, Z + 1) * BlockSize,
+						FVector(X, Y, Z) * WorldSettings::BlockSize,
+						FVector(X + 1, Y + 1, Z) * WorldSettings::BlockSize,
+						FVector(X, Y, Z + 1) * WorldSettings::BlockSize,
+						FVector(X + 1, Y + 1, Z + 1) * WorldSettings::BlockSize,
 
-						FVector(X + 1, Y, Z) * BlockSize,
-						FVector(X, Y + 1, Z) * BlockSize,
-						FVector(X + 1, Y, Z + 1) * BlockSize,
-						FVector(X, Y + 1, Z + 1) * BlockSize
+						FVector(X + 1, Y, Z) * WorldSettings::BlockSize,
+						FVector(X, Y + 1, Z) * WorldSettings::BlockSize,
+						FVector(X + 1, Y, Z + 1) * WorldSettings::BlockSize,
+						FVector(X, Y + 1, Z + 1) * WorldSettings::BlockSize
 						});
 					MeshData->Triangles.Append({
 						Index,
