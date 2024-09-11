@@ -1,7 +1,6 @@
 #include "UI/Widget/StorageUI/Backpack.h"
 #include "Components/Inventory/BackpackComponent.h"
 #include "Components/Crafting/CraftingComponent.h"
-#include "Entity/MinecraftPlayer.h"
 
 UBackpack::UBackpack(const FObjectInitializer& ObjectInitializer)
 	:UUserWidget(ObjectInitializer)
@@ -12,18 +11,18 @@ UBackpack::UBackpack(const FObjectInitializer& ObjectInitializer)
 void UBackpack::NativePreConstruct()
 {
 	Super::NativePreConstruct();
-
-	Player = Cast<AMinecraftPlayer>(GetOwningPlayerPawn());
+	
+	Player = GetOwningPlayerPawn();
 	if (Player)
 	{
-		Backpack = Player->GetBackpackComponent();
-		CraftingSystem = Player->GetCraftingComponent();
+		CraftingSystem = Player->GetComponentByClass<UCraftingComponent>();
+		BackpackComponent = Player->GetComponentByClass<UBackpackComponent>();
 	}
 
-	if (Backpack)
+	if (BackpackComponent)
 	{
-		Backpack->OnHotbarUpdate.AddDynamic(this, &UBackpack::FlushHotbar);
-		Backpack->OnInventoryUpdate.AddDynamic(this, &UBackpack::FlushBackpack);
+		BackpackComponent->OnHotbarUpdate.AddDynamic(this, &UBackpack::FlushHotbar);
+		BackpackComponent->OnInventoryUpdate.AddDynamic(this, &UBackpack::FlushBackpack);
 	}
 
 	if (CraftingSystem)

@@ -11,6 +11,8 @@
 #include "World/Runnable/TerrainDataAsyncTask.h"
 #include "World/Components/TerrainComponent.h"
 
+AWorldManager* AWorldManager::Instance = nullptr;
+
 AWorldManager::AWorldManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -25,6 +27,8 @@ AWorldManager::AWorldManager()
 void AWorldManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Instance = this;
 
 	USimplexNoiseLibrary::SetNoiseSeed(Seed);
 
@@ -77,8 +81,8 @@ void AWorldManager::InitialWorldChunkLoad()
 	DefaultCharacterPosition = FVector2D(FMath::RandRange(-100.f, 100.f));
 	FVector2D NewLocation2D = DefaultCharacterPosition;
 
-	CharacterChunkPosition.X = FMath::FloorToInt32(NewLocation2D.X / ChunkSize);
-	CharacterChunkPosition.Y = FMath::FloorToInt32(NewLocation2D.Y / ChunkSize);
+	CharacterChunkPosition.X = FMath::FloorToInt32(NewLocation2D.X / WorldSettings::ChunkSize);
+	CharacterChunkPosition.Y = FMath::FloorToInt32(NewLocation2D.Y / WorldSettings::ChunkSize);
 
 	{
 		// 初始化
@@ -111,8 +115,8 @@ bool AWorldManager::UpdatePosition()
 	if (Pawn == nullptr) return false;
 
 	FIntPoint NewLocation2D;
-	NewLocation2D.X = FMath::FloorToInt32(Pawn->GetActorLocation().X / ChunkSize);
-	NewLocation2D.Y = FMath::FloorToInt32(Pawn->GetActorLocation().Y / ChunkSize);
+	NewLocation2D.X = FMath::FloorToInt32(Pawn->GetActorLocation().X / WorldSettings::ChunkSize);
+	NewLocation2D.Y = FMath::FloorToInt32(Pawn->GetActorLocation().Y / WorldSettings::ChunkSize);
 	if (NewLocation2D != CharacterChunkPosition)
 	{
 		CharacterChunkPosition = NewLocation2D;
@@ -209,8 +213,8 @@ AChunk* AWorldManager::GetChunk(const FIntPoint& ChunkVoxelLocation)
 AChunk* AWorldManager::GetChunk(const FIntVector& BlockWorldVoxelLocation)
 {
 	// static_cast<float>() 转成float考虑到负数
-	const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / CHUNK_SIZE);
-	const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / CHUNK_SIZE);
+	const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / WorldSettings::CHUNK_SIZE);
+	const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / WorldSettings::CHUNK_SIZE);
 
 	return GetChunk(FIntPoint(ChunkVoxelLocationX, ChunkVoxelLocationY));
 }
@@ -223,10 +227,10 @@ bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation)
 	FBlockMeta BlockMeta;
 	if (!UMinecraftAssetLibrary::GetBlockMeta(BlockData.BlockID(), BlockMeta)) return false;
 
-	FVector WorldLocation = FVector(BlockWorldVoxelLocation * BlockSize);
-	WorldLocation.X += BlockSize >> 1;
-	WorldLocation.Y += BlockSize >> 1;
-	WorldLocation.Z += BlockSize >> 1;
+	FVector WorldLocation = FVector(BlockWorldVoxelLocation * WorldSettings::BlockSize);
+	WorldLocation.X += WorldSettings::BlockSize >> 1;
+	WorldLocation.Y += WorldSettings::BlockSize >> 1;
+	WorldLocation.Z += WorldSettings::BlockSize >> 1;
 
 	if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnDestroy(this, WorldLocation, BlockMeta.DestroySound);
 	SetBlock(BlockWorldVoxelLocation, {});
@@ -253,16 +257,16 @@ void AWorldManager::PlaceBlock(const FIntVector& BlockWorldVoxelLocation, int32 
 void AWorldManager::SetBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID)
 {
 	// static_cast<float>() 转成float考虑到负数
-	const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / CHUNK_SIZE);
-	const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / CHUNK_SIZE);
+	const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / WorldSettings::CHUNK_SIZE);
+	const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / WorldSettings::CHUNK_SIZE);
 
 	AChunk* Chunk = GetChunk(FIntPoint(ChunkVoxelLocationX, ChunkVoxelLocationY));
 	if (Chunk)
 	{
-		FIntVector OffsetLocation = BlockWorldVoxelLocation - FIntVector(ChunkVoxelLocationX, ChunkVoxelLocationY, 0) * CHUNK_SIZE;
+		FIntVector OffsetLocation = BlockWorldVoxelLocation - FIntVector(ChunkVoxelLocationX, ChunkVoxelLocationY, 0) * WorldSettings::CHUNK_SIZE;
 
-		const int32 OffsetX = OffsetLocation.X % CHUNK_SIZE;
-		const int32 OffsetY = OffsetLocation.Y % CHUNK_SIZE;
+		const int32 OffsetX = OffsetLocation.X % WorldSettings::CHUNK_SIZE;
+		const int32 OffsetY = OffsetLocation.Y % WorldSettings::CHUNK_SIZE;
 		const int32 WorldZ = OffsetLocation.Z;
 
 		Chunk->SetBlock(OffsetX, OffsetY, WorldZ, { static_cast<EBlockID>(BlockID), 0 });
@@ -272,17 +276,17 @@ void AWorldManager::SetBlock(const FIntVector& BlockWorldVoxelLocation, int32 Bl
 FBlockData AWorldManager::GetBlock(const FIntVector& BlockWorldVoxelLocation)
 {
 	// static_cast<float>() 转成float考虑到负数
-	const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / CHUNK_SIZE);
-	const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / CHUNK_SIZE);
+	const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / WorldSettings::CHUNK_SIZE);
+	const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / WorldSettings::CHUNK_SIZE);
 
 	AChunk* Chunk = GetChunk(FIntPoint(ChunkVoxelLocationX, ChunkVoxelLocationY));
 
 	if (Chunk)
 	{
-		FIntVector OffsetLocation = BlockWorldVoxelLocation - FIntVector(ChunkVoxelLocationX, ChunkVoxelLocationY, 0) * CHUNK_SIZE;
+		FIntVector OffsetLocation = BlockWorldVoxelLocation - FIntVector(ChunkVoxelLocationX, ChunkVoxelLocationY, 0) * WorldSettings::CHUNK_SIZE;
 
-		const int32 OffsetX = OffsetLocation.X % CHUNK_SIZE;
-		const int32 OffsetY = OffsetLocation.Y % CHUNK_SIZE;
+		const int32 OffsetX = OffsetLocation.X % WorldSettings::CHUNK_SIZE;
+		const int32 OffsetY = OffsetLocation.Y % WorldSettings::CHUNK_SIZE;
 		const int32 WorldZ = OffsetLocation.Z;
 		return Chunk->GetBlock(OffsetX, OffsetY, WorldZ);
 	}

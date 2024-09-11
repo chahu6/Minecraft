@@ -125,8 +125,4 @@ private:
 
 	UPROPERTY()
 	int32 MainHandIndex = 0;
-
-public:
-	FORCEINLINE UCraftingComponent* GetCraftingComponent() const { return CraftingComponent; }
-	FORCEINLINE UBackpackComponent* GetBackpackComponent() const { return BackpackComponent; }
 };

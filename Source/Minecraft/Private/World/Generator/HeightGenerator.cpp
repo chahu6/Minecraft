@@ -8,12 +8,12 @@ void HeightGenerator::GenerateHeight(AChunk* Chunk)
 	const FVector ChunkLocation = Chunk->GetActorLocation();
 	TArray<int32>& HeightMap = Chunk->GetHeightMap();
 
-	for (int32 X = 0; X < CHUNK_SIZE; ++X)
+	for (int32 X = 0; X < WorldSettings::CHUNK_SIZE; ++X)
 	{
-		for (int32 Y = 0; Y < CHUNK_SIZE; ++Y)
+		for (int32 Y = 0; Y < WorldSettings::CHUNK_SIZE; ++Y)
 		{
-			int32 World_X = X * BlockSize + ChunkLocation.X;
-			int32 World_Y = Y * BlockSize + ChunkLocation.Y;
+			int32 World_X = X * WorldSettings::BlockSize + ChunkLocation.X;
+			int32 World_Y = Y * WorldSettings::BlockSize + ChunkLocation.Y;
 
 			//float World_Z = USimplexNoiseLibrary::SimplexNoiseInRange2D(World_X, World_Y, 0, 48, );
 

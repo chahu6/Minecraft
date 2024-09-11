@@ -87,23 +87,23 @@ void UBlockMeshComponent::BuildGreedyChunkMesh()
 		{
 			case 0: // X轴
 			{
-				MainAxisLimit = CHUNK_SIZE;
-				Axis1Limit = CHUNK_SIZE;
-				Axis2Limit = CHUNK_HEIGHT;
+				MainAxisLimit = WorldSettings::CHUNK_SIZE;
+				Axis1Limit = WorldSettings::CHUNK_SIZE;
+				Axis2Limit = WorldSettings::CHUNK_HEIGHT;
 				break;
 			}
 			case 1: // Y轴
 			{
-				MainAxisLimit = CHUNK_SIZE;
-				Axis1Limit = CHUNK_HEIGHT;
-				Axis2Limit = CHUNK_SIZE;
+				MainAxisLimit = WorldSettings::CHUNK_SIZE;
+				Axis1Limit = WorldSettings::CHUNK_HEIGHT;
+				Axis2Limit = WorldSettings::CHUNK_SIZE;
 				break;
 			}
 			case 2: // Z轴
 			{
-				MainAxisLimit = CHUNK_HEIGHT;
-				Axis1Limit = CHUNK_SIZE;
-				Axis2Limit = CHUNK_SIZE;
+				MainAxisLimit = WorldSettings::CHUNK_HEIGHT;
+				Axis1Limit = WorldSettings::CHUNK_SIZE;
+				Axis2Limit = WorldSettings::CHUNK_SIZE;
 				break;
 			}
 			default:
@@ -123,8 +123,8 @@ void UBlockMeshComponent::BuildGreedyChunkMesh()
 				{
 					if (Chunk->bIsStopped) return;
 
-					const FBlockData CurrentBlock = WorldManager->GetBlock(ChunkItr + FIntVector(ChunkWorldLocation / BlockSize));
-					const FBlockData CompareBlock = WorldManager->GetBlock((ChunkItr + AxisMask) + FIntVector(ChunkWorldLocation / BlockSize));
+					const FBlockData CurrentBlock = WorldManager->GetBlock(ChunkItr + FIntVector(ChunkWorldLocation / WorldSettings::BlockSize));
+					const FBlockData CompareBlock = WorldManager->GetBlock((ChunkItr + AxisMask) + FIntVector(ChunkWorldLocation / WorldSettings::BlockSize));
 
 					const bool bCurrentBlockOpaque = CurrentBlock.ID != EBlockID::Air && !CurrentBlock.IsPlant();
 					const bool bCompareBlockOpaque = CompareBlock.ID != EBlockID::Air && !CompareBlock.IsPlant();
@@ -257,10 +257,10 @@ void UBlockMeshComponent::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 	int32 Index = MeshData->Vertices.Num();
 
 	MeshData->Vertices.Append({
-		FVector(V1) * BlockSize,
-		FVector(V2) * BlockSize,
-		FVector(V3) * BlockSize,
-		FVector(V4) * BlockSize
+		FVector(V1) * WorldSettings::BlockSize,
+		FVector(V2) * WorldSettings::BlockSize,
+		FVector(V3) * WorldSettings::BlockSize,
+		FVector(V4) * WorldSettings::BlockSize
 	});
 
 	MeshData->Triangles.Append({
@@ -327,11 +327,11 @@ void UBlockMeshComponent::BuildChunkMesh()
 
 	AWorldManager* WorldManager = Chunk->GetOwner<AWorldManager>();
 
-	for (int32 X = 0; X < CHUNK_SIZE; ++X)
+	for (int32 X = 0; X < WorldSettings::CHUNK_SIZE; ++X)
 	{
-		for (int32 Y = 0; Y < CHUNK_SIZE; ++Y)
+		for (int32 Y = 0; Y < WorldSettings::CHUNK_SIZE; ++Y)
 		{
-			for (int32 Z = 0; Z < CHUNK_HEIGHT; ++Z)
+			for (int32 Z = 0; Z < WorldSettings::CHUNK_HEIGHT; ++Z)
 			{
 				FBlockData BlockData = Chunk->GetBlock(X, Y, Z);
 
@@ -349,23 +349,23 @@ void UBlockMeshComponent::BuildChunkMesh()
 				Index = MeshData->Vertices.Num();
 
 				// World Voxel Position
-				int32 BlockWorldVoxelLocationX = X + ChunkLocation.X / BlockSize;
-				int32 BlockWorldVoxelLocationY = Y + ChunkLocation.Y / BlockSize;
-				int32 BlockWorldVoxelLocationZ = Z + ChunkLocation.Z / BlockSize;
+				int32 BlockWorldVoxelLocationX = X + ChunkLocation.X / WorldSettings::BlockSize;
+				int32 BlockWorldVoxelLocationY = Y + ChunkLocation.Y / WorldSettings::BlockSize;
+				int32 BlockWorldVoxelLocationZ = Z + ChunkLocation.Z / WorldSettings::BlockSize;
 
 				// Top Face
 				if (IsVoid(FIntVector(BlockWorldVoxelLocationX, BlockWorldVoxelLocationY, BlockWorldVoxelLocationZ + 1), WorldManager))
 				{
-					int32 Location_X = X * BlockSize;
-					int32 Location_Y = Y * BlockSize;
-					int32 Location_Z = Z * BlockSize;
+					int32 Location_X = X * WorldSettings::BlockSize;
+					int32 Location_Y = Y * WorldSettings::BlockSize;
+					int32 Location_Z = Z * WorldSettings::BlockSize;
 
 					// 顶点
 					MeshData->Vertices.Append({
-						FVector(Location_X, Location_Y, Location_Z + BlockSize),
-						FVector(Location_X, Location_Y + BlockSize, Location_Z + BlockSize),
-						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z + BlockSize),
-						FVector(Location_X + BlockSize, Location_Y, Location_Z + BlockSize)
+						FVector(Location_X, Location_Y, Location_Z + WorldSettings::BlockSize),
+						FVector(Location_X, Location_Y + WorldSettings::BlockSize, Location_Z + WorldSettings::BlockSize),
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y + WorldSettings::BlockSize, Location_Z + WorldSettings::BlockSize),
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y, Location_Z + WorldSettings::BlockSize)
 					});
 
 					// 索引
@@ -397,16 +397,16 @@ void UBlockMeshComponent::BuildChunkMesh()
 				// Down Face
 				if (IsVoid(FIntVector(BlockWorldVoxelLocationX, BlockWorldVoxelLocationY, BlockWorldVoxelLocationZ - 1), WorldManager))
 				{
-					int32 Location_X = X * BlockSize;
-					int32 Location_Y = Y * BlockSize;
-					int32 Location_Z = Z * BlockSize;
+					int32 Location_X = X * WorldSettings::BlockSize;
+					int32 Location_Y = Y * WorldSettings::BlockSize;
+					int32 Location_Z = Z * WorldSettings::BlockSize;
 
 					// 顶点
 					MeshData->Vertices.Append({
 						FVector(Location_X, Location_Y, Location_Z),
-						FVector(Location_X, Location_Y + BlockSize, Location_Z),
-						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z),
-						FVector(Location_X + BlockSize, Location_Y, Location_Z)
+						FVector(Location_X, Location_Y + WorldSettings::BlockSize, Location_Z),
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y + WorldSettings::BlockSize, Location_Z),
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y, Location_Z)
 					});
 
 					// 索引
@@ -438,16 +438,16 @@ void UBlockMeshComponent::BuildChunkMesh()
 				// Left Face
 				if (IsVoid(FIntVector(BlockWorldVoxelLocationX, BlockWorldVoxelLocationY - 1, BlockWorldVoxelLocationZ), WorldManager))
 				{
-					int32 Location_X = X * BlockSize;
-					int32 Location_Y = Y * BlockSize;
-					int32 Location_Z = Z * BlockSize;
+					int32 Location_X = X * WorldSettings::BlockSize;
+					int32 Location_Y = Y * WorldSettings::BlockSize;
+					int32 Location_Z = Z * WorldSettings::BlockSize;
 
 					// 顶点
 					MeshData->Vertices.Append({
 						FVector(Location_X, Location_Y, Location_Z),
-						FVector(Location_X, Location_Y, Location_Z + BlockSize),
-						FVector(Location_X + BlockSize, Location_Y, Location_Z + BlockSize),
-						FVector(Location_X + BlockSize, Location_Y, Location_Z)
+						FVector(Location_X, Location_Y, Location_Z + WorldSettings::BlockSize),
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y, Location_Z + WorldSettings::BlockSize),
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y, Location_Z)
 					});
 
 					// 索引
@@ -479,16 +479,16 @@ void UBlockMeshComponent::BuildChunkMesh()
 				// Right Face
 				if (IsVoid(FIntVector(BlockWorldVoxelLocationX, BlockWorldVoxelLocationY + 1, BlockWorldVoxelLocationZ), WorldManager))
 				{
-					int32 Location_X = X * BlockSize;
-					int32 Location_Y = Y * BlockSize;
-					int32 Location_Z = Z * BlockSize;
+					int32 Location_X = X * WorldSettings::BlockSize;
+					int32 Location_Y = Y * WorldSettings::BlockSize;
+					int32 Location_Z = Z * WorldSettings::BlockSize;
 
 					// 顶点
 					MeshData->Vertices.Append({
-						FVector(Location_X, Location_Y + BlockSize, Location_Z),
-						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z),
-						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z + BlockSize),
-						FVector(Location_X, Location_Y + BlockSize, Location_Z + BlockSize)
+						FVector(Location_X, Location_Y + WorldSettings::BlockSize, Location_Z),
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y + WorldSettings::BlockSize, Location_Z),
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y + WorldSettings::BlockSize, Location_Z + WorldSettings::BlockSize),
+						FVector(Location_X, Location_Y + WorldSettings::BlockSize, Location_Z + WorldSettings::BlockSize)
 					});
 
 					// 索引
@@ -521,16 +521,16 @@ void UBlockMeshComponent::BuildChunkMesh()
 				// Forward Face
 				if (IsVoid(FIntVector(BlockWorldVoxelLocationX + 1, BlockWorldVoxelLocationY, BlockWorldVoxelLocationZ), WorldManager))
 				{
-					int32 Location_X = X * BlockSize;
-					int32 Location_Y = Y * BlockSize;
-					int32 Location_Z = Z * BlockSize;
+					int32 Location_X = X * WorldSettings::BlockSize;
+					int32 Location_Y = Y * WorldSettings::BlockSize;
+					int32 Location_Z = Z * WorldSettings::BlockSize;
 
 					// 顶点
 					MeshData->Vertices.Append({
-						FVector(Location_X + BlockSize, Location_Y, Location_Z),
-						FVector(Location_X + BlockSize, Location_Y, Location_Z + BlockSize),
-						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z + BlockSize),
-						FVector(Location_X + BlockSize, Location_Y + BlockSize, Location_Z)
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y, Location_Z),
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y, Location_Z + WorldSettings::BlockSize),
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y + WorldSettings::BlockSize, Location_Z + WorldSettings::BlockSize),
+						FVector(Location_X + WorldSettings::BlockSize, Location_Y + WorldSettings::BlockSize, Location_Z)
 					});
 
 					// 索引
@@ -562,16 +562,16 @@ void UBlockMeshComponent::BuildChunkMesh()
 				// BackGround Face
 				if (IsVoid(FIntVector(BlockWorldVoxelLocationX - 1, BlockWorldVoxelLocationY, BlockWorldVoxelLocationZ), WorldManager))
 				{
-					int32 Location_X = X * BlockSize;
-					int32 Location_Y = Y * BlockSize;
-					int32 Location_Z = Z * BlockSize;
+					int32 Location_X = X * WorldSettings::BlockSize;
+					int32 Location_Y = Y * WorldSettings::BlockSize;
+					int32 Location_Z = Z * WorldSettings::BlockSize;
 
 					// 顶点
 					MeshData->Vertices.Append({
 						FVector(Location_X, Location_Y, Location_Z),
-						FVector(Location_X, Location_Y + BlockSize, Location_Z),
-						FVector(Location_X, Location_Y + BlockSize, Location_Z + BlockSize),
-						FVector(Location_X, Location_Y, Location_Z + BlockSize)
+						FVector(Location_X, Location_Y + WorldSettings::BlockSize, Location_Z),
+						FVector(Location_X, Location_Y + WorldSettings::BlockSize, Location_Z + WorldSettings::BlockSize),
+						FVector(Location_X, Location_Y, Location_Z + WorldSettings::BlockSize)
 					});
 
 					// 索引

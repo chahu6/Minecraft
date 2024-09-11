@@ -21,10 +21,14 @@ class MINECRAFT_API AWorldManager : public AActor
 	friend class UChunkManagerComponent;
 	friend class FTerrainDataAsyncTask;
 
+	static AWorldManager* Instance;
+
 public:	
 	AWorldManager();
 
 	virtual void Tick(float DeltaTime) override;
+
+	static AWorldManager* Get() { return Instance; }
 
 protected:
 	virtual void BeginPlay() override;

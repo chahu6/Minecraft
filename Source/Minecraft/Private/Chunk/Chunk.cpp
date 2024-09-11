@@ -21,8 +21,8 @@ AChunk::AChunk()
 	PlantMeshComponent->SetupAttachment(RootComponent);
 	PlantMeshComponent->bUseAsyncCooking = true;
 
-	HeightMap.Init(0, CHUNK_AREA);
-	Blocks.Init({}, CHUNK_VOLUME);
+	HeightMap.Init(0, WorldSettings::CHUNK_AREA);
+	Blocks.Init({}, WorldSettings::CHUNK_VOLUME);
 }
 
 void AChunk::EndPlay(const EEndPlayReason::Type EndPlayReason)
