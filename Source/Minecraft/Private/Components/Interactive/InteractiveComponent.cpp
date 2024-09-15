@@ -102,7 +102,7 @@ FBlockData UInteractiveComponent::GetBlockDataFromLocation(const FVector& WorldL
 
 FBlockData UInteractiveComponent::GetBlockDataFromLocation(const FIntVector& BlockVoxelLocation)
 {
-	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
+	AWorldManager* WorldManager = AWorldManager::Get();
 	if (WorldManager)
 	{
 		FBlockData BlockData = WorldManager->GetBlock(BlockVoxelLocation);
@@ -143,7 +143,7 @@ void UInteractiveComponent::PlaceBlock(int32 ItemID)
 
 	if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnInteract();
 
-	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
+	AWorldManager* WorldManager = AWorldManager::Get();
 	if (WorldManager)
 	{
 		if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnBeforePlace();
@@ -172,7 +172,6 @@ bool UInteractiveComponent::DestroyBlock(const FIntVector& BlockVoxelLocation)
 	if (!BlockData.IsValid()) return false;
 
 	bool bIsDestroyed = RemoveBlockFromWorld(BlockVoxelLocation);
-
 	if (bIsDestroyed)
 	{
 		FBlockMeta BlockMeta;
@@ -198,7 +197,8 @@ bool UInteractiveComponent::DestroyBlock(const FIntVector& BlockVoxelLocation)
 
 bool UInteractiveComponent::RemoveBlockFromWorld(const FIntVector& BlockVoxelLocation)
 {
-	AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
+	//AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
+	AWorldManager* WorldManager = AWorldManager::Get();
 	if (WorldManager)
 	{
 		return WorldManager->DestroyBlock(BlockVoxelLocation);

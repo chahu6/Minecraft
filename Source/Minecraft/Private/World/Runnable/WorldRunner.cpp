@@ -2,20 +2,56 @@
 #include "Engine/Engine.h"
 #include "World/WorldManager.h"
 
-FWorldRunner::FWorldRunner(AWorldManager* WorldManager)
-{
-	this->WorldManager = WorldManager;
-
-	WorldRunnerThread = FRunnableThread::Create(this, TEXT("WorldRunner"));
+FWorldRunner::FWorldRunner(const FString& ThreadName, AWorldManager* Manager)
+	:WorldManager(Manager),
+	m_ThreadName(ThreadName),
+	ThreadIns(FRunnableThread::Create(this, *m_ThreadName, 0, TPri_Normal)),
+	m_ThreadID(ThreadIns->GetThreadID()),
+	ThreadEvent(FPlatformProcess::GetSynchEventFromPool())
+{ 
 }
 
 FWorldRunner::~FWorldRunner()
 {
-	if (WorldRunnerThread)
+	if (ThreadEvent)
 	{
-		WorldRunnerThread->WaitForCompletion();
-		delete WorldRunnerThread;
-		WorldRunnerThread = nullptr;
+		FPlatformProcess::ReturnSynchEventToPool(ThreadEvent);
+		ThreadEvent = nullptr;
+	}
+
+	if (ThreadIns)
+	{
+		delete ThreadIns;
+		ThreadIns = nullptr;
+	}
+}
+
+void FWorldRunner::SuspendThread()
+{
+	bPause = true;
+}
+
+void FWorldRunner::WakeUpThread()
+{
+	bPause = false;
+	ThreadEvent->Trigger();
+}
+
+void FWorldRunner::StopThread()
+{
+	Stop();
+
+	if (ThreadIns)
+	{
+		ThreadIns->WaitForCompletion();
+	}
+}
+
+void FWorldRunner::ShutDown(bool bShouldWait)
+{
+	if (ThreadIns)
+	{
+		ThreadIns->Kill(bShouldWait);
 	}
 }
 
@@ -26,12 +62,23 @@ bool FWorldRunner::Init()
 
 uint32 FWorldRunner::Run()
 {
-	
+	while (bRun)
+	{
+		if (bPause)
+		{
+			ThreadEvent->Wait();
+			if (!bRun) return 0;
+		}
+
+		WorldManager->ThreadedUpdate();
+	}
 	return 0;
 }
 
 void FWorldRunner::Stop()
 {
+	bRun = false;
+	bPause = false;
 }
 
 void FWorldRunner::Exit()

@@ -45,7 +45,6 @@ void UBlockMeshComponent::Render()
 {
 	if (Chunk->bIsStopped) return;
 
-	ClearAllMeshSections();
 	FBlockMeta BlockMeta;
 	for (auto MeshData = MeshDatas.CreateConstIterator(); MeshData; ++MeshData)
 	{
@@ -585,7 +584,7 @@ void UBlockMeshComponent::BuildChunkMesh()
 					});
 
 					// ¶¥µãÑÕÉ«
-					float Direction = UKismetMathLibrary::MapRangeClamped(StaticCast<float>(EFaceType::BackGround), 0.0, 5.0, 0.0, 1.0);
+					float Direction = UKismetMathLibrary::MapRangeClamped(StaticCast<float>(EFaceType::Background), 0.0, 5.0, 0.0, 1.0);
 					MeshData->VertexColors.Append({
 						{ 0.0f, 0.0f, 0.0f, Direction },
 						{ 0.0f, 0.0f, 0.0f, Direction },

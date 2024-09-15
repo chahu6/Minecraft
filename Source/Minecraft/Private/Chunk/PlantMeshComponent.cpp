@@ -59,7 +59,7 @@ void UPlantMeshComponent::BuildMesh()
 						FVector(X, Y + 1, Z) * WorldSettings::BlockSize,
 						FVector(X + 1, Y, Z + 1) * WorldSettings::BlockSize,
 						FVector(X, Y + 1, Z + 1) * WorldSettings::BlockSize
-						});
+					});
 					MeshData->Triangles.Append({
 						Index,
 						Index + 1,
@@ -74,7 +74,7 @@ void UPlantMeshComponent::BuildMesh()
 						Index + 5,
 						Index + 6,
 						Index + 7
-						});
+					});
 					MeshData->UV0.Append({
 						{ 1.f, 1.f },
 						{ 0.f, 1.f },
@@ -85,7 +85,7 @@ void UPlantMeshComponent::BuildMesh()
 						{ 0.f, 1.f },
 						{ 1.f, 0.f },
 						{ 0.f, 0.f }
-						});
+					});
 				}
 			}
 		}

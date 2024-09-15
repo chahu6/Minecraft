@@ -10,6 +10,7 @@ class AChunk;
 class UTerrainComponent;
 class UChunkManagerComponent;
 struct FBlockData;
+class FWorldRunner;
 
 DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
 
@@ -20,6 +21,7 @@ class MINECRAFT_API AWorldManager : public AActor
 	
 	friend class UChunkManagerComponent;
 	friend class FTerrainDataAsyncTask;
+	friend class FWorldRunner;
 
 	static AWorldManager* Instance;
 
@@ -58,7 +60,7 @@ private:
 
 	void AddChunk();
 
-	void CreateChunk(const FIntPoint& ChunkPosition);
+	void SpawnChunk(const FIntPoint& ChunkPosition);
 
 	void LoadChunkInfo(const FIntPoint& ChunkPosition);
 
@@ -71,6 +73,20 @@ private:
 	void Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z);
 
 	void RenderChunk();
+
+
+
+	/*
+	* 
+	* 新版
+	*/
+	void LoadChunks();
+
+	void AddChunkToUpdate(AChunk* Chunk, bool bTop = false);
+
+	void ThreadedUpdate();
+
+	void UpdateChunks();
 
 public:
 	// 渲染网格体的任务队列
@@ -87,6 +103,9 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "World Setting")
+	int32 LoadDistance = 4;
+
+	UPROPERTY(EditAnywhere, Category = "World Setting")
 	int32 ChunkRenderRange = 8;
 
 	UPROPERTY(EditAnywhere, Category = "World Setting")
@@ -98,11 +117,16 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "World Setting")
 	float RenderRate = 0.1f;
 
+	UPROPERTY(EditAnywhere, Category = "World Setting")
+	float UpdateRate = 1.f;
+
 	// 每次渲染Chunk的个数
 	UPROPERTY(EditAnywhere, Category = "World Setting")
 	int32 RenderCount = 1;
 
 	FTimerHandle RenderQueueHandle;
+
+	FTimerHandle UpdateHandle;
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -119,6 +143,16 @@ private:
 	std::atomic<int32> Count = 0;
 
 	FAsyncTask<FTerrainDataAsyncTask>* TerrainDataAsyncTask = nullptr;
+
+
+	/*
+	* 最新的
+	*/
+private:
+	TArray<AChunk*> ChunksToUpdate;
+	FCriticalSection ChunkUpdateCritical;
+
+	FWorldRunner* ChunkUpdateThread;
 
 public:
 	FORCEINLINE FVector2D GetDefaultCharacterPosition() const { return DefaultCharacterPosition; }
