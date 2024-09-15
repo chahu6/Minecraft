@@ -28,7 +28,7 @@ AChunk::AChunk()
 void AChunk::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	EnsureCompletion();
-
+	
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -46,6 +46,24 @@ void AChunk::EnsureCompletion()
 void AChunk::StopBuildMesh()
 {
 	bIsStopped = true;
+}
+
+void AChunk::TickUpdate()
+{
+
+}
+
+void AChunk::UpdateChunk()
+{
+	SetChunkState(EChunkState::Rebuild);
+
+	BuildMesh();
+	AWorldManager::Get()->TaskQueue.Enqueue(this);
+	/*AWorldManager* WorldManager = Cast<AWorldManager>(GetOwner());
+	if (WorldManager && !bIsStopped)
+	{
+		WorldManager->TaskQueue.Enqueue(this);
+	}*/
 }
 
 void AChunk::Dirty()

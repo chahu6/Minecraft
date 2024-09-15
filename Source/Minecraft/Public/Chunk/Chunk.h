@@ -56,6 +56,10 @@ public:
 
 	void StopBuildMesh();
 
+	void TickUpdate();
+
+	void UpdateChunk();
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Setting")
 	EGenerationMethod GenerationMethod = EGenerationMethod::Greedy;

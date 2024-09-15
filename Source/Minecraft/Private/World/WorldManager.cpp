@@ -10,6 +10,7 @@
 #include "World/Behavior/BlockBehavior.h"
 #include "World/Runnable/TerrainDataAsyncTask.h"
 #include "World/Components/TerrainComponent.h"
+#include "World/Runnable/WorldRunner.h"
 
 AWorldManager* AWorldManager::Instance = nullptr;
 
@@ -30,11 +31,14 @@ void AWorldManager::BeginPlay()
 
 	Instance = this;
 
+	ChunkUpdateThread = new FWorldRunner(TEXT("ChunkUpdateThread"), this);
+
 	USimplexNoiseLibrary::SetNoiseSeed(Seed);
 
 	InitialWorldChunkLoad();
 
 	GetWorldTimerManager().SetTimer(RenderQueueHandle, this, &AWorldManager::RenderChunk, RenderRate, true);
+	//GetWorldTimerManager().SetTimer(UpdateHandle, this, &AWorldManager::UpdateChunk, UpdateRate, true);
 }
 
 void AWorldManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -50,6 +54,13 @@ void AWorldManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if (ChunkManager)
 	{
 		ChunkManager->EnsureCompletion();
+	}
+
+	if (ChunkUpdateThread)
+	{
+		ChunkUpdateThread->StopThread();
+		delete ChunkUpdateThread;
+		ChunkUpdateThread = nullptr;
 	}
 
 	Super::EndPlay(EndPlayReason);
@@ -84,26 +95,62 @@ void AWorldManager::InitialWorldChunkLoad()
 	CharacterChunkPosition.X = FMath::FloorToInt32(NewLocation2D.X / WorldSettings::ChunkSize);
 	CharacterChunkPosition.Y = FMath::FloorToInt32(NewLocation2D.Y / WorldSettings::ChunkSize);
 
+
+	int32 CurrentRadius = 0;
+	SpawnChunk(CharacterChunkPosition);
+	while (CurrentRadius <= LoadDistance)
 	{
-		// 初始化
-		CreateChunk(CharacterChunkPosition);
-		LoadChunkInfo(CharacterChunkPosition);
-		AChunk* Chunk = ChunkManager->GetChunk(CharacterChunkPosition);
-		if (IsValid(Chunk))
+		// Forward
+		for (int32 i = -CurrentRadius; i <= CurrentRadius - 1; ++i)
 		{
-			Chunk->BuildAndRender();
+			FIntPoint ChunkPosition = CharacterChunkPosition + FIntPoint(i, CurrentRadius);
+			SpawnChunk(ChunkPosition);
 		}
+
+		// Right
+		for (int32 i = -CurrentRadius + 1; i <= CurrentRadius; ++i)
+		{
+			FIntPoint ChunkPosition = CharacterChunkPosition + FIntPoint(CurrentRadius, i);
+			SpawnChunk(ChunkPosition);
+		}
+
+		// Backward
+		for (int32 i = -CurrentRadius + 1; i <= CurrentRadius; ++i)
+		{
+			FIntPoint ChunkPosition = CharacterChunkPosition + FIntPoint(i, -CurrentRadius);
+			SpawnChunk(ChunkPosition);
+		}
+
+		// Left
+		for (int32 i = -CurrentRadius; i <= CurrentRadius - 1; ++i)
+		{
+			FIntPoint ChunkPosition = CharacterChunkPosition + FIntPoint(-CurrentRadius, i);
+			SpawnChunk(ChunkPosition);
+		}
+
+		CurrentRadius++;
 	}
 
-	FIntPoint ChunkPosition;
-	for (int32 ChunkX = -ChunkRenderRange; ChunkX <= ChunkRenderRange; ++ChunkX)
-	{
-		for (int32 ChunkY = -ChunkRenderRange; ChunkY <= ChunkRenderRange; ++ChunkY)
-		{
-			ChunkPosition = CharacterChunkPosition + FIntPoint(ChunkX, ChunkY);
-			CreateChunk(ChunkPosition);
-		}
-	}
+	//{
+	//	// 初始化
+	//	SpawnChunk(CharacterChunkPosition);
+	//	LoadChunkInfo(CharacterChunkPosition);
+	//	AChunk* Chunk = ChunkManager->GetChunk(CharacterChunkPosition);
+	//	if (IsValid(Chunk))
+	//	{
+	//		Chunk->BuildAndRender();
+	//	}
+	//}
+
+	//FIntPoint ChunkPosition;
+	//for (int32 ChunkX = -ChunkRenderRange; ChunkX <= ChunkRenderRange; ++ChunkX)
+	//{
+	//	for (int32 ChunkY = -ChunkRenderRange; ChunkY <= ChunkRenderRange; ++ChunkY)
+	//	{
+	//		ChunkPosition = CharacterChunkPosition + FIntPoint(ChunkX, ChunkY);
+	//		SpawnChunk(ChunkPosition);
+	//	}
+	//}
 
 	TerrainDataAsyncTask = new FAsyncTask<FTerrainDataAsyncTask>(this);
 	TerrainDataAsyncTask->StartBackgroundTask();
@@ -141,7 +188,7 @@ void AWorldManager::AddChunk()
 	{
 		for (int32 Y = MinRenderingRangeY; Y <= MaxRenderingRangeY; ++Y)
 		{
-			CreateChunk(FIntPoint(X, Y));
+			SpawnChunk(FIntPoint(X, Y));
 		}
 	}
 
@@ -158,9 +205,9 @@ void AWorldManager::AddChunk()
 	});
 }
 
-void AWorldManager::CreateChunk(const FIntPoint& ChunkPosition)
+void AWorldManager::SpawnChunk(const FIntPoint& ChunkPosition)
 {
-	ChunkManager->CreateChunk(ChunkPosition);
+	ChunkManager->SpawnChunk(ChunkPosition);
 }
 
 void AWorldManager::LoadChunkInfo(const FIntPoint& ChunkPosition)
@@ -238,8 +285,10 @@ bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation)
 	AChunk* Chunk = GetChunk(BlockWorldVoxelLocation);
 	if (Chunk == nullptr) return false;
 
-	Chunk->Rebuild();
+	//Chunk->Rebuild();
 	//Rebuild_Adjacent_Chunks(BlockPos);
+
+	AddChunkToUpdate(Chunk);
 
 	return true;
 }
@@ -359,4 +408,50 @@ void AWorldManager::RenderChunk()
 			Chunk->Render();
 		}
 	}
+}
+
+void AWorldManager::LoadChunks()
+{
+	for (const TPair<FIntPoint, AChunk*>& Pair : ChunkManager->AllChunks)
+	{
+		AChunk* Chunk = Pair.Value;
+		if (Chunk && Chunk->GetChunkState() == EChunkState::None)
+		{
+			TerrainManager->LoadTerrainInfo(Chunk);
+		}
+	}
+}
+
+void AWorldManager::AddChunkToUpdate(AChunk* Chunk, bool bTop)
+{
+	FScopeLock ChunkUpdateThreadLock(&ChunkUpdateCritical);
+
+	if (!ChunksToUpdate.Contains(Chunk))
+	{
+		if (bTop)
+		{
+			ChunksToUpdate.Insert(Chunk, 0);
+		}
+		else
+		{
+			ChunksToUpdate.Add(Chunk);
+		}
+	}
+}
+
+void AWorldManager::ThreadedUpdate()
+{
+	if (!ChunksToUpdate.IsEmpty())
+	{
+		UpdateChunks();
+	}
+}
+
+void AWorldManager::UpdateChunks()
+{
+	FScopeLock ChunkUpdateThreadLock(&ChunkUpdateCritical);
+
+	ChunksToUpdate[0]->UpdateChunk();
+	
+	ChunksToUpdate.RemoveAt(0);
 }

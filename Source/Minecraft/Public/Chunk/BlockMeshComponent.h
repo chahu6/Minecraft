@@ -13,13 +13,11 @@ UENUM(BlueprintType)
 enum class EFaceType : uint8
 {
 	Forward,
-	BackGround,
+	Background,
 	Left,
 	Right,
 	Up,
-	Down,
-
-	EFT_MAX
+	Down
 };
 
 struct FMask
