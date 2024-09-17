@@ -12,6 +12,10 @@
 #include "World/Components/TerrainComponent.h"
 #include "World/Runnable/WorldRunner.h"
 
+#include "World/Runnable/TestRunner.h"
+#include "Chunk/MeshData.h"
+#include "GreedyMeshGenerator.h"
+
 AWorldManager* AWorldManager::Instance = nullptr;
 
 AWorldManager::AWorldManager()
@@ -32,6 +36,8 @@ void AWorldManager::BeginPlay()
 	Instance = this;
 
 	ChunkUpdateThread = new FWorldRunner(TEXT("ChunkUpdateThread"), this);
+
+	TestThread = new FTestRunner(TEXT("TestThread"), this);
 
 	USimplexNoiseLibrary::SetNoiseSeed(Seed);
 
@@ -61,6 +67,13 @@ void AWorldManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		ChunkUpdateThread->StopThread();
 		delete ChunkUpdateThread;
 		ChunkUpdateThread = nullptr;
+	}
+
+	if (TestThread)
+	{
+		TestThread->StopThread();
+		delete TestThread;
+		TestThread = nullptr;
 	}
 
 	Super::EndPlay(EndPlayReason);
@@ -95,7 +108,7 @@ void AWorldManager::InitialWorldChunkLoad()
 	CharacterChunkPosition.X = FMath::FloorToInt32(NewLocation2D.X / WorldSettings::ChunkSize);
 	CharacterChunkPosition.Y = FMath::FloorToInt32(NewLocation2D.Y / WorldSettings::ChunkSize);
 
-	LoadWorld(CharacterChunkPosition);
+	//LoadWorld(CharacterChunkPosition);
 }
 
 bool AWorldManager::UpdatePosition()
@@ -287,16 +300,30 @@ FBlockData AWorldManager::GetBlock(const FIntVector& BlockWorldVoxelLocation)
 
 void AWorldManager::RenderChunk()
 {
-	if (TaskQueue.IsEmpty()) return;
+	if (SpawnChunkQueue.IsEmpty()) return;
 
-	AChunk* Chunk = nullptr;
-	for (int32 I = 0; I < RenderCount; ++I) // 每帧最大能加载几个
+	FIntPoint QueueItem;
+	if (SpawnChunkQueue.Dequeue(QueueItem))
 	{
-		if (TaskQueue.Dequeue(Chunk) && nullptr != Chunk)
+		AChunk* SpawnChunk = GetWorld()->SpawnActor<AChunk>(AChunk::StaticClass(), FVector(QueueItem.X * WorldSettings::ChunkSize, QueueItem.Y * WorldSettings::ChunkSize, 0), FRotator::ZeroRotator);
+		if (SpawnChunk)
 		{
-			Chunk->Render();
+			SpawnChunk->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+			SpawnChunk->RenderMesh(WorldInfo.MeshDataCache[QueueItem]);
 		}
 	}
+
+
+	//if (TaskQueue.IsEmpty()) return;
+
+	//AChunk* Chunk = nullptr;
+	//for (int32 I = 0; I < RenderCount; ++I) // 每帧最大能加载几个
+	//{
+	//	if (TaskQueue.Dequeue(Chunk) && nullptr != Chunk)
+	//	{
+	//		Chunk->Render();
+	//	}
+	//}
 }
 
 void AWorldManager::LoadChunks()
@@ -314,7 +341,7 @@ void AWorldManager::LoadChunks()
 void AWorldManager::LoadWorld(const FIntPoint& OffsetPosition)
 {
 	int32 CurrentRadius = 0;
-	SpawnChunk(OffsetPosition);
+	//SpawnChunk(OffsetPosition);
 	while (CurrentRadius <= LoadDistance)
 	{
 		// Forward

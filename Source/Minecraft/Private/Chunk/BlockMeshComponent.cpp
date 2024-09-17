@@ -55,6 +55,22 @@ void UBlockMeshComponent::Render()
 	}
 }
 
+void UBlockMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMeshDatas)
+{
+	FBlockMeta BlockMeta;
+	for (auto MeshData = NewMeshDatas.CreateConstIterator(); MeshData; ++MeshData)
+	{
+		if (MeshData->Value->Vertices.IsEmpty()) continue;
+
+		CreateMeshSection_LinearColor(MeshData->Key, MeshData->Value->Vertices, MeshData->Value->Triangles, MeshData->Value->Normals, MeshData->Value->UV0, MeshData->Value->VertexColors, MeshData->Value->Tangents, true);
+
+		if (UMinecraftAssetLibrary::GetBlockMeta(MeshData->Key, BlockMeta))
+		{
+			SetMaterial(MeshData->Key, BlockMeta.Material);
+		}
+	}
+}
+
 void UBlockMeshComponent::BuildGreedyChunkMesh()
 {
 	AWorldManager* WorldManager = AWorldManager::Get();

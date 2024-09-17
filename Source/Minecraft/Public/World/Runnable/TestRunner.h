@@ -31,6 +31,10 @@ private:
 
 	virtual void Exit() override;
 
+	void GenerateChunks();
+
+	bool UpdatePosition();
+
 private:
 	bool bRun = true;
 

@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "Block/BlockID.h"
 #include "World/GenerationMethod.h"
+#include "World/GlobalInfo.h"
 #include "WorldManager.generated.h"
 
 class AChunk;
@@ -11,6 +12,7 @@ class UTerrainComponent;
 class UChunkManagerComponent;
 struct FBlockData;
 class FWorldRunner;
+struct FMeshData;
 
 DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
 
@@ -22,6 +24,7 @@ class MINECRAFT_API AWorldManager : public AActor
 	friend class UChunkManagerComponent;
 	friend class FTerrainDataAsyncTask;
 	friend class FWorldRunner;
+	friend class FTestRunner;
 
 	static AWorldManager* Instance;
 
@@ -90,6 +93,8 @@ public:
 	// 渲染网格体的任务队列
 	TQueue<AChunk*, EQueueMode::Mpsc> TaskQueue;
 
+	TQueue<FIntPoint, EQueueMode::Mpsc> SpawnChunkQueue;
+
 	TQueue<AChunk*, EQueueMode::Mpsc> DirtyChunkQueue;
 
 protected:
@@ -146,11 +151,14 @@ private:
 	/*
 	* 最新的
 	*/
+	GlobalInfo WorldInfo;
+
 private:
 	TArray<AChunk*> ChunksToUpdate;
 	FCriticalSection ChunkUpdateCritical;
 
 	FWorldRunner* ChunkUpdateThread;
+	class FTestRunner* TestThread;
 
 public:
 	FORCEINLINE FVector2D GetDefaultCharacterPosition() const { return DefaultCharacterPosition; }

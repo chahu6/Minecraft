@@ -14,7 +14,7 @@ void FTerrainDataAsyncTask::DoWork()
 void FTerrainDataAsyncTask::LoadWorldMesh(const FIntPoint& OffsetPosition)
 {
 	int32 CurrentRadius = 0;
-	WorldManager->GetChunk(OffsetPosition)->UpdateChunk();
+	//WorldManager->GetChunk(OffsetPosition)->UpdateChunk();
 	while (CurrentRadius <= WorldManager->LoadDistance)
 	{
 		if (bIsStopped) return;

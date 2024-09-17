@@ -2,6 +2,7 @@
 #include "Chunk/Chunk.h"
 #include "World/WorldSettings.h"
 #include "SimplexNoiseLibrary.h"
+#include "Utils/ChunkHelper.h"
 
 void HeightGenerator::GenerateHeight(AChunk* Chunk)
 {
@@ -31,7 +32,7 @@ void HeightGenerator::GenerateHeight(AChunk* Chunk)
 			float World_Z = 100.0f + Height * 40.0f;
 			//float World_Z = Height;
 
-			HeightMap[GetHeightIndex(X, Y)] = FMath::Floor(World_Z);
+			HeightMap[ChunkHelper::GetHeightIndex(X, Y)] = FMath::Floor(World_Z);
 		}
 	}
 }

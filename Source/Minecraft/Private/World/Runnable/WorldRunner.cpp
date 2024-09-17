@@ -1,5 +1,4 @@
 #include "World/Runnable/WorldRunner.h"
-#include "Engine/Engine.h"
 #include "World/WorldManager.h"
 
 FWorldRunner::FWorldRunner(const FString& ThreadName, AWorldManager* Manager)

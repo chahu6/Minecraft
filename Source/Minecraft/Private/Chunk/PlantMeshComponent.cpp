@@ -34,6 +34,18 @@ void UPlantMeshComponent::Render()
 	}
 }
 
+void UPlantMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMeshDatas)
+{
+	TSharedPtr<FMeshData> NewMeshData =  NewMeshDatas[6];
+
+	FBlockMeta BlockMeta;
+	CreateMeshSection_LinearColor(0, NewMeshData->Vertices, NewMeshData->Triangles, NewMeshData->Normals, NewMeshData->UV0, NewMeshData->VertexColors, NewMeshData->Tangents, false);
+	if (UMinecraftAssetLibrary::GetBlockMeta(6, BlockMeta))
+	{
+		SetMaterial(0, BlockMeta.Material);
+	}
+}
+
 void UPlantMeshComponent::BuildMesh()
 {
 	MeshData = MakeShared<FMeshData>();

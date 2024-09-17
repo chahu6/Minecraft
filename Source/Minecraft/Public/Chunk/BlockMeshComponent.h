@@ -2,8 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "ProceduralMeshComponent.h"
-#include "World/Block/BlockID.h"
 #include "World/GenerationMethod.h"
+#include "GreedyMeshGenerator.h"
 #include "BlockMeshComponent.generated.h"
 
 class AChunk;
@@ -18,12 +18,6 @@ enum class EFaceType : uint8
 	Right,
 	Up,
 	Down
-};
-
-struct FMask
-{
-	EBlockID BlockID = EBlockID::Air;
-	int8 Normal = 0;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -41,6 +35,8 @@ public:
 	void BuildMesh(EGenerationMethod GenerationMethod);
 
 	void Render();
+
+	void Render(const TMap<int32, TSharedPtr<struct FMeshData>>& NewMeshDatas);
 
 private:
 	/**

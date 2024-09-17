@@ -19,4 +19,7 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = "MinecraftMath")
 	static void PoissonDiscSampling(/*UPARAM(ref) */TArray<FVector2D>& Points, float Radius, const FVector2D& SampleRegionSize, int32 NumSamples = 10);
+
+	UFUNCTION(BlueprintCallable, Category = "MinecraftMath")
+	static int32 GetBlocksIndex(int32 OffsetX, int32 OffsetY, int32 OffsetZ);
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+// #include "World/WorldSettings.h"
+
 namespace WorldSettings
 {
 	// 一个Chunk的单位尺寸
@@ -32,6 +34,6 @@ namespace WorldSettings
 }
 
 // 一些工具宏函数
-#define GetLocationFromIndex(x)			((x) * WorldSettings::BlockSize)
-#define GetBlocksIndex(x, y, z)			((x) + (y * WorldSettings::CHUNK_SIZE) + (z * WorldSettings::CHUNK_AREA))
-#define GetHeightIndex(x, y)			((x) + (y * WorldSettings::CHUNK_SIZE))
+// #define GetLocationFromIndex(x)			((x) * WorldSettings::BlockSize)
+// #define GetBlocksIndex(x, y, z)			((x) + (y * WorldSettings::CHUNK_SIZE) + (z * WorldSettings::CHUNK_AREA))
+// #define GetHeightIndex(x, y)			((x) + (y * WorldSettings::CHUNK_SIZE))

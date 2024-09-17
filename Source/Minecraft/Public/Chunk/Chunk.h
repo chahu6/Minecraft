@@ -8,6 +8,7 @@
 
 struct FBlockData;
 class FChunkGeneratorAsyncTask;
+struct FMeshData;
 
 UENUM()
 enum class EChunkState : uint8
@@ -65,6 +66,8 @@ public:
 	*/
 
 	void AddActiveVoxel(const FBlockData& BlockData);
+
+	void RenderMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Setting")

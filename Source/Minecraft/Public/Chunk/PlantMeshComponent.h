@@ -7,6 +7,7 @@
 #include "PlantMeshComponent.generated.h"
 
 class AChunk;
+struct FMeshData;
 
 /**
  * 
@@ -24,11 +25,13 @@ protected:
 public:
 	void Render();
 
+	void Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMeshDatas);
+
 	void BuildMesh();
 
 private:
 	UPROPERTY()
 	TObjectPtr<AChunk> Chunk;
 
-	TSharedPtr<struct FMeshData> MeshData;
+	TSharedPtr<FMeshData> MeshData;
 };
