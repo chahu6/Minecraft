@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MinecraftEntity.h"
+#include "Entity/MinecraftEntity.h"
 #include "InputActionValue.h"
 #include "Interfaces/InteractiveInterface.h"
 #include "MinecraftPlayer.generated.h"

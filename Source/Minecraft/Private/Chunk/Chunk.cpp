@@ -6,6 +6,7 @@
 #include "Chunk/PlantMeshComponent.h"
 #include "World/WorldSettings.h"
 #include "World/WorldManager.h"
+#include "Utils/ChunkHelper.h"
 
 AChunk::AChunk()
 {
@@ -59,11 +60,21 @@ void AChunk::UpdateChunk()
 
 	BuildMesh();
 	AWorldManager::Get()->TaskQueue.Enqueue(this);
-	/*AWorldManager* WorldManager = Cast<AWorldManager>(GetOwner());
-	if (WorldManager && !bIsStopped)
+}
+
+void AChunk::AddActiveVoxel(const FBlockData& BlockData)
+{
+	/*if (!ActiveVoxels.Contains(BlockData))
 	{
-		WorldManager->TaskQueue.Enqueue(this);
+		ActiveVoxels.Add(BlockData);
 	}*/
+}
+
+void AChunk::RenderMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
+{
+	BlockMeshComponent->Render(MeshDatas);
+
+	//PlantMeshComponent->Render(MeshDatas);
 }
 
 void AChunk::Dirty()
@@ -73,9 +84,9 @@ void AChunk::Dirty()
 
 FBlockData AChunk::GetBlock(int32 OffsetX, int32 OffsetY, int32 WorldZ)
 {
-	if (Blocks.IsValidIndex(GetBlocksIndex(OffsetX, OffsetY, WorldZ)))
+	if (Blocks.IsValidIndex(ChunkHelper::GetBlocksIndex(OffsetX, OffsetY, WorldZ)))
 	{
-		return Blocks[GetBlocksIndex(OffsetX, OffsetY, WorldZ)];
+		return Blocks[ChunkHelper::GetBlocksIndex(OffsetX, OffsetY, WorldZ)];
 	}
 
 	return {};
@@ -83,9 +94,9 @@ FBlockData AChunk::GetBlock(int32 OffsetX, int32 OffsetY, int32 WorldZ)
 
 void AChunk::SetBlock(int32 OffsetX, int32 OffsetY, int32 WorldZ, const FBlockData& BlockData)
 {
-	if (Blocks.IsValidIndex(GetBlocksIndex(OffsetX, OffsetY, WorldZ)))
+	if (Blocks.IsValidIndex(ChunkHelper::GetBlocksIndex(OffsetX, OffsetY, WorldZ)))
 	{
-		Blocks[GetBlocksIndex(OffsetX, OffsetY, WorldZ)] = BlockData;
+		Blocks[ChunkHelper::GetBlocksIndex(OffsetX, OffsetY, WorldZ)] = BlockData;
 	}
 }
 

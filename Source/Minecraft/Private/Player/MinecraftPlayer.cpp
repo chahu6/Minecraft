@@ -1,4 +1,4 @@
-﻿#include "Entity/MinecraftPlayer.h"
+﻿#include "Player/MinecraftPlayer.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"

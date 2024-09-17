@@ -2,7 +2,7 @@
 
 
 #include "UI/WidgetController/OverlayWidgetController.h"
-#include "Entity/MinecraftPlayer.h"
+#include "Player/MinecraftPlayer.h"
 
 void UOverlayWidgetController::BroadcastInitialValue()
 {

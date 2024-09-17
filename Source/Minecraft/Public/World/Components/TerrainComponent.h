@@ -7,6 +7,7 @@
 #include "TerrainComponent.generated.h"
 
 class AChunk;
+class GlobalInfo;
 
 UENUM(BlueprintType)
 enum class ETerrainFBMType : uint8
@@ -38,12 +39,20 @@ protected:
 public:	
 	void LoadTerrainInfo(AChunk* Chunk);
 
+	void LoadTerrainInfo(GlobalInfo& WorldInfo, const FIntPoint& ChunkVoxelPos);
+
 	void LoadTerrainBlockID(AChunk* Chunk);
+
+	void LoadTerrainBlockID(GlobalInfo& WorldInfo, const FIntPoint& ChunkVoxelPos);
 
 private:
 	void GenerateHeight(AChunk* Chunk);
 
+	void GenerateHeight(GlobalInfo& WorldInfo, const FIntPoint& ChunkVoxelPos);
+
 	void GeneratePlant(AChunk* Chunk);
+
+	void GeneratePlant(GlobalInfo& WorldInfo, const FIntPoint& ChunkVoxelPos);
 
 	float FBM(float InX, float InY, const TArray<FVector2D>& InOctaveOffsets, ETerrainFBMType InFBMType) const;
 

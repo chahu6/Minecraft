@@ -11,6 +11,8 @@ class FTerrainDataAsyncTask
 	friend class FAsyncTask<FTerrainDataAsyncTask>;
 
 public:
+	void DoWork();
+
 	FTerrainDataAsyncTask(AWorldManager* InWorldManager)
 	{
 		WorldManager = InWorldManager;
@@ -21,8 +23,6 @@ public:
 		RETURN_QUICK_DECLARE_CYCLE_STAT(FTerrainDataAsyncTask, STATGROUP_ThreadPoolAsyncTasks);
 	}
 
-	void DoWork();
-
 	bool CanAbandon()
 	{
 		return true;
@@ -32,6 +32,9 @@ public:
 	{
 		bIsStopped = true;
 	}
+
+private:
+	void LoadWorldMesh(const FIntPoint& OffsetPosition);
 
 private:
 	AWorldManager* WorldManager = nullptr;
