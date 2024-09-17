@@ -6,54 +6,47 @@ void FTerrainDataAsyncTask::DoWork()
 {
 	if (WorldManager == nullptr) return;
 
-	//FIntPoint ChunkLoc;
-	//for (int32 ChunkX = -WorldManager->ChunkRenderRange; ChunkX <= WorldManager->ChunkRenderRange; ++ChunkX)
-	//{
-	//	for (int32 ChunkY = -WorldManager->ChunkRenderRange; ChunkY <= WorldManager->ChunkRenderRange; ++ChunkY)
-	//	{
-	//		if (bIsStopped) return;
-
-	//		ChunkLoc = WorldManager->CharacterChunkPosition + FIntPoint(ChunkX, ChunkY);
-	//		WorldManager->LoadChunkInfo(ChunkLoc);
-	//	}
-	//}
-
 	WorldManager->LoadChunks();
 
+	LoadWorldMesh(WorldManager->CharacterChunkPosition);
+}
+
+void FTerrainDataAsyncTask::LoadWorldMesh(const FIntPoint& OffsetPosition)
+{
 	int32 CurrentRadius = 0;
-	WorldManager->GetChunk(WorldManager->CharacterChunkPosition)->UpdateChunk();
+	WorldManager->GetChunk(OffsetPosition)->UpdateChunk();
 	while (CurrentRadius <= WorldManager->LoadDistance)
 	{
+		if (bIsStopped) return;
+
 		// Forward
 		for (int32 i = -CurrentRadius; i <= CurrentRadius - 1; ++i)
 		{
-			FIntPoint ChunkPosition = WorldManager->CharacterChunkPosition + FIntPoint(i, CurrentRadius);
+			FIntPoint ChunkPosition = OffsetPosition + FIntPoint(i, CurrentRadius);
 			WorldManager->GetChunk(ChunkPosition)->UpdateChunk();
 		}
 
 		// Right
 		for (int32 i = -CurrentRadius + 1; i <= CurrentRadius; ++i)
 		{
-			FIntPoint ChunkPosition = WorldManager->CharacterChunkPosition + FIntPoint(CurrentRadius, i);
+			FIntPoint ChunkPosition = OffsetPosition + FIntPoint(CurrentRadius, i);
 			WorldManager->GetChunk(ChunkPosition)->UpdateChunk();
 		}
 
 		// Backward
 		for (int32 i = -CurrentRadius + 1; i <= CurrentRadius; ++i)
 		{
-			FIntPoint ChunkPosition = WorldManager->CharacterChunkPosition + FIntPoint(i, -CurrentRadius);
+			FIntPoint ChunkPosition = OffsetPosition + FIntPoint(i, -CurrentRadius);
 			WorldManager->GetChunk(ChunkPosition)->UpdateChunk();
 		}
 
 		// Left
 		for (int32 i = -CurrentRadius; i <= CurrentRadius - 1; ++i)
 		{
-			FIntPoint ChunkPosition = WorldManager->CharacterChunkPosition + FIntPoint(-CurrentRadius, i);
+			FIntPoint ChunkPosition = OffsetPosition + FIntPoint(-CurrentRadius, i);
 			WorldManager->GetChunk(ChunkPosition)->UpdateChunk();
 		}
 
 		CurrentRadius++;
 	}
-
-	//WorldManager->RenderChunksAsync();
 }

@@ -60,6 +60,12 @@ public:
 
 	void UpdateChunk();
 
+	/**
+	* new
+	*/
+
+	void AddActiveVoxel(const FBlockData& BlockData);
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Setting")
 	EGenerationMethod GenerationMethod = EGenerationMethod::Greedy;
@@ -72,6 +78,8 @@ private:
 	TObjectPtr<UPlantMeshComponent> PlantMeshComponent;
 
 	TArray<FBlockData> Blocks;
+
+	//TArray<FBlockData> ActiveVoxels;
 
 	bool bIsEmpty = false;
 

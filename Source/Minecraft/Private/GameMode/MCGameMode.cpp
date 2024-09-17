@@ -4,7 +4,7 @@
 #include "GameMode/MCGameMode.h"
 #include "World/WorldManager.h"
 #include "Controller/MCPlayerController.h"
-#include "Entity/MinecraftPlayer.h"
+#include "Player/MinecraftPlayer.h"
 
 /**
  *	执行的先后顺序

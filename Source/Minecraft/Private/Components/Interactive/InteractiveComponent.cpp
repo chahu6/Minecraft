@@ -1,5 +1,5 @@
 ﻿#include "Components/Interactive/InteractiveComponent.h"
-#include "Entity/MinecraftPlayer.h"
+#include "Player/MinecraftPlayer.h"
 #include "Item/DroppedItem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/MinecraftAssetLibrary.h"

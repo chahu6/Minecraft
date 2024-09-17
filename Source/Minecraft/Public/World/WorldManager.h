@@ -68,10 +68,6 @@ private:
 
 	void RenderChunksAsync();
 
-	//void Rebuild_Adjacent_Chunks(const FBlockPos& BlockPos);
-
-	void Rebuild_Adj_Chunk(int32 Chunk_World_X, int32 Chunk_World_Y, int32 Chunk_World_Z);
-
 	void RenderChunk();
 
 
@@ -81,6 +77,8 @@ private:
 	* ÐÂ°æ
 	*/
 	void LoadChunks();
+
+	void LoadWorld(const FIntPoint& OffsetPosition);
 
 	void AddChunkToUpdate(AChunk* Chunk, bool bTop = false);
 

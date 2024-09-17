@@ -26,8 +26,6 @@ void UBlockMeshComponent::BeginPlay()
 
 void UBlockMeshComponent::BuildMesh(EGenerationMethod GenerationMethod)
 {
-	if (Chunk->bIsStopped) return;
-
 	MeshDatas.Empty();
 
 	switch (GenerationMethod)
@@ -43,8 +41,6 @@ void UBlockMeshComponent::BuildMesh(EGenerationMethod GenerationMethod)
 
 void UBlockMeshComponent::Render()
 {
-	if (Chunk->bIsStopped) return;
-
 	FBlockMeta BlockMeta;
 	for (auto MeshData = MeshDatas.CreateConstIterator(); MeshData; ++MeshData)
 	{
@@ -61,7 +57,7 @@ void UBlockMeshComponent::Render()
 
 void UBlockMeshComponent::BuildGreedyChunkMesh()
 {
-	AWorldManager* WorldManager = Chunk->GetOwner<AWorldManager>();
+	AWorldManager* WorldManager = AWorldManager::Get();
 
 	FVector ChunkWorldLocation = Chunk->GetActorLocation();
 
@@ -120,8 +116,6 @@ void UBlockMeshComponent::BuildGreedyChunkMesh()
 			{
 				for (ChunkItr[Axis1] = 0; ChunkItr[Axis1] < Axis1Limit; ++ChunkItr[Axis1])
 				{
-					if (Chunk->bIsStopped) return;
-
 					const FBlockData CurrentBlock = WorldManager->GetBlock(ChunkItr + FIntVector(ChunkWorldLocation / WorldSettings::BlockSize));
 					const FBlockData CompareBlock = WorldManager->GetBlock((ChunkItr + AxisMask) + FIntVector(ChunkWorldLocation / WorldSettings::BlockSize));
 
@@ -164,8 +158,6 @@ void UBlockMeshComponent::BuildGreedyChunkMesh()
 			{
 				for (int32 i = 0; i < Axis1Limit;)
 				{
-					if (Chunk->bIsStopped) return;
-
 					if (Mask[N].Normal != 0)
 					{
 						const FMask CurrentMask = Mask[N];
@@ -324,7 +316,7 @@ void UBlockMeshComponent::BuildChunkMesh()
 
 	FVector ChunkLocation = Chunk->GetActorLocation();
 
-	AWorldManager* WorldManager = Chunk->GetOwner<AWorldManager>();
+	AWorldManager* WorldManager = AWorldManager::Get();
 
 	for (int32 X = 0; X < WorldSettings::CHUNK_SIZE; ++X)
 	{

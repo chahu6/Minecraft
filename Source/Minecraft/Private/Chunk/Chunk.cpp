@@ -59,10 +59,13 @@ void AChunk::UpdateChunk()
 
 	BuildMesh();
 	AWorldManager::Get()->TaskQueue.Enqueue(this);
-	/*AWorldManager* WorldManager = Cast<AWorldManager>(GetOwner());
-	if (WorldManager && !bIsStopped)
+}
+
+void AChunk::AddActiveVoxel(const FBlockData& BlockData)
+{
+	/*if (!ActiveVoxels.Contains(BlockData))
 	{
-		WorldManager->TaskQueue.Enqueue(this);
+		ActiveVoxels.Add(BlockData);
 	}*/
 }
 
