@@ -34,9 +34,6 @@ public:
 	}
 
 private:
-	void LoadWorldMesh(const FIntPoint& OffsetPosition);
-
-private:
 	AWorldManager* WorldManager = nullptr;
 	bool bIsStopped = false;
 };

@@ -2,11 +2,10 @@
 
 
 #include "Chunk/PlantMeshComponent.h"
-#include "Chunk/Chunk.h"
 #include "Chunk/MeshData.h"
-#include "World/Block/Block.h"
-#include "Utils/MinecraftAssetLibrary.h"
-#include "World/WorldSettings.h"
+#include "World/Block/Data/BlockData.h"
+#include "Kismet/MinecraftAssetLibrary.h"
+#include "Chunk/Chunk.h"
 
 UPlantMeshComponent::UPlantMeshComponent(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
@@ -24,16 +23,6 @@ void UPlantMeshComponent::BeginPlay()
 	Chunk = Chunk == nullptr ? Cast<AChunk>(GetOwner()) : Chunk;
 }
 
-void UPlantMeshComponent::Render()
-{
-	FBlockMeta BlockMeta;
-	CreateMeshSection_LinearColor(0, MeshData->Vertices, MeshData->Triangles, MeshData->Normals, MeshData->UV0, MeshData->VertexColors, MeshData->Tangents, false);
-	if (UMinecraftAssetLibrary::GetBlockMeta(6, BlockMeta))
-	{
-		SetMaterial(0, BlockMeta.Material);
-	}
-}
-
 void UPlantMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMeshDatas)
 {
 	TSharedPtr<FMeshData> NewMeshData =  NewMeshDatas[6];
@@ -46,6 +35,7 @@ void UPlantMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMe
 	}
 }
 
+#if 0
 void UPlantMeshComponent::BuildMesh()
 {
 	MeshData = MakeShared<FMeshData>();
@@ -103,3 +93,4 @@ void UPlantMeshComponent::BuildMesh()
 		}
 	}
 }
+#endif

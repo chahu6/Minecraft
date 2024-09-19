@@ -1,7 +1,7 @@
 #include "Components/Crafting/CraftingComponent.h"
-#include "World/Block/BlockID.h"
-#include "Item/ItemID.h"
-#include "Utils/MinecraftAssetLibrary.h"
+#include "World/Block/Data/BlockID.h"
+#include "Item/Data/ItemID.h"
+#include "Kismet/MinecraftAssetLibrary.h"
 
 TMap<FString, FItemOutput> UCraftingComponent::ItemRecipes;
 

@@ -4,15 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "World/Block/Block.h"
+#include "BlockBush.generated.h"
 
 /**
  * 
  */
-class MINECRAFT_API VoxelState
+UCLASS()
+class MINECRAFT_API UBlockBush : public UBlock
 {
-public:
-	VoxelState();
-	~VoxelState();
-
-	FBlockData BlockData;
+	GENERATED_BODY()
+	
 };

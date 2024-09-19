@@ -2,25 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "World/Block/Block.h"
 #include "InteractiveComponent.generated.h"
 
 class AMinecraftPlayer;
 class ADroppedItem;
-
-UENUM(BlueprintType)
-enum class EAction : uint8
-{
-	None = 0,
-
-	START_DESTROY_BLOCK,
-	ABORT_DESTROY_BLOCK,
-	STOP_DESTROY_BLOCK,
-	DROP_ALL_ITEMS,
-	DROP_ITEM,
-	RELEASE_USE_ITEM,
-	SWAP_ITEM_WITH_OFFHAND
-};
+struct FBlockState;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class MINECRAFT_API UInteractiveComponent : public UActorComponent
@@ -40,8 +26,8 @@ private:
 	bool DestroyBlock(const FVector& WorldLocation, const FVector& WorldNormal);
 	bool DestroyBlock(const FIntVector& BlockVoxelLocation);
 
-	FBlockData GetBlockDataFromLocation(const FVector& WorldLocation, const FVector& WorldNormal);
-	FBlockData GetBlockDataFromLocation(const FIntVector& BlockVoxelLocation);
+	FBlockState GetBlockDataFromLocation(const FVector& WorldLocation, const FVector& WorldNormal);
+	FBlockState GetBlockDataFromLocation(const FIntVector& BlockVoxelLocation);
 
 	void WorldLocToBlockVoxelLoc(const FVector& WorldLocation, const FVector& WorldNormal, FIntVector& BlockVoxelLocation);
 

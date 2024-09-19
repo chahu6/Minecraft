@@ -1,6 +1,6 @@
 #pragma once
 
-#include "World/Block/BlockID.h"
+#include "World/Block/Data/BlockID.h"
 
 class GlobalInfo;
 struct FMeshData;

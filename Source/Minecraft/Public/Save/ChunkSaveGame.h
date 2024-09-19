@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
-#include "World/Block/BlockID.h"
 #include "ChunkSaveGame.generated.h"
 
 /**

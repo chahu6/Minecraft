@@ -1,10 +1,10 @@
-#include "World/Runnable/TestRunner.h"
+#include "World/Runnable/ChunkGenerateRunner.h"
 #include "Kismet/GameplayStatics.h"
 #include "World/WorldManager.h"
-#include "GreedyMeshGenerator.h"
+#include "World/Generator/GreedyMeshGenerator.h"
 #include "World/Components/TerrainComponent.h"
 
-FTestRunner::FTestRunner(const FString& ThreadName, AWorldManager* Manager)
+FChunkGenerateRunner::FChunkGenerateRunner(const FString& ThreadName, AWorldManager* Manager)
 	:WorldManager(Manager),
 	m_ThreadName(ThreadName),
 	ThreadIns(FRunnableThread::Create(this, *m_ThreadName, 0, EThreadPriority::TPri_Normal)),
@@ -13,7 +13,7 @@ FTestRunner::FTestRunner(const FString& ThreadName, AWorldManager* Manager)
 {
 }
 
-FTestRunner::~FTestRunner()
+FChunkGenerateRunner::~FChunkGenerateRunner()
 {
 	if (ThreadEvent)
 	{
@@ -28,18 +28,18 @@ FTestRunner::~FTestRunner()
 	}
 }
 
-void FTestRunner::SuspendThread()
+void FChunkGenerateRunner::SuspendThread()
 {
 	bPause = true;
 }
 
-void FTestRunner::WakeUpThread()
+void FChunkGenerateRunner::WakeUpThread()
 {
 	bPause = false;
 	ThreadEvent->Trigger();
 }
 
-void FTestRunner::StopThread()
+void FChunkGenerateRunner::StopThread()
 {
 	Stop();
 
@@ -49,7 +49,7 @@ void FTestRunner::StopThread()
 	}
 }
 
-void FTestRunner::ShutDown(bool bShouldWait)
+void FChunkGenerateRunner::ShutDown(bool bShouldWait)
 {
 	if (ThreadIns)
 	{
@@ -57,12 +57,12 @@ void FTestRunner::ShutDown(bool bShouldWait)
 	}
 }
 
-bool FTestRunner::Init()
+bool FChunkGenerateRunner::Init()
 {
 	return true;
 }
 
-uint32 FTestRunner::Run()
+uint32 FChunkGenerateRunner::Run()
 {
 	while (bRun)
 	{
@@ -72,32 +72,43 @@ uint32 FTestRunner::Run()
 			if (!bRun) return 0;
 		}
 
-		if (UpdatePosition())
+		if (CoordsChanged())
 		{
-			GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Red, *WorldManager->CharacterChunkPosition.ToString());
 			GenerateChunks();
+
+			GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Red, *WorldManager->CharacterChunkPosition.ToString());
 		}
 	}
 	return 0;
 }
 
-void FTestRunner::Stop()
+void FChunkGenerateRunner::Stop()
 {
 	bRun = false;
 	bPause = false;
 }
 
-void FTestRunner::Exit()
+void FChunkGenerateRunner::Exit()
 {
 }
 
-void FTestRunner::GenerateChunks()
+void FChunkGenerateRunner::GenerateChunks()
 {
 	TArray<FIntPoint> Locations;
 	int32 CurrentRadius = 0;
+
+	for (auto Itr = WorldManager->WorldInfo.MeshDataCache.CreateConstIterator(); Itr; ++Itr)
+	{
+		LastActiveLoc.Add(Itr->Key);
+	}
+
 	if (!WorldManager->WorldInfo.MeshDataCache.Contains(WorldManager->CharacterChunkPosition))
 	{
 		Locations.Add(WorldManager->CharacterChunkPosition);
+	}
+	if(LastActiveLoc.Contains(WorldManager->CharacterChunkPosition))
+	{
+		LastActiveLoc.Remove(WorldManager->CharacterChunkPosition);
 	}
 	while (CurrentRadius <= WorldManager->LoadDistance)
 	{
@@ -109,6 +120,10 @@ void FTestRunner::GenerateChunks()
 			{
 				Locations.Add(ChunkVoxelPosition);
 			}
+			if (LastActiveLoc.Contains(ChunkVoxelPosition))
+			{
+				LastActiveLoc.Remove(ChunkVoxelPosition);
+			}
 		}
 
 		// Right
@@ -118,6 +133,10 @@ void FTestRunner::GenerateChunks()
 			if (!WorldManager->WorldInfo.MeshDataCache.Contains(ChunkVoxelPosition))
 			{
 				Locations.Add(ChunkVoxelPosition);
+			}
+			if (LastActiveLoc.Contains(ChunkVoxelPosition))
+			{
+				LastActiveLoc.Remove(ChunkVoxelPosition);
 			}
 		}
 
@@ -129,6 +148,10 @@ void FTestRunner::GenerateChunks()
 			{
 				Locations.Add(ChunkVoxelPosition);
 			}
+			if (LastActiveLoc.Contains(ChunkVoxelPosition))
+			{
+				LastActiveLoc.Remove(ChunkVoxelPosition);
+			}
 		}
 
 		// Left
@@ -139,6 +162,10 @@ void FTestRunner::GenerateChunks()
 			{
 				Locations.Add(ChunkVoxelPosition);
 			}
+			if (LastActiveLoc.Contains(ChunkVoxelPosition))
+			{
+				LastActiveLoc.Remove(ChunkVoxelPosition);
+			}
 		}
 
 		CurrentRadius++;
@@ -146,13 +173,13 @@ void FTestRunner::GenerateChunks()
 
 	for (int32 i = 0; i < Locations.Num(); ++i)
 	{
-		WorldManager->WorldInfo.ChunksMap.Add(Locations[i], ChunkData(Locations[i]));
+		WorldManager->WorldInfo.ChunkDataMap.Add(Locations[i], MakeShared<FChunkData>(Locations[i]));
 		WorldManager->WorldInfo.MeshDataCache.Add(Locations[i], {});
 	}
 
 	for (int32 i = 0; i < Locations.Num(); ++i)
 	{
-		WorldManager->TerrainManager->LoadTerrainInfo(WorldManager->WorldInfo, Locations[i]);
+		WorldManager->TerrainManager->LoadTerrainInfo(WorldManager, Locations[i]);
 	}
 
 	for (int32 i = 0; i < Locations.Num(); ++i)
@@ -164,9 +191,16 @@ void FTestRunner::GenerateChunks()
 	{
 		WorldManager->SpawnChunkQueue.Enqueue(Locations[i]);
 	}
+
+	for (int32 i = 0; i < LastActiveLoc.Num(); ++i)
+	{
+		WorldManager->RemoveChunkQueue.Enqueue(LastActiveLoc[i]);
+	}
+
+	LastActiveLoc.Empty();
 }
 
-bool FTestRunner::UpdatePosition()
+bool FChunkGenerateRunner::CoordsChanged()
 {
 	APawn* Pawn = UGameplayStatics::GetPlayerPawn(WorldManager, 0);
 	if (Pawn == nullptr) return false;

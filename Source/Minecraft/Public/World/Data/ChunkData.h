@@ -2,19 +2,32 @@
 
 #include "CoreMinimal.h"
 #include "World/WorldSettings.h"
+#include "World/Data/BlockState.h"
 
-class MINECRAFT_API ChunkData
+class MINECRAFT_API FChunkData
 {
 public:
-	ChunkData(const FIntPoint& ChunkPos)
-		:ChunkPosition(ChunkPos),
-		HeightMap{0},
-		BlocksMap{0}
-	{}
-
 	FIntPoint ChunkPosition;
 
-	int32 HeightMap[WorldSettings::CHUNK_AREA];
+	TArray<int32> HeightMap;
 
-	int32 BlocksMap[WorldSettings::CHUNK_VOLUME];
+	TArray<FBlockState> BlockStateMap;
+
+	TArray<FBlockState> ActiveVoxels;
+
+public:
+	explicit FChunkData(const FIntPoint& ChunkPos);
+
+	FBlockState GetBlockState(int32 OffsetX, int32 OffsetY, int32 OffsetZ) const;
+
+	void SetBlockState(int32 OffsetX, int32 OffsetY, int32 OffsetZ, const FBlockState& BlockSate);
+
+	void SetHeight(int32 Index, int32 Height);
+
+	int32 GetHeight(int32 Index) const;
+
+	int32 GetHeight(int32 OffsetX, int32 OffsetY) const;
+
+	void TickUpdate();
+
 };

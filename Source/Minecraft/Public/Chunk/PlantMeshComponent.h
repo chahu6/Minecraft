@@ -23,15 +23,11 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	void Render();
-
 	void Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMeshDatas);
 
-	void BuildMesh();
+	//void BuildMesh();
 
 private:
 	UPROPERTY()
 	TObjectPtr<AChunk> Chunk;
-
-	TSharedPtr<FMeshData> MeshData;
 };

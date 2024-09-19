@@ -19,19 +19,7 @@ public:
 
 	virtual void BeginPlay() override;
 
-	AChunk* GetChunk(const FIntPoint& Key);
-
-	void SpawnChunk(const FIntPoint& ChunkVoxelPosition);
-
-	void EnsureCompletion();
-
 private:
 	UPROPERTY()
-	TMap<FIntPoint, AChunk*> AllChunks;
-
-	UPROPERTY()
 	TObjectPtr<AWorldManager> WorldManager;
-
-public:
-	FORCEINLINE int32 GetAllChunksNum() const { return AllChunks.Num(); }
 };

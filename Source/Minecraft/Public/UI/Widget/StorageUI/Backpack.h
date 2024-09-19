@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Item/ItemInfo.h"
+#include "Item/Data/ItemInfo.h"
 #include "Backpack.generated.h"
 
 class UBackpackComponent;

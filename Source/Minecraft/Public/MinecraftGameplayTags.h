@@ -18,12 +18,15 @@ public:
 
 	FGameplayTag Minecraft_Air;
 	FGameplayTag Minecraft_Stone;
-	FGameplayTag Minecraft_Dirt;
-	FGameplayTag Minecraft_Grass_Block;
 	FGameplayTag Minecraft_Grass;
+	FGameplayTag Minecraft_Dirt;
+	FGameplayTag Minecraft_Bedrock;
+	FGameplayTag Minecraft_Water;
+	FGameplayTag Minecraft_Sand;
+	FGameplayTag Minecraft_Tallgrass;
 	FGameplayTag Minecraft_Rose;
-	FGameplayTag Minecraft_Oak_Wood;
-	FGameplayTag Minecraft_Oak_Plants;
+	FGameplayTag Minecraft_OakWood;
+	FGameplayTag Minecraft_OakPlants;
 
 private:
 	FMinecraftGameplayTags() = default;

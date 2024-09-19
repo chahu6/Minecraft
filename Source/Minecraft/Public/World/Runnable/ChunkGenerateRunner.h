@@ -6,12 +6,12 @@ class AWorldManager;
 /**
  *
  */
-class MINECRAFT_API FTestRunner : public FRunnable
+class MINECRAFT_API FChunkGenerateRunner : public FRunnable
 {
 public:
-	FTestRunner(const FString& ThreadName, AWorldManager* Manager);
+	FChunkGenerateRunner(const FString& ThreadName, AWorldManager* Manager);
 
-	~FTestRunner();
+	~FChunkGenerateRunner();
 
 public:
 	void SuspendThread();
@@ -33,7 +33,7 @@ private:
 
 	void GenerateChunks();
 
-	bool UpdatePosition();
+	bool CoordsChanged();
 
 private:
 	bool bRun = true;
@@ -49,4 +49,6 @@ private:
 	uint32 m_ThreadID;
 
 	FEvent* ThreadEvent;
+
+	TArray<FIntPoint> LastActiveLoc;
 };

@@ -24,19 +24,31 @@ void FMinecraftGameplayTags::InitializeNativeGameplayTags()
 		FName("Minecraft.Grass")
 	);
 
-	GameplayTags.Minecraft_Grass_Block = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Minecraft.Grass_Block")
+	GameplayTags.Minecraft_Bedrock = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Minecraft.Bedrock")
+	);
+
+	GameplayTags.Minecraft_Water = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Minecraft.Water")
+	);
+
+	GameplayTags.Minecraft_Sand = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Minecraft.Sand")
+	);
+
+	GameplayTags.Minecraft_Tallgrass = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Minecraft.Tallgrass")
 	);
 
 	GameplayTags.Minecraft_Rose = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Minecraft.Rose")
 	);
 
-	GameplayTags.Minecraft_Oak_Wood = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Minecraft.Oak_Wood")
+	GameplayTags.Minecraft_OakWood = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Minecraft.OakWood")
 	);
 
-	GameplayTags.Minecraft_Oak_Plants = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Minecraft.Oak_Plants")
+	GameplayTags.Minecraft_OakPlants = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Minecraft.OakPlants")
 	);
 }

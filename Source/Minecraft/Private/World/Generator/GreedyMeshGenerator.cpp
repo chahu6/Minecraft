@@ -1,7 +1,8 @@
-#include "GreedyMeshGenerator.h"
+#include "World/Generator/GreedyMeshGenerator.h"
 #include "World/WorldSettings.h"
-#include "World/GlobalInfo.h"
+#include "World/Data/GlobalInfo.h"
 #include "Chunk/MeshData.h"
+#include "World/Block/Blocks.h"
 
 void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FIntPoint& ChunkVoxelPos)
 {
@@ -62,11 +63,14 @@ void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FInt
 			{
 				for (ChunkItr[Axis1] = 0; ChunkItr[Axis1] < Axis1Limit; ++ChunkItr[Axis1])
 				{
-					const int32 CurrentBlockID = WorldInfo.GetBlock(ChunkItr + FIntVector(ChunkWorldLocation.X, ChunkWorldLocation.Y, 0));
-					const int32 CompareBlockID = WorldInfo.GetBlock((ChunkItr + AxisMask) + FIntVector(ChunkWorldLocation.X, ChunkWorldLocation.Y, 0));
+					const FBlockState CurrentBlockState = WorldInfo.GetBlockState(ChunkItr + FIntVector(ChunkWorldLocation.X, ChunkWorldLocation.Y, 0));
+					const FBlockState CompareBlockState = WorldInfo.GetBlockState((ChunkItr + AxisMask) + FIntVector(ChunkWorldLocation.X, ChunkWorldLocation.Y, 0));
 
-					const bool bCurrentBlockOpaque = CurrentBlockID != 0 && CurrentBlockID != 6 && CurrentBlockID != 7;
-					const bool bCompareBlockOpaque = CompareBlockID != 0 && CompareBlockID != 6 && CompareBlockID != 7;
+					const int32 CurrentBlockID = CurrentBlockState.BlockID;
+					const int32 CompareBlockID = CompareBlockState.BlockID;
+
+					const bool bCurrentBlockOpaque = !CurrentBlockState.IsAir() && CurrentBlockID != UBlocks::Tallgrass->BlockID && CurrentBlockID != UBlocks::Rose->BlockID;
+					const bool bCompareBlockOpaque = !CompareBlockState.IsAir() && CompareBlockID != UBlocks::Tallgrass->BlockID && CompareBlockID != UBlocks::Rose->BlockID;
 
 					if (bCurrentBlockOpaque == bCompareBlockOpaque)
 					{

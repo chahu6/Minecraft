@@ -2,9 +2,8 @@
 #include "Player/MinecraftPlayer.h"
 #include "Item/DroppedItem.h"
 #include "Kismet/GameplayStatics.h"
-#include "Utils/MinecraftAssetLibrary.h"
+#include "Kismet/MinecraftAssetLibrary.h"
 #include "World/WorldManager.h"
-#include "World/Behavior/BlockBehavior.h"
 #include "World/WorldSettings.h"
 
 UInteractiveComponent::UInteractiveComponent()
@@ -92,7 +91,7 @@ void UInteractiveComponent::WorldLocToBlockVoxelLoc(const FVector& WorldLocation
 	GEngine->AddOnScreenDebugMessage(26, 5.f, FColor::Blue, FString::Printf(TEXT("%s"), *BlockVoxelLocation.ToString()));
 }
 
-FBlockData UInteractiveComponent::GetBlockDataFromLocation(const FVector& WorldLocation, const FVector& WorldNormal)
+FBlockState UInteractiveComponent::GetBlockDataFromLocation(const FVector& WorldLocation, const FVector& WorldNormal)
 {
 	FIntVector BlockVoxelLocation;
 	WorldLocToBlockVoxelLoc(WorldLocation, WorldNormal, BlockVoxelLocation);
@@ -100,13 +99,13 @@ FBlockData UInteractiveComponent::GetBlockDataFromLocation(const FVector& WorldL
 	return GetBlockDataFromLocation(BlockVoxelLocation);
 }
 
-FBlockData UInteractiveComponent::GetBlockDataFromLocation(const FIntVector& BlockVoxelLocation)
+FBlockState UInteractiveComponent::GetBlockDataFromLocation(const FIntVector& BlockVoxelLocation)
 {
 	AWorldManager* WorldManager = AWorldManager::Get();
 	if (WorldManager)
 	{
-		FBlockData BlockData = WorldManager->GetBlock(BlockVoxelLocation);
-		return BlockData;
+		FBlockState BlockState = WorldManager->GetBlockState(BlockVoxelLocation);
+		return BlockState;
 	}
 	return {};
 }
@@ -125,6 +124,7 @@ void UInteractiveComponent::UseItem()
 	}
 }
 
+// @TODO
 void UInteractiveComponent::PlaceBlock(int32 ItemID)
 {
 	FIntVector BlockVoxelLocation;
@@ -134,24 +134,21 @@ void UInteractiveComponent::PlaceBlock(int32 ItemID)
 	BlockVoxelLocation.Y += BlockHitResult.ImpactNormal.Y;
 	BlockVoxelLocation.Z += BlockHitResult.ImpactNormal.Z;
 
-	FBlockData BlockData = GetBlockDataFromLocation(BlockVoxelLocation);
+	FBlockState BlockSate = GetBlockDataFromLocation(BlockVoxelLocation);
 
-	if (BlockData.IsValid()) return;
+	if (!BlockSate.IsAir()) return;
 
-	FBlockMeta BlockMeta;
-	if (!UMinecraftAssetLibrary::GetBlockMeta(ItemID, BlockMeta)) return;
-
-	if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnInteract();
+	//if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnInteract();
 
 	AWorldManager* WorldManager = AWorldManager::Get();
 	if (WorldManager)
 	{
-		if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnBeforePlace();
-		WorldManager->PlaceBlock(BlockVoxelLocation, BlockMeta.BlockID);
+		//if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnBeforePlace();
+		//WorldManager->PlaceBlock(BlockVoxelLocation, BlockMeta.BlockID);
 
 		FVector WorldLocation = FVector(BlockVoxelLocation * WorldSettings::BlockSize);
 		WorldLocation = WorldLocation + (WorldSettings::BlockSize >> 1);
-		if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnAfterPlace(WorldManager, WorldLocation, BlockMeta.PlaceSound);
+		//if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnAfterPlace(WorldManager, WorldLocation, BlockMeta.PlaceSound);
 
 		Player->ConsumeItem();
 		Player->UpdateMainHandItem();
@@ -166,17 +163,18 @@ bool UInteractiveComponent::DestroyBlock(const FVector& WorldLocation, const FVe
 	return DestroyBlock(BlockVoxelLocation);
 }
 
+// @TODO
 bool UInteractiveComponent::DestroyBlock(const FIntVector& BlockVoxelLocation)
 {
-	FBlockData BlockData = GetBlockDataFromLocation(BlockVoxelLocation);
-	if (!BlockData.IsValid()) return false;
+	FBlockState BlockState = GetBlockDataFromLocation(BlockVoxelLocation);
+	if (BlockState.IsAir()) return false;
 
 	bool bIsDestroyed = RemoveBlockFromWorld(BlockVoxelLocation);
 	if (bIsDestroyed)
 	{
-		FBlockMeta BlockMeta;
-		bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(BlockData.BlockID(), BlockMeta);
-		if (bSuccessed)
+		//FBlockMeta BlockMeta;
+		//bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(BlockData.BlockID(), BlockMeta);
+		/*if (bSuccessed)
 		{
 			checkf(DroppedItemClass, TEXT("Uninitialize DroppedItemClass"));
 
@@ -189,7 +187,7 @@ bool UInteractiveComponent::DestroyBlock(const FIntVector& BlockVoxelLocation)
 			DroppedItem->SetItemHandle(BlockMeta.ItemHandle);
 			DroppedItem->FinishSpawning(DroppedItem->GetActorTransform());
 			return true;
-		}
+		}*/
 	}
 
 	return false;
@@ -228,6 +226,7 @@ void UInteractiveComponent::OngoingClick()
 	}
 }
 
+// @TODO
 bool UInteractiveComponent::OnPlayerDamageBlock()
 {
 	if (!BlockHitResult.bBlockingHit)
@@ -246,6 +245,7 @@ bool UInteractiveComponent::OnPlayerDamageBlock()
 	}
 	else if (IsHittingPosition(BlockVoxelLocation))
 	{
+#if 0
 		FBlockData BlockData = GetBlockDataFromLocation(BlockVoxelLocation);
 
 		if (!BlockData.IsValid())
@@ -280,6 +280,7 @@ bool UInteractiveComponent::OnPlayerDamageBlock()
 			}
 			return true;
 		}
+#endif
 	}
 	else
 	{
