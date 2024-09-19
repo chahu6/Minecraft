@@ -24,9 +24,6 @@ void FChunkGeneratorAsyncTask::DoWork()
 		return;
 	}
 
-	// 重新计算空值
-	Chunk->RecalculateEmpty();
-
 	Chunk->BuildMesh();
 
 	AWorldManager* WorldManager = Cast<AWorldManager>(Chunk->GetOwner());

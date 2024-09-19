@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ItemInfo.h"
+#include "Item/Data/ItemInfo.h"
 #include "DroppedItem.generated.h"
 
 class UBoxComponent;

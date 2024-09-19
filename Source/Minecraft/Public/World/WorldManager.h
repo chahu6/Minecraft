@@ -2,17 +2,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Block/BlockID.h"
-#include "World/GenerationMethod.h"
-#include "World/GlobalInfo.h"
+#include "World/Data/GenerationMethod.h"
+#include "World/Data/GlobalInfo.h"
 #include "WorldManager.generated.h"
 
 class AChunk;
 class UTerrainComponent;
 class UChunkManagerComponent;
-struct FBlockData;
+class FChunkGenerateRunner;
 class FWorldRunner;
-struct FMeshData;
+class UDataTable;
+class FChunkData;
 
 DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
 
@@ -22,9 +22,9 @@ class MINECRAFT_API AWorldManager : public AActor
 	GENERATED_BODY()
 	
 	friend class UChunkManagerComponent;
-	friend class FTerrainDataAsyncTask;
+	friend class UTerrainComponent;
 	friend class FWorldRunner;
-	friend class FTestRunner;
+	friend class FChunkGenerateRunner;
 
 	static AWorldManager* Instance;
 
@@ -41,53 +41,36 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
-	// Key是Chunk在Voxel World的位置，没有乘以ChunkSize的位置
-	AChunk* GetChunk(const FIntPoint& ChunkVoxelLocation);
-
-	AChunk* GetChunk(const FIntVector& BlockWorldVoxelLocation);
-
 	bool DestroyBlock(const FIntVector& BlockWorldVoxelLocation);
 
-	void PlaceBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID);
+	void PlaceBlock(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
 
-	FBlockData GetBlock(const FIntVector& BlockWorldVoxelLocation);
+	FBlockState GetBlockState(const FIntVector& BlockWorldVoxelLocation);
+
+	TSharedPtr<FChunkData> GetChunkData(const FIntPoint& ChunkVoxelLocation);
 
 	FProgressDelegate ProgressDelegate;
 
 private:
-	void SetBlock(const FIntVector& BlockWorldVoxelLocation, int32 BlockID);
+	void SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
 
 	void InitialWorldChunkLoad();
 
 	bool UpdatePosition();
 
-	void AddChunk();
-
-	void SpawnChunk(const FIntPoint& ChunkPosition);
-
-	void LoadChunkInfo(const FIntPoint& ChunkPosition);
-
-	void RemoveChunk();
-
-	void RenderChunksAsync();
-
 	void RenderChunk();
-
-
 
 	/*
 	* 
 	* 新版
 	*/
-	void LoadChunks();
-
-	void LoadWorld(const FIntPoint& OffsetPosition);
-
 	void AddChunkToUpdate(AChunk* Chunk, bool bTop = false);
 
 	void ThreadedUpdate();
 
 	void UpdateChunks();
+
+	void UpdateChunk();
 
 public:
 	// 渲染网格体的任务队列
@@ -95,7 +78,11 @@ public:
 
 	TQueue<FIntPoint, EQueueMode::Mpsc> SpawnChunkQueue;
 
+	TQueue<FIntPoint, EQueueMode::Mpsc> RemoveChunkQueue;
+
 	TQueue<AChunk*, EQueueMode::Mpsc> DirtyChunkQueue;
+
+	TMap<FIntPoint, AChunk*> ActiveChunks;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
@@ -105,6 +92,12 @@ protected:
 	TObjectPtr<UTerrainComponent> TerrainManager;
 
 protected:
+	UPROPERTY(EditAnywhere, Category = "World Setting")
+	TObjectPtr<UDataTable> ItemDataTable;
+
+	UPROPERTY(EditAnywhere, Category = "World Setting")
+	TObjectPtr<UDataTable> BlockDataTable;
+
 	UPROPERTY(EditAnywhere, Category = "World Setting")
 	int32 LoadDistance = 4;
 
@@ -145,9 +138,6 @@ private:
 
 	std::atomic<int32> Count = 0;
 
-	FAsyncTask<FTerrainDataAsyncTask>* TerrainDataAsyncTask = nullptr;
-
-
 	/*
 	* 最新的
 	*/
@@ -158,7 +148,7 @@ private:
 	FCriticalSection ChunkUpdateCritical;
 
 	FWorldRunner* ChunkUpdateThread;
-	class FTestRunner* TestThread;
+	FChunkGenerateRunner* ChunkGenerateThread;
 
 public:
 	FORCEINLINE FVector2D GetDefaultCharacterPosition() const { return DefaultCharacterPosition; }

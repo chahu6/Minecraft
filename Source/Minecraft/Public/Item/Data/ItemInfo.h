@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/ItemType.h"
+#include "Item/Data/ItemType.h"
 #include "Engine/DataTable.h"
 #include "GameplayTagContainer.h"
 #include "ItemInfo.generated.h"

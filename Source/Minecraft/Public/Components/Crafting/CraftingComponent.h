@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/ItemInfo.h"
+#include "Item/Data/ItemInfo.h"
 #include "Components/ActorComponent.h"
 #include "Interfaces/InventoryInterface.h"
 #include "CraftingComponent.generated.h"

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Utils/MinecraftMathLibrary.h"
+#include "Kismet/MinecraftMathLibrary.h"
 #include "Math/PoissonDiscSampling.h"
 #include "Utils/ChunkHelper.h"
 

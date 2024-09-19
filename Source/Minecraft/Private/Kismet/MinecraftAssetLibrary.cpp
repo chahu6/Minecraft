@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Utils/MinecraftAssetLibrary.h"
+#include "Kismet/MinecraftAssetLibrary.h"
 #include "World/MinecraftSettings.h"
-#include "World/Block/Block.h"
-#include "Item/ItemInfo.h"
+#include "World/Block/Data/BlockData.h"
+#include "Item/Data/ItemInfo.h"
 
 bool UMinecraftAssetLibrary::GetBlockMeta(int32 BlockID, FBlockMeta& OutBlockInfo)
 {

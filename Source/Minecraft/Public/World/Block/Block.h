@@ -1,75 +1,83 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/DataTable.h"
-#include "BlockID.h"
+#include "Engine/DataAsset.h"
+#include "GameplayTagContainer.h"
+#include "World/Data/BlockState.h"
 #include "Block.generated.h"
 
-class UBlockBehavior;
-
-struct FBlockData
+/**
+ * 
+ */
+UCLASS(BlueprintType)
+class MINECRAFT_API UBlock : public UPrimaryDataAsset
 {
-	EBlockID ID = EBlockID::Air;
-	uint8 BlockState = 0;
+	GENERATED_BODY()
+public:
+	UBlock();
 
-	FBlockData() : ID(EBlockID::Air), BlockState(0) {}
+	static TMap<FName, UBlock*> Registry;
 
-	FBlockData(EBlockID InBlockID) : ID(InBlockID) {}
+	static void Initializer();
 
-	FBlockData(EBlockID InBlockID, uint8 InBlockState)
-		:ID(InBlockID), BlockState(InBlockState)
-	{}
+	virtual void RandomTick();
 
-	FORCEINLINE bool IsValid() const
-	{
-		return ID != EBlockID::Air;
-	}
+	virtual void UpdateTick();
 
-	FORCEINLINE int32 BlockID()
-	{
-		return static_cast<int32>(ID);
-	}
+	virtual void OnDestroy(const FVector& WorldLocation);
 
-	FORCEINLINE bool IsPlant() const
-	{
-		return ID == EBlockID::Rose || ID == EBlockID::Grass;
-	}
-};
+	/** Overridden to use saved type */
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
-USTRUCT(BlueprintType)
-struct FBlockMeta : public FTableRowBase
-{
-	GENERATED_USTRUCT_BODY();
+	FBlockState GetDefaultBlockState() const;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 BlockID = 0;
+	/** Returns the logical name, equivalent to the primary asset id */
+	UFUNCTION(BlueprintCallable, Category = Item)
+	FString GetIdentifierString() const;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FName BlockName = TEXT("None");
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
+	FPrimaryAssetType ItemType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FDataTableRowHandle ItemHandle;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	int32 BlockID;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UMaterialInterface* Material = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	FGameplayTag Tag;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	USoundBase* DestroySound = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	bool bIsActive;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	USoundBase* PlaceSound = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	bool bFullBlock;
 
-	// 是否是流体
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bLiquid = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	int32 LightOpacity;
 
-	// 是否是透明的
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bTransparent = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	bool bTranslucent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float Hardness = 0.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	float BlockHardness;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<UBlockBehavior> BehaviorClass = nullptr;
+	/** 可以抵抗爆炸的程度 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	float BlockResistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	int32 TickRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	TObjectPtr<USoundBase> PlaceSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	TObjectPtr<USoundBase> DestroySound;
+
+private:
+	FBlockState DefaultBlockState;
+
+private:
+	static void RegisterBlock(const FName& Name, UBlock* Block);
 };

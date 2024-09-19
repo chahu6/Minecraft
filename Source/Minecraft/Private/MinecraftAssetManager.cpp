@@ -2,10 +2,14 @@
 
 
 #include "MinecraftAssetManager.h"
-#include "World/MinecraftSettings.h"
 #include "Engine/DataTable.h"
 #include "MinecraftGameplayTags.h"
 #include "Components/Crafting/CraftingComponent.h"
+#include "World/MinecraftSettings.h"
+#include "Item/Item.h"
+
+const FPrimaryAssetType UMinecraftAssetManager::BlockType = TEXT("Block");
+const FPrimaryAssetType UMinecraftAssetManager::ItemType = TEXT("Item");
 
 UMinecraftAssetManager& UMinecraftAssetManager::Get()
 {
@@ -28,4 +32,18 @@ void UMinecraftAssetManager::StartInitialLoading()
 
 	Setting->ItemDataTable.LoadSynchronous();
 	Setting->BlockDataTable.LoadSynchronous();
+}
+
+UItem* UMinecraftAssetManager::ForceLoadItem(const FPrimaryAssetId& PrimaryAssetId, bool bLogWarning)
+{
+	FSoftObjectPath ItemPath = GetPrimaryAssetPath(PrimaryAssetId);
+
+	UItem* LoadedItem = Cast<UItem>(ItemPath.TryLoad());
+
+	if (bLogWarning && LoadedItem == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load item for identifier %s!"), *PrimaryAssetId.ToString());
+	}
+
+	return LoadedItem;
 }
