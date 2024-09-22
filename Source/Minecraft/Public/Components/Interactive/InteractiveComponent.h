@@ -4,7 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "InteractiveComponent.generated.h"
 
-class AMinecraftPlayer;
+class AEntityPlayer;
 class ADroppedItem;
 struct FBlockState;
 
@@ -13,7 +13,7 @@ class MINECRAFT_API UInteractiveComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	friend class AMinecraftPlayer;
+	friend class AEntityPlayer;
 public:	
 	UInteractiveComponent();
 
@@ -23,8 +23,8 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	bool DestroyBlock(const FVector& WorldLocation, const FVector& WorldNormal);
-	bool DestroyBlock(const FIntVector& BlockVoxelLocation);
+	bool OnPlayerDestroyBlock(const FVector& WorldLocation, const FVector& WorldNormal);
+	bool OnPlayerDestroyBlock(const FIntVector& BlockVoxelLocation);
 
 	FBlockState GetBlockDataFromLocation(const FVector& WorldLocation, const FVector& WorldNormal);
 	FBlockState GetBlockDataFromLocation(const FIntVector& BlockVoxelLocation);
@@ -57,15 +57,18 @@ private:
 
 private:
 	UPROPERTY()
-	TObjectPtr<AMinecraftPlayer> Player;
+	TObjectPtr<AEntityPlayer> Player;
 
 	UPROPERTY()
 	TObjectPtr<APlayerController> PlayerController;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = Initialization)
 	TSubclassOf<ADroppedItem> DroppedItemClass;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = Initialization)
+	TObjectPtr<UStaticMesh> MarkerMesh;
+
+	UPROPERTY(EditAnywhere, Category = Initialization)
 	TObjectPtr<UMaterialInstance> MaterialInstance;
 
 	UPROPERTY()
@@ -78,7 +81,6 @@ private:
 	bool bIsHittingBlock = false;
 	int32 BlockHitDelay = 0;
 	float CurBlockDamageMP = 0.0f;
-	float DestroyPercent = 0.0f;
 
 	FIntVector LastHitBlockLocation;
 

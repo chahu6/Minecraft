@@ -31,6 +31,11 @@ void UBlock::OnDestroy(const FVector& WorldLocation)
 	}
 }
 
+void UBlock::OnBlockClicked(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Block Is Clicked")));
+}
+
 FPrimaryAssetId UBlock::GetPrimaryAssetId() const
 {
 	// This is a DataAsset and not a blueprint so we can just use the raw FName
@@ -48,7 +53,24 @@ FString UBlock::GetIdentifierString() const
 	return GetPrimaryAssetId().ToString();
 }
 
-void UBlock::Initializer()
+float UBlock::GetPlayerRelativeBlockHardness()
+{
+	float f = GetBlockHardness();
+
+	if (f > 0.f)
+	{
+		return 1.f / f / 30.f;
+	}
+
+	return 0.0f;
+}
+
+float UBlock::GetBlockHardness()
+{
+	return BlockHardness;
+}
+
+void UBlock::RegisterBlocks()
 {
 	UMinecraftAssetManager& AssetManager = UMinecraftAssetManager::Get();
 
@@ -59,7 +81,6 @@ void UBlock::Initializer()
 	{
 		if (UBlock* Block = Cast<UBlock>(Object))
 		{
-			Block->AddToRoot();
 			RegisterBlock(Block->Tag.GetTagName(), Block);
 		}
 	}

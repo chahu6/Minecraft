@@ -8,6 +8,9 @@
 #include "World/Data/BlockState.h"
 #include "Block.generated.h"
 
+class AWorldManager;
+class AEntityPlayer;
+
 /**
  * 
  */
@@ -20,13 +23,16 @@ public:
 
 	static TMap<FName, UBlock*> Registry;
 
-	static void Initializer();
+	static void RegisterBlocks();
 
 	virtual void RandomTick();
 
 	virtual void UpdateTick();
 
 	virtual void OnDestroy(const FVector& WorldLocation);
+
+	/** Block±»µã»÷ */
+	virtual void OnBlockClicked(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player);
 
 	/** Overridden to use saved type */
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
@@ -36,6 +42,10 @@ public:
 	/** Returns the logical name, equivalent to the primary asset id */
 	UFUNCTION(BlueprintCallable, Category = Item)
 	FString GetIdentifierString() const;
+
+	float GetPlayerRelativeBlockHardness();
+
+	float GetBlockHardness();
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)

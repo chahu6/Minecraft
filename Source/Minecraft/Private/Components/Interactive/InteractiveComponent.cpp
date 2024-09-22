@@ -1,10 +1,11 @@
 ﻿#include "Components/Interactive/InteractiveComponent.h"
-#include "Player/MinecraftPlayer.h"
+#include "Player/EntityPlayer.h"
 #include "Item/DroppedItem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/MinecraftAssetLibrary.h"
 #include "World/WorldManager.h"
 #include "World/WorldSettings.h"
+#include "World/Block/Blocks.h"
 
 UInteractiveComponent::UInteractiveComponent()
 {
@@ -38,10 +39,9 @@ bool UInteractiveComponent::InitMarkComponent(USceneComponent* Parent)
 	Marker->AttachToComponent(Parent, FAttachmentTransformRules::KeepRelativeTransform);
 	Marker->RegisterComponent();
 
-	UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(this, TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
-	if (CubeMesh)
+	if (MarkerMesh)
 	{
-		Marker->SetStaticMesh(CubeMesh);
+		Marker->SetStaticMesh(MarkerMesh);
 	}
 	Marker->SetCollisionProfileName(TEXT("NoCollision"));
 	return Marker->IsRegistered();
@@ -86,6 +86,7 @@ void UInteractiveComponent::WorldLocToBlockVoxelLoc(const FVector& WorldLocation
 	BlockVoxelLocation.X = FMath::FloorToInt32(Location.X / WorldSettings::BlockSize);
 	BlockVoxelLocation.Y = FMath::FloorToInt32(Location.Y / WorldSettings::BlockSize);
 	BlockVoxelLocation.Z = FMath::FloorToInt32(Location.Z / WorldSettings::BlockSize);
+
 	GEngine->AddOnScreenDebugMessage(24, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *WorldLocation.ToString()));
 	GEngine->AddOnScreenDebugMessage(25, 5.f, FColor::Green, FString::Printf(TEXT("%s"), *WorldNormal.ToString()));
 	GEngine->AddOnScreenDebugMessage(26, 5.f, FColor::Blue, FString::Printf(TEXT("%s"), *BlockVoxelLocation.ToString()));
@@ -155,16 +156,16 @@ void UInteractiveComponent::PlaceBlock(int32 ItemID)
 	}
 }
 
-bool UInteractiveComponent::DestroyBlock(const FVector& WorldLocation, const FVector& WorldNormal)
+bool UInteractiveComponent::OnPlayerDestroyBlock(const FVector& WorldLocation, const FVector& WorldNormal)
 {
 	FIntVector BlockVoxelLocation;
 	WorldLocToBlockVoxelLoc(WorldLocation, WorldNormal, BlockVoxelLocation);
 
-	return DestroyBlock(BlockVoxelLocation);
+	return OnPlayerDestroyBlock(BlockVoxelLocation);
 }
 
 // @TODO
-bool UInteractiveComponent::DestroyBlock(const FIntVector& BlockVoxelLocation)
+bool UInteractiveComponent::OnPlayerDestroyBlock(const FIntVector& BlockVoxelLocation)
 {
 	FBlockState BlockState = GetBlockDataFromLocation(BlockVoxelLocation);
 	if (BlockState.IsAir()) return false;
@@ -195,7 +196,6 @@ bool UInteractiveComponent::DestroyBlock(const FIntVector& BlockVoxelLocation)
 
 bool UInteractiveComponent::RemoveBlockFromWorld(const FIntVector& BlockVoxelLocation)
 {
-	//AWorldManager* WorldManager = Cast<AWorldManager>(UGameplayStatics::GetActorOfClass(this, AWorldManager::StaticClass()));
 	AWorldManager* WorldManager = AWorldManager::Get();
 	if (WorldManager)
 	{
@@ -211,7 +211,16 @@ bool UInteractiveComponent::ClickBlock()
 	{
 		bIsHittingBlock = true;
 		WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, LastHitBlockLocation);
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("点击Block")));
+
+		AWorldManager* WorldManager = AWorldManager::Get();
+		if (WorldManager)
+		{
+			FBlockState BlockState = WorldManager->GetBlockState(LastHitBlockLocation);
+			if (!BlockState.IsAir())
+			{
+				BlockState.GetBlock()->OnBlockClicked(WorldManager, LastHitBlockLocation, GetOwner<AEntityPlayer>());
+			}
+		}
 		return true;
 	}
 
@@ -222,7 +231,7 @@ void UInteractiveComponent::OngoingClick()
 {
 	if (OnPlayerDamageBlock())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Black, TEXT("播放挥手动画和特效"));
+
 	}
 }
 
@@ -245,42 +254,27 @@ bool UInteractiveComponent::OnPlayerDamageBlock()
 	}
 	else if (IsHittingPosition(BlockVoxelLocation))
 	{
-#if 0
-		FBlockData BlockData = GetBlockDataFromLocation(BlockVoxelLocation);
-
-		if (!BlockData.IsValid())
+		FBlockState BlockState = GetBlockDataFromLocation(BlockVoxelLocation);
+		if (BlockState.GetBlock() == UBlocks::Air)
 		{
 			bIsHittingBlock = false;
 			return false;
 		}
 		else
 		{
-			FBlockMeta BlockMeta;
-			bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(BlockData.BlockID(), BlockMeta);
-			if (!bSuccessed) return false;
+			CurBlockDamageMP += BlockState.GetPlayerRelativeBlockHardness();
 
-			CurBlockDamageMP += BlockMeta.Hardness * GetWorld()->GetDeltaSeconds();
-
-			DestroyPercent = CurBlockDamageMP / BlockMeta.Hardness;
-
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("播放音乐"));
-
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("更新破坏进度: %f"), DestroyPercent));
-			DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), DestroyPercent);
-
-			if (DestroyPercent >= 1.0f)
+			if (CurBlockDamageMP >= 1.0f)
 			{
-				DestroyBlock(BlockVoxelLocation);
 				bIsHittingBlock = false;
-				CurBlockDamageMP = 0.0f;
-				BlockHitDelay = 5.0f;
-				DestroyPercent = 0.0f;
-				DestroyMaterial->SetScalarParameterValue(TEXT("Damage"), DestroyPercent);
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("破坏方块"));
+				OnPlayerDestroyBlock(BlockVoxelLocation);
+				CurBlockDamageMP = 0.f;
+				BlockHitDelay = 5.f;
 			}
+
+			UpdateDestroyProgress(CurBlockDamageMP);
 			return true;
 		}
-#endif
 	}
 	else
 	{
@@ -298,7 +292,6 @@ void UInteractiveComponent::ResetBlockRemoving()
 		bIsHittingBlock = false;
 		CurBlockDamageMP = 0.0f;
 		BlockHitDelay = 0.0;
-		DestroyPercent = 0.0f;
 		UpdateDestroyProgress(CurBlockDamageMP);
 	}
 }

@@ -4,7 +4,7 @@
 #include "GameMode/MCGameMode.h"
 #include "World/WorldManager.h"
 #include "Controller/MCPlayerController.h"
-#include "Player/MinecraftPlayer.h"
+#include "Player/EntityPlayer.h"
 
 /**
  *	执行的先后顺序
@@ -47,7 +47,7 @@ void AMCGameMode::BeginPlay()
 
 void AMCGameMode::EnterWorld(AMCPlayerController* NewPlayer)
 {
-	check(MinecraftPlayerClass);
+	check(EntityPlayerClass);
 	check(WorldManagerClass);
 
 	AWorldManager* WorldManager = GetWorld()->SpawnActorDeferred<AWorldManager>(WorldManagerClass, FTransform());
@@ -58,7 +58,7 @@ void AMCGameMode::EnterWorld(AMCPlayerController* NewPlayer)
 			NewPlayer->RemovePrograssWidget();
 			FVector2D DefaultCharacterPosition = WorldManager->GetDefaultCharacterPosition();
 
-			AMinecraftPlayer* PlayerCharacter = GetWorld()->SpawnActorDeferred<AMinecraftPlayer>(MinecraftPlayerClass, FTransform());
+			AEntityPlayer* PlayerCharacter = GetWorld()->SpawnActorDeferred<AEntityPlayer>(EntityPlayerClass, FTransform());
 			if (PlayerCharacter == nullptr) return;
 
 			NewPlayer->SetPawn(PlayerCharacter);

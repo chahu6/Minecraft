@@ -4,7 +4,7 @@
 #include "Entity/MinecraftEntity.h"
 #include "InputActionValue.h"
 #include "Interfaces/InteractiveInterface.h"
-#include "MinecraftPlayer.generated.h"
+#include "EntityPlayer.generated.h"
 
 class UBackpackComponent;
 class USpringArmComponent;
@@ -18,7 +18,7 @@ struct FItemData;
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSwitchMainHand, int32);
 
 UCLASS()
-class MINECRAFT_API AMinecraftPlayer : public AMinecraftEntity, public IInteractiveInterface
+class MINECRAFT_API AEntityPlayer : public AMinecraftEntity, public IInteractiveInterface
 {
 	GENERATED_BODY()
 
@@ -41,7 +41,7 @@ class MINECRAFT_API AMinecraftPlayer : public AMinecraftEntity, public IInteract
 	TObjectPtr<UInputAction> DropItemAction;
 
 public:
-	AMinecraftPlayer();
+	AEntityPlayer();
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_Controller() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
