@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "GameplayTagContainer.h"
 #include "Item.generated.h"
+
+class UBlock;
 
 /**
  * 
@@ -16,6 +19,13 @@ class MINECRAFT_API UItem : public UPrimaryDataAsset
 public:
 	UItem();
 
+	static TMap<FName, UItem*> REGISTER;
+	static TMap<UBlock*, UItem*> BLOCK_TO_ITEM;
+
+	static void RegisterItems();
+
+	static UItem* GetItemFromBlock(UBlock* Block);
+
 	/** Overridden to use saved type */
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
@@ -23,7 +33,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Item)
 	FString GetIdentifierString() const;
 
-protected:
+private:
+	static void RegisterItemBlock(UBlock* Block, UItem* Item);
+	static void RegisterItem(const FName& Name, UItem* Item);
+
+public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
 	FPrimaryAssetType ItemType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	int32 ItemID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	FGameplayTag Tag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	int32 MaxStackSize;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	int32 MaxDamage;
 };

@@ -23,6 +23,8 @@ void UMinecraftAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
 
+	//ScanPathForPrimaryAssets(ItemType, TEXT("/Game/Datas/Items"), UItem::StaticClass(), false);
+
 	FMinecraftGameplayTags::InitializeNativeGameplayTags();
 
 	UCraftingComponent::InitialItemRecipes();

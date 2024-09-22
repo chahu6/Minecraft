@@ -39,4 +39,6 @@ public:
 	void SetBlock(const UBlock* InBlock);
 
 	FORCEINLINE bool IsAir() const;
+
+	float GetPlayerRelativeBlockHardness();
 };

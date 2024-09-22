@@ -2,7 +2,7 @@
 
 
 #include "UI/WidgetController/OverlayWidgetController.h"
-#include "Player/MinecraftPlayer.h"
+#include "Player/EntityPlayer.h"
 
 void UOverlayWidgetController::BroadcastInitialValue()
 {
@@ -10,7 +10,7 @@ void UOverlayWidgetController::BroadcastInitialValue()
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
 {
-	if (AMinecraftPlayer* Player = PlayerController->GetPawn<AMinecraftPlayer>())
+	if (AEntityPlayer* Player = PlayerController->GetPawn<AEntityPlayer>())
 	{
 		Player->OnSwitchMainHand.AddLambda(
 			[this](int32 HotbarIndex)

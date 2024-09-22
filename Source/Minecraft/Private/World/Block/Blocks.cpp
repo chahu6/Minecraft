@@ -21,7 +21,7 @@ UBlocks::~UBlocks()
 	SingletonManager = nullptr;
 }
 
-void UBlocks::Initializer()
+void UBlocks::Initialization()
 {
 	SingletonManager = NewObject<UBlocks>(GetTransientPackage(), NAME_None);
 	SingletonManager->AddToRoot();

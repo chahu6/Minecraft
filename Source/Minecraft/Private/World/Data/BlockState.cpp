@@ -3,12 +3,15 @@
 
 #include "World/Data/BlockState.h"
 #include "World/Block/Block.h"
+#include "World/Block/Blocks.h"
 
 FBlockState::FBlockState()
 	:BlockID(0),
 	FaceType(EFaceType::Forward),
 	Position{ 0, 0, 0 }
-{}
+{
+	SetBlock(UBlocks::Air);
+}
 
 FBlockState::FBlockState(const UBlock * InBlock)
 	:BlockID(InBlock->BlockID)
@@ -36,4 +39,9 @@ void FBlockState::SetBlock(const UBlock* InBlock)
 bool FBlockState::IsAir() const
 {
 	return BlockID == 0;
+}
+
+float FBlockState::GetPlayerRelativeBlockHardness()
+{
+	return Block->GetPlayerRelativeBlockHardness();
 }

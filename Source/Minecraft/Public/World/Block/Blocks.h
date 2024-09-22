@@ -8,7 +8,7 @@
 struct FGameplayTag;
 
 UCLASS()
-class UBlocks : public UObject
+class MINECRAFT_API UBlocks : public UObject
 {
 	GENERATED_BODY()
 public:
@@ -25,17 +25,16 @@ public:
 public:
 	~UBlocks();
 
-	//static void RegisterBlock(int32 ID, IBlock* Block);
 	FORCEINLINE static UBlocks& Get()
 	{
 		if (SingletonManager == nullptr)
 		{
-			Initializer();
+			Initialization();
 		}
 		return *SingletonManager;
 	}
 
-	static void Initializer();
+	static void Initialization();
 
 private:
 	static UBlock* GetRegisteredBlock(const FName& Name);

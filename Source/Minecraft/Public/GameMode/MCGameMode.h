@@ -7,7 +7,7 @@
 #include "MCGameMode.generated.h"
 
 class AMCPlayerController;
-class AMinecraftPlayer;
+class AEntityPlayer;
 class AWorldManager;
 /**
  * 
@@ -33,7 +33,7 @@ protected:
 	void EnterWorld(AMCPlayerController* NewPlayer);
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<AMinecraftPlayer> MinecraftPlayerClass;
+	TSubclassOf<AEntityPlayer> EntityPlayerClass;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AWorldManager> WorldManagerClass;
