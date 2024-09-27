@@ -41,8 +41,7 @@ UItem* UItem::GetItemFromBlock(UBlock* Block)
 {
 	if (BLOCK_TO_ITEM.Contains(Block))
 	{
-		UItem* Item = BLOCK_TO_ITEM[Block];
-		return Item;
+		return BLOCK_TO_ITEM[Block];
 	}
 	return nullptr;
 }

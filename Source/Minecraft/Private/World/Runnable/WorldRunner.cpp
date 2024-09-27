@@ -39,6 +39,7 @@ void FWorldRunner::WakeUpThread()
 void FWorldRunner::StopThread()
 {
 	Stop();
+	WakeUpThread();
 
 	if (ThreadIns)
 	{
@@ -69,7 +70,7 @@ uint32 FWorldRunner::Run()
 			if (!bRun) return 0;
 		}
 
-		WorldManager->ThreadedUpdate();
+		WorldManager->ThreadUpdate();
 	}
 	return 0;
 }

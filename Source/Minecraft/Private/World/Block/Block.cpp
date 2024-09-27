@@ -4,6 +4,8 @@
 #include "World/Block/Block.h"
 #include "MinecraftAssetManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Item/Item.h"
+#include "Item/Items.h"
 
 TMap<FName, UBlock*> UBlock::Registry;
 
@@ -29,6 +31,43 @@ void UBlock::OnDestroy(const FVector& WorldLocation)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, DestroySound, WorldLocation);
 	}
+}
+
+int32 UBlock::QuantityDroppedWithBonus(int32 Forture)
+{
+	return QuantityDropped();
+}
+
+int32 UBlock::QuantityDropped()
+{
+	return 1;
+}
+
+void UBlock::DropBlockAsItem(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, int32 Forture)
+{
+	DropBlockAsItemWithChance(WorldManager, BlockWorldVoxelLocation, 1.f, Forture);
+}
+
+void UBlock::DropBlockAsItemWithChance(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, float Chance, int32 Forture)
+{
+	int32 Number = QuantityDroppedWithBonus(Forture);
+
+	for (int32 i = 0; i < Number; ++i)
+	{
+		if (FMath::FRand() <= Chance)
+		{
+			UItem* Item = GetItemDropped(Forture);
+			if (Item != UItems::Air)
+			{
+				SpawnAsEntity(WorldManager, BlockWorldVoxelLocation);
+			}
+		}
+	}
+}
+
+UItem* UBlock::GetItemDropped(int32 Forture)
+{
+	return UItem::GetItemFromBlock(this);
 }
 
 void UBlock::OnBlockClicked(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player)
@@ -68,6 +107,11 @@ float UBlock::GetPlayerRelativeBlockHardness()
 float UBlock::GetBlockHardness()
 {
 	return BlockHardness;
+}
+
+void UBlock::SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation)
+{
+
 }
 
 void UBlock::RegisterBlocks()

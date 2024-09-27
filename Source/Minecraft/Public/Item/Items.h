@@ -15,6 +15,7 @@ class MINECRAFT_API UItems : public UObject
 {
 	GENERATED_BODY()
 public:
+	static const UItem* Air;
 
 public:
 	~UItems();
@@ -29,6 +30,9 @@ public:
 	}
 
 	static void Initialization();
+
+private:
+	static UItem* GetRegisteredItem(const FName& Name);
 
 private:
 	static UItems* Instance;

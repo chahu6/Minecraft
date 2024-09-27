@@ -41,7 +41,7 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
-	bool DestroyBlock(const FIntVector& BlockWorldVoxelLocation);
+	bool DestroyBlock(const FIntVector& BlockWorldVoxelLocation, bool bDropBlock = false);
 
 	void PlaceBlock(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
 
@@ -56,31 +56,36 @@ private:
 
 	void InitialWorldChunkLoad();
 
-	bool UpdatePosition();
-
-	void RenderChunk();
-
 	/*
 	* 
 	* 新版
 	*/
-	void AddChunkToUpdate(AChunk* Chunk, bool bTop = false);
+	bool UpdatePosition();
 
-	void ThreadedUpdate();
+	//void EnqueueDirtyChunk()
+
+	void AddChunkToUpdate(const FIntVector& BlockWorldVoxelLocation, bool bTop = false);
+
+	void AddChunkToUpdate(const FIntPoint& ChunkVoxelLocation, bool bTop = false);
+
+	void ThreadUpdate();
 
 	void UpdateChunks();
 
 	void UpdateChunk();
 
-public:
-	// 渲染网格体的任务队列
-	TQueue<AChunk*, EQueueMode::Mpsc> TaskQueue;
+	void RenderChunk();
 
+	void UnloadChunk();
+
+	void CheckSurroundingChunkNeedUpdate(const FIntVector& BlockOffsetLocation, int32 ChunkVoxelLocationX, int32 ChunkVoxelLocationY);
+
+public:
 	TQueue<FIntPoint, EQueueMode::Mpsc> SpawnChunkQueue;
 
-	TQueue<FIntPoint, EQueueMode::Mpsc> RemoveChunkQueue;
+	TQueue<FIntPoint, EQueueMode::Mpsc> DirtyChunkQueue;
 
-	TQueue<AChunk*, EQueueMode::Mpsc> DirtyChunkQueue;
+	TQueue<FIntPoint, EQueueMode::Mpsc> UnloadChunkQueue;
 
 	TMap<FIntPoint, AChunk*> ActiveChunks;
 
@@ -92,12 +97,6 @@ protected:
 	TObjectPtr<UTerrainComponent> TerrainManager;
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "World Setting")
-	TObjectPtr<UDataTable> ItemDataTable;
-
-	UPROPERTY(EditAnywhere, Category = "World Setting")
-	TObjectPtr<UDataTable> BlockDataTable;
-
 	UPROPERTY(EditAnywhere, Category = "World Setting")
 	int32 LoadDistance = 4;
 
@@ -113,16 +112,25 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "World Setting")
 	float RenderRate = 0.1f;
 
-	UPROPERTY(EditAnywhere, Category = "World Setting")
-	float UpdateRate = 1.f;
-
 	// 每次渲染Chunk的个数
 	UPROPERTY(EditAnywhere, Category = "World Setting")
-	int32 RenderCount = 1;
+	int32 RenderCount = 2;
+
+	UPROPERTY(EditAnywhere, Category = "World Setting")
+	float UnloadRate = 0.02f;
+
+	// 每次卸载Chunk的个数
+	UPROPERTY(EditAnywhere, Category = "World Setting")
+	int32 UnloadCount = 3;
+
+	UPROPERTY(EditAnywhere, Category = "World Setting")
+	float UpdateRate = 1.f;
 
 	FTimerHandle RenderQueueHandle;
 
 	FTimerHandle UpdateHandle;
+
+	FTimerHandle UnloadHandle;
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -144,7 +152,7 @@ private:
 	GlobalInfo WorldInfo;
 
 private:
-	TArray<AChunk*> ChunksToUpdate;
+	TArray<FIntPoint> ChunksToUpdate;
 	FCriticalSection ChunkUpdateCritical;
 
 	FWorldRunner* ChunkUpdateThread;

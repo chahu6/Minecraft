@@ -45,6 +45,10 @@ UBlock* UBlocks::GetRegisteredBlock(const FName& Name)
 	{
 		return UBlock::Registry[Name];
 	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT(" Invalid Block Requested: %s"), *Name.ToString());
+	}
 	return nullptr;
 }
 

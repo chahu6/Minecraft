@@ -6,6 +6,8 @@
 
 void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FIntPoint& ChunkVoxelPos)
 {
+	WorldInfo.MeshDataCache[ChunkVoxelPos].Empty();
+
 	FIntPoint ChunkWorldLocation = ChunkVoxelPos * WorldSettings::CHUNK_SIZE;
 
 	for (int32 Axis = 0; Axis < 3; ++Axis)

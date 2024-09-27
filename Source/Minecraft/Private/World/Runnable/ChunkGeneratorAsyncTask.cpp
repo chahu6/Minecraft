@@ -29,6 +29,6 @@ void FChunkGeneratorAsyncTask::DoWork()
 	AWorldManager* WorldManager = Cast<AWorldManager>(Chunk->GetOwner());
 	if (WorldManager && !bIsStopped)
 	{
-		WorldManager->TaskQueue.Enqueue(Chunk);
+		//WorldManager->TaskQueue.Enqueue(Chunk);
 	}
 }

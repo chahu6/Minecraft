@@ -38,7 +38,7 @@ void AChunk::UpdateChunk()
 	SetChunkState(EChunkState::Rebuild);
 
 	BuildMesh();
-	AWorldManager::Get()->TaskQueue.Enqueue(this);
+	//AWorldManager::Get()->TaskQueue.Enqueue(this);
 }
 
 void AChunk::AddActiveVoxel(const FBlockData& BlockData)
