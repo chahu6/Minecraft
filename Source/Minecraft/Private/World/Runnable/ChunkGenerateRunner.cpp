@@ -42,6 +42,7 @@ void FChunkGenerateRunner::WakeUpThread()
 void FChunkGenerateRunner::StopThread()
 {
 	Stop();
+	WakeUpThread();
 
 	if (ThreadIns)
 	{
@@ -75,6 +76,8 @@ uint32 FChunkGenerateRunner::Run()
 		if (CoordsChanged())
 		{
 			GenerateChunks();
+
+			FPlatformProcess::Sleep(0.1f);
 
 			GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Red, *WorldManager->CharacterChunkPosition.ToString());
 		}
@@ -194,7 +197,7 @@ void FChunkGenerateRunner::GenerateChunks()
 
 	for (int32 i = 0; i < LastActiveLoc.Num(); ++i)
 	{
-		WorldManager->RemoveChunkQueue.Enqueue(LastActiveLoc[i]);
+		WorldManager->UnloadChunkQueue.Enqueue(LastActiveLoc[i]);
 	}
 
 	LastActiveLoc.Empty();

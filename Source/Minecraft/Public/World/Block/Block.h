@@ -10,6 +10,7 @@
 
 class AWorldManager;
 class AEntityPlayer;
+class UItem;
 
 /**
  * 
@@ -31,6 +32,26 @@ public:
 
 	virtual void OnDestroy(const FVector& WorldLocation);
 
+	virtual void DropBlockAsItemWithChance(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, float Chance, int32 Forture);
+
+	/**
+	* 获取此区块在收获时应掉落的物品。
+	*/
+	virtual UItem* GetItemDropped(int32 Forture);
+
+	/**
+	* 根据给定的运气水平获取下降的数量
+	*/
+	virtual int32 QuantityDroppedWithBonus(int32 Forture);
+
+	/**
+	* 返回Block销毁时要丢弃的物品数量
+	*/
+	virtual int32 QuantityDropped();
+
+public:
+	void DropBlockAsItem(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, int32 Forture);
+
 	/** Block被点击 */
 	virtual void OnBlockClicked(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player);
 
@@ -46,6 +67,9 @@ public:
 	float GetPlayerRelativeBlockHardness();
 
 	float GetBlockHardness();
+
+protected:
+	static void SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)

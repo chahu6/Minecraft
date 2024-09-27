@@ -12,6 +12,8 @@
 #include "Chunk/MeshData.h"
 
 #include "World/Block/Blocks.h"
+#include "Utils/ChunkHelper.h"
+#include "World/Generator/GreedyMeshGenerator.h"
 
 AWorldManager* AWorldManager::Instance = nullptr;
 
@@ -41,6 +43,7 @@ void AWorldManager::BeginPlay()
 	InitialWorldChunkLoad();
 
 	GetWorldTimerManager().SetTimer(RenderQueueHandle, this, &AWorldManager::RenderChunk, RenderRate, true);
+	GetWorldTimerManager().SetTimer(UnloadHandle, this, &AWorldManager::UnloadChunk, UnloadRate, true);
 	GetWorldTimerManager().SetTimer(UpdateHandle, this, &AWorldManager::UpdateChunk, UpdateRate, true);
 }
 
@@ -69,19 +72,15 @@ void AWorldManager::Tick(float DeltaTime)
 
 	if (!DirtyChunkQueue.IsEmpty())
 	{
-		AChunk* DirtyChunk = nullptr;
-		DirtyChunkQueue.Dequeue(DirtyChunk);
-		if (DirtyChunk != nullptr)
+		FIntPoint ChunkVoxelPos;
+		while (DirtyChunkQueue.Dequeue(ChunkVoxelPos) && WorldInfo.MeshDataCache.Contains(ChunkVoxelPos) && ActiveChunks.Contains(ChunkVoxelPos))
 		{
-			//DirtyChunk->Render();
+			if (AChunk* ModifyChunk = ActiveChunks[ChunkVoxelPos])
+			{
+				ModifyChunk->RenderMesh(WorldInfo.MeshDataCache[ChunkVoxelPos]);
+			}
 		}
 	}
-
-	/*if (UpdatePosition())
-	{
-		AddChunk();
-		RemoveChunk();
-	}*/
 }
 
 void AWorldManager::InitialWorldChunkLoad()
@@ -110,7 +109,7 @@ bool AWorldManager::UpdatePosition()
 	return false;
 }
 
-bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation)
+bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation, bool bDropBlock)
 {
 	FVector WorldLocation = FVector(BlockWorldVoxelLocation * WorldSettings::BlockSize);
 	WorldLocation.X += WorldSettings::BlockSize >> 1;
@@ -118,20 +117,17 @@ bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation)
 	WorldLocation.Z += WorldSettings::BlockSize >> 1;
 
 	FBlockState BlockState = GetBlockState(BlockWorldVoxelLocation);
-	if (BlockState.GetBlock())
+
+	UBlock* Block = BlockState.GetBlock();
+
+	Block->OnDestroy(WorldLocation);
+
+	if (bDropBlock)
 	{
-		BlockState.GetBlock()->OnDestroy(WorldLocation);
+		Block->DropBlockAsItem(this, BlockWorldVoxelLocation, 0);
 	}
 
 	SetBlockState(BlockWorldVoxelLocation, FBlockState(UBlocks::Air));
-
-	//AChunk* Chunk = GetChunk(BlockWorldVoxelLocation);
-	//if (Chunk == nullptr) return false;
-
-	//Chunk->Rebuild();
-	//Rebuild_Adjacent_Chunks(BlockPos);
-
-	//AddChunkToUpdate(Chunk);
 
 	return true;
 }
@@ -139,11 +135,6 @@ bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation)
 void AWorldManager::PlaceBlock(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState)
 {
 	SetBlockState(BlockWorldVoxelLocation, BlockState);
-
-	/*AChunk* Chunk = GetChunk(BlockWorldVoxelLocation);
-	if (Chunk == nullptr) return;
-
-	AddChunkToUpdate(Chunk);*/
 }
 
 void AWorldManager::SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState)
@@ -157,12 +148,28 @@ void AWorldManager::SetBlockState(const FIntVector& BlockWorldVoxelLocation, con
 	{
 		FIntVector OffsetLocation = BlockWorldVoxelLocation - FIntVector(ChunkVoxelLocationX, ChunkVoxelLocationY, 0) * WorldSettings::CHUNK_SIZE;
 
-		const int32 OffsetX = OffsetLocation.X % WorldSettings::CHUNK_SIZE;
-		const int32 OffsetY = OffsetLocation.Y % WorldSettings::CHUNK_SIZE;
-		const int32 WorldZ = OffsetLocation.Z;
+		OffsetLocation.X %= WorldSettings::CHUNK_SIZE;
+		OffsetLocation.Y %= WorldSettings::CHUNK_SIZE;
+		//const int32 WorldZ = OffsetLocation.Z;
 
-		ChunkData->SetBlockState(OffsetX, OffsetY, WorldZ, BlockState);
+		ChunkData->SetBlockState(OffsetLocation, BlockState);
+
+		AddChunkToUpdate(BlockWorldVoxelLocation);
+
+		CheckSurroundingChunkNeedUpdate(OffsetLocation, ChunkVoxelLocationX, ChunkVoxelLocationY);
 	}
+}
+
+void AWorldManager::CheckSurroundingChunkNeedUpdate(const FIntVector& BlockOffsetLocation, int32 ChunkVoxelLocationX, int32 ChunkVoxelLocationY)
+{
+	if (BlockOffsetLocation.X >= WorldSettings::CHUNK_SIZE - 1)
+		AddChunkToUpdate(FIntPoint(ChunkVoxelLocationX + 1, ChunkVoxelLocationY));
+	else if (BlockOffsetLocation.X <= 0)
+		AddChunkToUpdate(FIntPoint(ChunkVoxelLocationX - 1, ChunkVoxelLocationY));
+	if (BlockOffsetLocation.Y >= WorldSettings::CHUNK_SIZE - 1)
+		AddChunkToUpdate(FIntPoint(ChunkVoxelLocationX, ChunkVoxelLocationY + 1));
+	else if (BlockOffsetLocation.Y <= 0)
+		AddChunkToUpdate(FIntPoint(ChunkVoxelLocationX, ChunkVoxelLocationY - 1));
 }
 
 FBlockState AWorldManager::GetBlockState(const FIntVector& BlockWorldVoxelLocation)
@@ -199,78 +206,84 @@ void AWorldManager::RenderChunk()
 	if (!SpawnChunkQueue.IsEmpty())
 	{
 		FIntPoint ChunkPos;
-		if (SpawnChunkQueue.Dequeue(ChunkPos))
+		for (int32 I = 0; I < RenderCount; ++I) // 每帧最大能加载几个
 		{
-			AChunk* SpawnChunk = GetWorld()->SpawnActor<AChunk>(AChunk::StaticClass(), FVector(ChunkPos.X * WorldSettings::ChunkSize, ChunkPos.Y * WorldSettings::ChunkSize, 0), FRotator::ZeroRotator);
-			if (SpawnChunk)
+			if (SpawnChunkQueue.Dequeue(ChunkPos) && WorldInfo.MeshDataCache.Contains(ChunkPos))
 			{
-				SpawnChunk->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
-				SpawnChunk->RenderMesh(WorldInfo.MeshDataCache[ChunkPos]);
-
-				ActiveChunks.Add(ChunkPos, SpawnChunk);
-				
-				for (FBlockState VoxelState : WorldInfo.ChunkDataMap[ChunkPos]->BlockStateMap)
+				AChunk* SpawnChunk = GetWorld()->SpawnActor<AChunk>(AChunk::StaticClass(), FVector(ChunkPos.X * WorldSettings::ChunkSize, ChunkPos.Y * WorldSettings::ChunkSize, 0), FRotator::ZeroRotator);
+				if (SpawnChunk)
 				{
-					if (VoxelState.GetBlock() && VoxelState.GetBlock()->bIsActive)
+					SpawnChunk->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+					SpawnChunk->RenderMesh(WorldInfo.MeshDataCache[ChunkPos]);
+
+					ActiveChunks.Add(ChunkPos, SpawnChunk);
+
+					/*for (FBlockState VoxelState : WorldInfo.ChunkDataMap[ChunkPos]->BlockStateMap)
 					{
-						WorldInfo.ChunkDataMap[ChunkPos]->ActiveVoxels.Add(VoxelState);
-					}
+						if (VoxelState.GetBlock() && VoxelState.GetBlock()->bIsActive)
+						{
+							WorldInfo.ChunkDataMap[ChunkPos]->ActiveVoxels.Add(VoxelState);
+						}
+					}*/
 				}
 			}
 		}
 	}
-	else
+}
+
+void AWorldManager::UnloadChunk()
+{
+	if (!UnloadChunkQueue.IsEmpty())
 	{
-		if (!RemoveChunkQueue.IsEmpty())
+		FIntPoint ChunkPos;
+		for (int32 I = 0; I < UnloadCount; ++I) // 每帧最大能卸载几个Chunk
 		{
-			FIntPoint ChunkPos;
-			if (RemoveChunkQueue.Dequeue(ChunkPos))
+			if (UnloadChunkQueue.Dequeue(ChunkPos))
 			{
 				if (ActiveChunks.Contains(ChunkPos))
 				{
 					ActiveChunks[ChunkPos]->Destroy();
+					ActiveChunks.Remove(ChunkPos);
 				}
 				WorldInfo.MeshDataCache.Remove(ChunkPos);
 				WorldInfo.ChunkDataMap.Remove(ChunkPos);
-				ActiveChunks.Remove(ChunkPos);
 			}
 		}
 	}
-
-	//if (TaskQueue.IsEmpty()) return;
-
-	//AChunk* Chunk = nullptr;
-	//for (int32 I = 0; I < RenderCount; ++I) // 每帧最大能加载几个
-	//{
-	//	if (TaskQueue.Dequeue(Chunk) && nullptr != Chunk)
-	//	{
-	//		Chunk->Render();
-	//	}
-	//}
 }
 
-void AWorldManager::AddChunkToUpdate(AChunk* Chunk, bool bTop)
+void AWorldManager::AddChunkToUpdate(const FIntVector& BlockWorldVoxelLocation, bool bTop)
+{
+	AddChunkToUpdate(ChunkHelper::GetChunkVoxelFromBlockWorldVoxel(BlockWorldVoxelLocation));
+}
+
+void AWorldManager::AddChunkToUpdate(const FIntPoint& ChunkVoxelLocation, bool bTop)
 {
 	FScopeLock ChunkUpdateThreadLock(&ChunkUpdateCritical);
 
-	if (!ChunksToUpdate.Contains(Chunk))
+	if (!ChunksToUpdate.Contains(ChunkVoxelLocation))
 	{
 		if (bTop)
 		{
-			ChunksToUpdate.Insert(Chunk, 0);
+			ChunksToUpdate.Insert(ChunkVoxelLocation, 0);
 		}
 		else
 		{
-			ChunksToUpdate.Add(Chunk);
+			ChunksToUpdate.Add(ChunkVoxelLocation);
 		}
+		ChunkUpdateThread->WakeUpThread();
 	}
 }
 
-void AWorldManager::ThreadedUpdate()
+void AWorldManager::ThreadUpdate()
 {
 	if (!ChunksToUpdate.IsEmpty())
 	{
 		UpdateChunks();
+	}
+	else
+	{
+		if (ChunkUpdateThread)ChunkUpdateThread->SuspendThread();
 	}
 }
 
@@ -278,8 +291,12 @@ void AWorldManager::UpdateChunks()
 {
 	FScopeLock ChunkUpdateThreadLock(&ChunkUpdateCritical);
 
-	ChunksToUpdate[0]->UpdateChunk();
-	
+	const FIntPoint ChunkVoxelLocation = ChunksToUpdate[0];
+	if (ActiveChunks.Contains(ChunkVoxelLocation))
+	{
+		GreedyMeshGenerator::BuildGreedyChunkMesh(WorldInfo, ChunkVoxelLocation);
+		DirtyChunkQueue.Enqueue(ChunkVoxelLocation);
+	}
 	ChunksToUpdate.RemoveAt(0);
 }
 

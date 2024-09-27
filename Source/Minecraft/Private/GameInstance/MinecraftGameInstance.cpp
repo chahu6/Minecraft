@@ -6,6 +6,7 @@
 #include "World/WorldManager.h"
 #include "World/Block/Block.h"
 #include "Item/Item.h"
+#include "Item/Items.h"
 #include "World/Block/Blocks.h"
 
 void UMinecraftGameInstance::Init()
@@ -30,6 +31,7 @@ void UMinecraftGameInstance::CallbackFunction()
 	UItem::RegisterItems();
 
 	UBlocks::Initialization();
-
+	UItems::Initialization();
+	
 	GetWorld()->SpawnActor<AWorldManager>(WorldManagerClass);
 }
