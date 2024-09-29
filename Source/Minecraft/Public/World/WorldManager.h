@@ -13,6 +13,7 @@ class FChunkGenerateRunner;
 class FWorldRunner;
 class UDataTable;
 class FChunkData;
+struct FItemStack;
 
 DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
 
@@ -50,6 +51,8 @@ public:
 	TSharedPtr<FChunkData> GetChunkData(const FIntPoint& ChunkVoxelLocation);
 
 	FProgressDelegate ProgressDelegate;
+
+	void SpawnEntity(const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack);
 
 private:
 	void SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
@@ -98,6 +101,9 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "World Setting")
+	TSubclassOf<class AEntityItem> DroppedItemClass;
+
+	UPROPERTY(EditAnywhere, Category = "World Setting")
 	int32 LoadDistance = 4;
 
 	UPROPERTY(EditAnywhere, Category = "World Setting")
@@ -134,7 +140,10 @@ protected:
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FIntPoint CharacterChunkPosition;
+	FIntPoint CharacterChunkPosition = { 1, 1 };
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FIntPoint PlayerPosition;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	FVector2D DefaultCharacterPosition;

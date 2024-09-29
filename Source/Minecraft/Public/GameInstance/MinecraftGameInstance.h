@@ -6,6 +6,8 @@
 #include "Engine/GameInstance.h"
 #include "MinecraftGameInstance.generated.h"
 
+struct FStreamableHandle;
+
 /**
  * 
  */
@@ -16,10 +18,6 @@ class MINECRAFT_API UMinecraftGameInstance : public UGameInstance
 public:
 	virtual void Init() override;
 
-private:
-	void CallbackFunction();
-
 protected:
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AWorldManager> WorldManagerClass;
+	TSharedPtr<FStreamableHandle> LoadAssetHandle;
 };

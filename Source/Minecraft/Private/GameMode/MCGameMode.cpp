@@ -5,10 +5,20 @@
 #include "World/WorldManager.h"
 #include "Controller/MCPlayerController.h"
 #include "Player/EntityPlayer.h"
+#include "Blueprint/UserWidget.h"
+
+#include "UI/Widget/ProgressBarWidget.h"
+#include "Components/ProgressBar.h"
+#include "GameInstance/MinecraftGameInstance.h"
 
 /**
  *	执行的先后顺序
  */
+
+AMCGameMode::AMCGameMode()
+{
+	PrimaryActorTick.bCanEverTick = true;
+}
 
 void AMCGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
@@ -27,12 +37,13 @@ void AMCGameMode::PostLogin(APlayerController* NewPlayer)
 
 void AMCGameMode::OnPostLogin(AController* NewPlayer)
 {
-	if (AMCPlayerController* PlayerController = Cast<AMCPlayerController>(NewPlayer))
-	{
-		//PlayerController->SetPrograssPercent(0.f);
-		//PlayerController->AddPrograssWidget();
-		//EnterWorld(PlayerController);
-	}
+}
+
+void AMCGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+
+	EnterWorld(NewPlayer);
 }
 
 void AMCGameMode::StartPlay()
@@ -45,33 +56,38 @@ void AMCGameMode::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AMCGameMode::EnterWorld(AMCPlayerController* NewPlayer)
+void AMCGameMode::Tick(float DeltaTime)
 {
-	check(EntityPlayerClass);
+	Super::Tick(DeltaTime);
+}
+
+void AMCGameMode::EnterWorld(APlayerController* NewPlayer)
+{
 	check(WorldManagerClass);
 
 	AWorldManager* WorldManager = GetWorld()->SpawnActorDeferred<AWorldManager>(WorldManagerClass, FTransform());
-	WorldManager->ProgressDelegate.BindLambda([=](float Percent) {
-		NewPlayer->SetPrograssPercent(Percent);
-		if (Percent == 1.f)
-		{
-			NewPlayer->RemovePrograssWidget();
-			FVector2D DefaultCharacterPosition = WorldManager->GetDefaultCharacterPosition();
+	//WorldManager->ProgressDelegate.BindLambda([&](float Percent) {
+	//	//SetPrograssPercent(Percent);
+	//	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, FString::Printf(TEXT("Percent: %f"), Percent));
+	//	if (Percent == 1.f)
+	//	{
+	//		if (ProgressBarWidget)
+	//		{
+	//			ProgressBarWidget->RemoveFromParent();
+	//		}
+	//		WorldManager->ProgressDelegate.Unbind();
+	//	}
+	//});
 
-			AEntityPlayer* PlayerCharacter = GetWorld()->SpawnActorDeferred<AEntityPlayer>(EntityPlayerClass, FTransform());
-			if (PlayerCharacter == nullptr) return;
+	NewPlayer->GetPawn()->SetActorLocation(FVector(0, 0, 30000));
 
-			NewPlayer->SetPawn(PlayerCharacter);
-			NewPlayer->OnPossess(PlayerCharacter);
-			PlayerCharacter->FinishSpawning(FTransform(FVector(DefaultCharacterPosition, 15000.f)));
-
-			FHitResult HitResult;
-			GetWorld()->LineTraceSingleByChannel(HitResult, FVector(DefaultCharacterPosition, 100000.0f), FVector(DefaultCharacterPosition, -1000.f), ECollisionChannel::ECC_Visibility);
-			if (HitResult.bBlockingHit)
-			{
-				PlayerCharacter->SetActorLocation(HitResult.ImpactPoint + FVector(0.f, 0.f, 2 * PlayerCharacter->GetDefaultHalfHeight()));
-			}
-		}
-	});
 	WorldManager->FinishSpawning(FTransform());
+}
+
+void AMCGameMode::SetPrograssPercent(float Percent)
+{
+	if (ProgressBarWidget && ProgressBarWidget->ProgressBar)
+	{
+		ProgressBarWidget->ProgressBar->SetPercent(Percent);
+	}
 }

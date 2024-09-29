@@ -5,7 +5,7 @@
 UBackpack::UBackpack(const FObjectInitializer& ObjectInitializer)
 	:UUserWidget(ObjectInitializer)
 {
-	SetIsFocusable(true);
+	//SetIsFocusable(true);
 }
 
 void UBackpack::NativePreConstruct()
@@ -35,7 +35,7 @@ void UBackpack::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	APlayerController* PlayerController = GetOwningPlayer();
+	/*APlayerController* PlayerController = GetOwningPlayer();
 	if (PlayerController)
 	{
 		FInputModeUIOnly InputMode;
@@ -45,31 +45,31 @@ void UBackpack::NativeConstruct()
 		PlayerController->SetShowMouseCursor(true);
 	}
 
-	InitUI();
+	InitUI();*/
 }
 
 void UBackpack::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	APlayerController* PlayerController = GetOwningPlayer();
+	/*APlayerController* PlayerController = GetOwningPlayer();
 	if (PlayerController)
 	{
 		FInputModeGameOnly InputMode;
 		PlayerController->SetInputMode(InputMode);
 		PlayerController->SetShowMouseCursor(false);
-	}
+	}*/
 }
 
 FReply UBackpack::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {
 	Super::NativeOnKeyDown(InGeometry, InKeyEvent);
 
-	FKey Key = InKeyEvent.GetKey();
+	/*FKey Key = InKeyEvent.GetKey();
 	if (Key == EKeys::E || Key == EKeys::Escape)
 	{
 		RemoveFromParent();
-	}
+	}*/
 
 	return FReply::Handled();
 }

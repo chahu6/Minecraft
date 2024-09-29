@@ -6,9 +6,10 @@
 #include "GameFramework/GameModeBase.h"
 #include "MCGameMode.generated.h"
 
-class AMCPlayerController;
 class AEntityPlayer;
 class AWorldManager;
+class UProgressBarWidget;
+
 /**
  * 
  */
@@ -17,6 +18,8 @@ class MINECRAFT_API AMCGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 public:
+	AMCGameMode();
+
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 
 	virtual void PreInitializeComponents() override;
@@ -27,14 +30,22 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	virtual void OnPostLogin(AController* NewPlayer) override;
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 
-	void EnterWorld(AMCPlayerController* NewPlayer);
+	void EnterWorld(APlayerController* NewPlayer);
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AEntityPlayer> EntityPlayerClass;
+	void SetPrograssPercent(float Percent);
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AWorldManager> WorldManagerClass;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UProgressBarWidget> ProgressBarWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UProgressBarWidget> ProgressBarWidget;
 };

@@ -3,7 +3,6 @@
 
 #include "GameInstance/MinecraftGameInstance.h"
 #include "MinecraftAssetManager.h"
-#include "World/WorldManager.h"
 #include "World/Block/Block.h"
 #include "Item/Item.h"
 #include "Item/Items.h"
@@ -22,16 +21,16 @@ void UMinecraftGameInstance::Init()
 	AssetManager.GetPrimaryAssetIdList(UMinecraftAssetManager::ItemType, ItemIdList);
 	
 	ItemIdList.Append(BlockIdList);
-	AssetManager.LoadPrimaryAssets(ItemIdList, TArray<FName>(), FStreamableDelegate::CreateUObject(this, &UMinecraftGameInstance::CallbackFunction));
-}
 
-void UMinecraftGameInstance::CallbackFunction()
-{
+	LoadAssetHandle = AssetManager.LoadPrimaryAssets(ItemIdList, TArray<FName>(), FStreamableDelegate());
+
+	EAsyncPackageState::Type Result = LoadAssetHandle->WaitUntilComplete();
+
+	check(Result == EAsyncPackageState::Complete);
+
 	UBlock::RegisterBlocks();
 	UItem::RegisterItems();
 
 	UBlocks::Initialization();
 	UItems::Initialization();
-	
-	GetWorld()->SpawnActor<AWorldManager>(WorldManagerClass);
 }

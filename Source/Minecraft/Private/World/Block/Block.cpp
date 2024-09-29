@@ -6,6 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Item/Item.h"
 #include "Item/Items.h"
+#include "World/WorldManager.h"
+#include "Item/ItemStack.h"
 
 TMap<FName, UBlock*> UBlock::Registry;
 
@@ -25,11 +27,11 @@ void UBlock::UpdateTick()
 {
 }
 
-void UBlock::OnDestroy(const FVector& WorldLocation)
+void UBlock::OnDestroy(AWorldManager* WorldManager, const FVector& WorldLocation)
 {
 	if (DestroySound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, DestroySound, WorldLocation);
+		UGameplayStatics::PlaySoundAtLocation(WorldManager, DestroySound, WorldLocation);
 	}
 }
 
@@ -59,7 +61,10 @@ void UBlock::DropBlockAsItemWithChance(AWorldManager* WorldManager, const FIntVe
 			UItem* Item = GetItemDropped(Forture);
 			if (Item != UItems::Air)
 			{
-				SpawnAsEntity(WorldManager, BlockWorldVoxelLocation);
+				FItemStack ItemStack;
+				ItemStack.SetItem(Item);
+				ItemStack.SetStackSize(1);
+				SpawnAsEntity(WorldManager, BlockWorldVoxelLocation, ItemStack);
 			}
 		}
 	}
@@ -109,9 +114,9 @@ float UBlock::GetBlockHardness()
 	return BlockHardness;
 }
 
-void UBlock::SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation)
+void UBlock::SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack)
 {
-
+	WorldManager->SpawnEntity(BlockWorldVoxelLocation, ItemStack);
 }
 
 void UBlock::RegisterBlocks()

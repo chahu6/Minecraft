@@ -60,6 +60,7 @@ public:
 
 	/** Interactive Interface */
 	virtual bool AddItemToInventory_Implementation(FItemData& ItemData) override;
+	virtual bool OnItemPickup_Implementation(FItemStack& ItemStack) override;
 	/** Interactive Interface end*/
 
 private:
@@ -77,7 +78,11 @@ private:
 	void SwitchingItem(const FInputActionValue& Value);
 	void DropItem();
 
-	void Initializer();
+	void Initialization();
+
+	void InitialInventoryUI();
+
+	void ToggleInventory();
 
 public:
 	FOnSwitchMainHand OnSwitchMainHand;
@@ -112,6 +117,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UBackpackComponent> BackpackComponent;
+
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UBackpack> InventoryWidgetClass;
+
+	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UBackpack> InventoryWidgetRef;
 
 private:
 	enum class EPerspective : uint8

@@ -24,4 +24,7 @@ class MINECRAFT_API IInteractiveInterface
 public:
 	UFUNCTION(BlueprintNativeEvent)
 	bool AddItemToInventory(UPARAM(ref) FItemData& ItemData);
+
+	UFUNCTION(BlueprintNativeEvent)
+	bool OnItemPickup(UPARAM(ref) FItemStack& ItemStack);
 };
