@@ -199,7 +199,7 @@ bool UInteractiveComponent::RemoveBlockFromWorld(const FIntVector& BlockVoxelLoc
 	AWorldManager* WorldManager = AWorldManager::Get();
 	if (WorldManager)
 	{
-		return WorldManager->DestroyBlock(BlockVoxelLocation);
+		return WorldManager->DestroyBlock(BlockVoxelLocation, true);
 	}
 
 	return false;

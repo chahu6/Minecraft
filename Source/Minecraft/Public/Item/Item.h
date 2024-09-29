@@ -48,8 +48,26 @@ public:
 	FGameplayTag Tag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
-	int32 MaxStackSize;
+	bool bIsStack = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (ClampMin = "0", ClampMax = "64", EditCondition = "bIsStack"), Category = Property)
+	int32 MaxStackSize = 64;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	int32 MaxDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	FText Name = FText::FromString(TEXT("None"));
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	FText Discription = FText::FromString(TEXT("None"));
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	TObjectPtr<UStaticMesh> StaticMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	TObjectPtr<USkeletalMesh> SkeletalMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	TObjectPtr<UTexture2D> Icon;
 };

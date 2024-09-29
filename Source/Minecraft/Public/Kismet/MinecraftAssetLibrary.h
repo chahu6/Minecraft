@@ -8,6 +8,9 @@
 
 struct FBlockMeta;
 struct FItemInstance;
+class UItem;
+struct FItemStack;
+
 /**
  * 
  */
@@ -21,4 +24,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "MinecraftAssetLibrary|Item")
 	static bool GetItemInstance(int32 ItemID, FItemInstance& OutItemInstance);
+
+	/** 
+	* Item
+	*/
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Item")
+	static bool IsEmpty(const FItemStack& ItemStack);
+
+	UFUNCTION(BlueprintCallable, Category = "Item")
+	static void ClearItemStack(UPARAM(ref) FItemStack& ItemStack);
 };

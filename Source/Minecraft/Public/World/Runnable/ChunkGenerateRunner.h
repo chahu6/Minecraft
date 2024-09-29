@@ -44,11 +44,11 @@ private:
 
 	FString m_ThreadName;
 
-	FRunnableThread* ThreadIns;
-
-	uint32 m_ThreadID;
-
 	FEvent* ThreadEvent;
 
 	TArray<FIntPoint> LastActiveLoc;
+
+	FRunnableThread* ThreadIns;
+
+	uint32 m_ThreadID;
 };

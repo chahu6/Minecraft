@@ -14,6 +14,7 @@
 #include "World/Block/Blocks.h"
 #include "Utils/ChunkHelper.h"
 #include "World/Generator/GreedyMeshGenerator.h"
+#include "Entity/Item/EntityItem.h"
 
 AWorldManager* AWorldManager::Instance = nullptr;
 
@@ -36,7 +37,7 @@ void AWorldManager::BeginPlay()
 
 	ChunkUpdateThread = new FWorldRunner(TEXT("ChunkUpdateThread"), this);
 
-	ChunkGenerateThread = new FChunkGenerateRunner(TEXT("TestThread"), this);
+	ChunkGenerateThread = new FChunkGenerateRunner(TEXT("ChunkGenerateThread"), this);
 
 	USimplexNoiseLibrary::SetNoiseSeed(Seed);
 
@@ -81,6 +82,12 @@ void AWorldManager::Tick(float DeltaTime)
 			}
 		}
 	}
+
+	if (APawn* Pawn = UGameplayStatics::GetPlayerPawn(this, 0))
+	{
+		PlayerPosition.X = FMath::FloorToInt32(Pawn->GetActorLocation().X / WorldSettings::ChunkSize);
+		PlayerPosition.Y = FMath::FloorToInt32(Pawn->GetActorLocation().Y / WorldSettings::ChunkSize);
+	}
 }
 
 void AWorldManager::InitialWorldChunkLoad()
@@ -120,7 +127,7 @@ bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation, bool
 
 	UBlock* Block = BlockState.GetBlock();
 
-	Block->OnDestroy(WorldLocation);
+	Block->OnDestroy(this, WorldLocation);
 
 	if (bDropBlock)
 	{
@@ -135,6 +142,27 @@ bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation, bool
 void AWorldManager::PlaceBlock(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState)
 {
 	SetBlockState(BlockWorldVoxelLocation, BlockState);
+}
+
+void AWorldManager::SpawnEntity(const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack)
+{
+	const double OffsetX = FMath::FRand() * 0.5f + 0.25;
+	const double OffsetY = FMath::FRand() * 0.5f + 0.25;
+	const double OffsetZ = FMath::FRand() * 0.5f + 0.25;
+
+	FVector ItemLocation;
+	ItemLocation.X = BlockWorldVoxelLocation.X + OffsetX;
+	ItemLocation.Y = BlockWorldVoxelLocation.Y + OffsetY;
+	ItemLocation.Z = BlockWorldVoxelLocation.Z + OffsetZ;
+
+	checkf(DroppedItemClass, TEXT("DroppedItemClass Is Invalid!"));
+
+	AEntityItem* EntityItem = GetWorld()->SpawnActorDeferred<AEntityItem>(DroppedItemClass, FTransform(ItemLocation * WorldSettings::BlockSize), this);
+	if (EntityItem)
+	{
+		EntityItem->SetItemStack(ItemStack);
+		EntityItem->FinishSpawning({}, true);
+	}
 }
 
 void AWorldManager::SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState)

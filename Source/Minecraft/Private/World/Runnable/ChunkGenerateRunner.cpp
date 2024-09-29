@@ -7,9 +7,9 @@
 FChunkGenerateRunner::FChunkGenerateRunner(const FString& ThreadName, AWorldManager* Manager)
 	:WorldManager(Manager),
 	m_ThreadName(ThreadName),
+	ThreadEvent(FPlatformProcess::GetSynchEventFromPool()),
 	ThreadIns(FRunnableThread::Create(this, *m_ThreadName, 0, EThreadPriority::TPri_Normal)),
-	m_ThreadID(ThreadIns->GetThreadID()),
-	ThreadEvent(FPlatformProcess::GetSynchEventFromPool())
+	m_ThreadID(ThreadIns->GetThreadID())
 {
 }
 
@@ -187,6 +187,7 @@ void FChunkGenerateRunner::GenerateChunks()
 
 	for (int32 i = 0; i < Locations.Num(); ++i)
 	{
+		if (!bRun) return;
 		GreedyMeshGenerator::BuildGreedyChunkMesh(WorldManager->WorldInfo, Locations[i]);
 	}
 
@@ -205,17 +206,10 @@ void FChunkGenerateRunner::GenerateChunks()
 
 bool FChunkGenerateRunner::CoordsChanged()
 {
-	APawn* Pawn = UGameplayStatics::GetPlayerPawn(WorldManager, 0);
-	if (Pawn == nullptr) return false;
-
-	FIntPoint NewLocation2D;
-	NewLocation2D.X = FMath::FloorToInt32(Pawn->GetActorLocation().X / WorldSettings::ChunkSize);
-	NewLocation2D.Y = FMath::FloorToInt32(Pawn->GetActorLocation().Y / WorldSettings::ChunkSize);
-	if (NewLocation2D != WorldManager->CharacterChunkPosition)
+	if (WorldManager->PlayerPosition != WorldManager->CharacterChunkPosition)
 	{
-		WorldManager->CharacterChunkPosition = NewLocation2D;
+		WorldManager->CharacterChunkPosition = WorldManager->PlayerPosition;
 		return true;
 	}
-
 	return false;
 }

@@ -5,16 +5,41 @@
 #include "CoreMinimal.h"
 #include "ItemStack.generated.h"
 
+class UItem;
 /**
  * 
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct MINECRAFT_API FItemStack final
 {
 	GENERATED_USTRUCT_BODY()
+
 public:
 	FItemStack();
 
-private:
+	void Empty();
+
+	bool IsEmpty() const;
+
+	bool IsFull() const;
+
+	int32 GetStackSize() const;
+	void SetStackSize(int32 NewStackSize);
+
+	const UItem* GetItem() const;
+	void SetItem(UItem* NewItem);
+
+	bool IsStack() const;
+	int32 GetMaxStackSize() const;
+
+	bool operator==(const FItemStack& ItemStack) const;
+
+	bool operator!=(const FItemStack& ItemStack) const;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Properties)
 	int32 StackSize;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Properties)
+	UItem* Item;
 };

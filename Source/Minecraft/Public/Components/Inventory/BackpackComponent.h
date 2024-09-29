@@ -13,6 +13,7 @@ UCLASS()
 class MINECRAFT_API UBackpackComponent : public UInventoryComponent
 {
 	GENERATED_BODY()
+
 public:
 	UBackpackComponent();
 
@@ -20,12 +21,26 @@ public:
 
 	void ConsumeItem(int32 SelectedIndex);
 
+	virtual bool AddItemToInventory(FItemData& ItemData) override;
+
+	virtual bool AddItemToInventory(FItemStack& ItemStack) override;
+
+	virtual bool AddItemToInventoryFromIndex(int32 Index, FItemStack& InItemStack) override;
+
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void NotifyAndUpdateUI() override;
+	bool AddItemToBackpack(FItemStack& ItemStack);
+	bool AddSameItemToBackpack(FItemStack& InItemStack);
+	bool AddItemStackBackpack(FItemStack& InItemStack);
 
-	bool IsHotbarSlot(int32 Index);
+	bool AddItemToHotbar(FItemStack& ItemStack);
+	bool AddSameItemToHotbar(FItemStack& InItemStack);
+	bool AddItemStackHotbar(FItemStack& InItemStack);
+
+	bool IsHotbarIndex(int32 Index);
+
+	virtual void NotifyAndUpdateUI() override;
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -38,6 +53,12 @@ private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemData> ArmorItems;
 
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TArray<FItemData> ArmorItems_Test;
+
 	UPROPERTY()
 	FItemData OffHand;
+
+	UPROPERTY()
+	FItemData OffHand_Test;
 };

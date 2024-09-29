@@ -11,6 +11,7 @@
 class AWorldManager;
 class AEntityPlayer;
 class UItem;
+struct FItemStack;
 
 /**
  * 
@@ -30,7 +31,7 @@ public:
 
 	virtual void UpdateTick();
 
-	virtual void OnDestroy(const FVector& WorldLocation);
+	virtual void OnDestroy(AWorldManager* WorldManager, const FVector& WorldLocation);
 
 	virtual void DropBlockAsItemWithChance(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, float Chance, int32 Forture);
 
@@ -69,7 +70,7 @@ public:
 	float GetBlockHardness();
 
 protected:
-	static void SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation);
+	static void SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
