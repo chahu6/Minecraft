@@ -23,14 +23,22 @@ public:
 
 	bool IsFull() const;
 
-	int32 GetStackSize() const;
-	void SetStackSize(int32 NewStackSize);
+	int32 GetCount() const;
+	void SetCount(int32 Size);
 
 	const UItem* GetItem() const;
 	void SetItem(UItem* NewItem);
 
 	bool IsStack() const;
 	int32 GetMaxStackSize() const;
+
+	void Decrement();
+
+	FItemStack SplitStack(int32 Amount);
+
+	void Shrink(int32 Quantity);
+
+	void Grow(int32 Quantity);
 
 	bool operator==(const FItemStack& ItemStack) const;
 

@@ -35,30 +35,13 @@ void UBackpack::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	/*APlayerController* PlayerController = GetOwningPlayer();
-	if (PlayerController)
-	{
-		FInputModeUIOnly InputMode;
-		InputMode.SetWidgetToFocus(this->TakeWidget());
-		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		PlayerController->SetInputMode(InputMode);
-		PlayerController->SetShowMouseCursor(true);
-	}
-
-	InitUI();*/
+	InitUI();
 }
 
 void UBackpack::NativeDestruct()
 {
 	Super::NativeDestruct();
 
-	/*APlayerController* PlayerController = GetOwningPlayer();
-	if (PlayerController)
-	{
-		FInputModeGameOnly InputMode;
-		PlayerController->SetInputMode(InputMode);
-		PlayerController->SetShowMouseCursor(false);
-	}*/
 }
 
 FReply UBackpack::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)

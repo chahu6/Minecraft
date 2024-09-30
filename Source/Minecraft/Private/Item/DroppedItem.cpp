@@ -75,14 +75,11 @@ void ADroppedItem::Tick(float DeltaTime)
 		SetActorLocation(FMath::VInterpTo(GetActorLocation(), Player->GetActorLocation(), DeltaTime, InterpSeepd));
 		if (GetActorLocation().Equals(Player->GetActorLocation(), 10.0f))
 		{
-			if (IInteractiveInterface::Execute_AddItemToInventory(Player, ItemData))
+			if (PickupSound)
 			{
-				if (PickupSound)
-				{
-					UGameplayStatics::PlaySound2D(this, PickupSound);
-				}
-				Destroy();
+				UGameplayStatics::PlaySound2D(this, PickupSound);
 			}
+			Destroy();
 		}
 	}
 }

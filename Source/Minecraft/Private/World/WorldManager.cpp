@@ -127,7 +127,7 @@ bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation, bool
 
 	UBlock* Block = BlockState.GetBlock();
 
-	Block->OnDestroy(this, WorldLocation);
+	Block->OnBlockDestroyedByPlayer(this, WorldLocation);
 
 	if (bDropBlock)
 	{
@@ -144,7 +144,30 @@ void AWorldManager::PlaceBlock(const FIntVector& BlockWorldVoxelLocation, const 
 	SetBlockState(BlockWorldVoxelLocation, BlockState);
 }
 
-void AWorldManager::SpawnEntity(const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack)
+AEntityItem* AWorldManager::SpawnEntity(const FVector& WorldLocation, const FItemStack& ItemStack)
+{
+	const double OffsetX = FMath::FRand() * 0.5f + 0.25;
+	const double OffsetY = FMath::FRand() * 0.5f + 0.25;
+	const double OffsetZ = FMath::FRand() * 0.5f + 0.25;
+
+	FVector Location;
+	Location.X = WorldLocation.X + OffsetX * 10.f;
+	Location.Y = WorldLocation.Y + OffsetY * 10.f;
+	Location.Z = WorldLocation.Z + OffsetZ * 10.f;
+
+	checkf(DroppedItemClass, TEXT("DroppedItemClass Is Invalid!"));
+
+	AEntityItem* EntityItem = GetWorld()->SpawnActorDeferred<AEntityItem>(DroppedItemClass, FTransform(Location), this);
+	if (EntityItem)
+	{
+		EntityItem->SetItemStack(ItemStack);
+		EntityItem->FinishSpawning({}, true);
+		return EntityItem;
+	}
+	return nullptr;
+}
+
+AEntityItem* AWorldManager::SpawnEntity(const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack)
 {
 	const double OffsetX = FMath::FRand() * 0.5f + 0.25;
 	const double OffsetY = FMath::FRand() * 0.5f + 0.25;
@@ -162,7 +185,9 @@ void AWorldManager::SpawnEntity(const FIntVector& BlockWorldVoxelLocation, const
 	{
 		EntityItem->SetItemStack(ItemStack);
 		EntityItem->FinishSpawning({}, true);
+		return EntityItem;
 	}
+	return nullptr;
 }
 
 void AWorldManager::SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState)

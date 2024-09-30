@@ -19,6 +19,8 @@ public:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+	void AddImpulse(const FVector& Impulse);
+
 protected:
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
@@ -41,7 +43,7 @@ protected:
 	TObjectPtr<USoundBase> PickupSound;
 
 	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
-	float FloatSpeed = 100.0f;
+	float FloatSpeed = 1.5f;
 
 	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
 	float FloatAmplitude = 10.0f;
@@ -62,6 +64,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "DefaultProperties")
 	float InterpSeepd = 15.0f;
+
+	float WorldTimer = 0.f;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))

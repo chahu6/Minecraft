@@ -26,7 +26,6 @@ public:
 
 	/** Player Controller Interface */
 	virtual void InitMainUI_Implementation() override;
-	virtual void OpenBackpack_Implementation() override;
 	/** end Player Controller Interface */
 
 	void AddPrograssWidget();

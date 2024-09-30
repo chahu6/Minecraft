@@ -6,6 +6,9 @@
 #include "World/WorldManager.h"
 #include "World/WorldSettings.h"
 #include "World/Block/Blocks.h"
+#include "Item/ItemStack.h"
+#include "Item/Item.h"
+#include "Item/ItemBlock.h"
 
 UInteractiveComponent::UInteractiveComponent()
 {
@@ -87,9 +90,9 @@ void UInteractiveComponent::WorldLocToBlockVoxelLoc(const FVector& WorldLocation
 	BlockVoxelLocation.Y = FMath::FloorToInt32(Location.Y / WorldSettings::BlockSize);
 	BlockVoxelLocation.Z = FMath::FloorToInt32(Location.Z / WorldSettings::BlockSize);
 
-	GEngine->AddOnScreenDebugMessage(24, 5.f, FColor::Red, FString::Printf(TEXT("%s"), *WorldLocation.ToString()));
-	GEngine->AddOnScreenDebugMessage(25, 5.f, FColor::Green, FString::Printf(TEXT("%s"), *WorldNormal.ToString()));
-	GEngine->AddOnScreenDebugMessage(26, 5.f, FColor::Blue, FString::Printf(TEXT("%s"), *BlockVoxelLocation.ToString()));
+	GEngine->AddOnScreenDebugMessage(24, 5.f, FColor::Red, FString::Printf(TEXT("WorldLocation: %s"), *WorldLocation.ToString()));
+	GEngine->AddOnScreenDebugMessage(25, 5.f, FColor::Green, FString::Printf(TEXT("WorldNormal: %s"), *WorldNormal.ToString()));
+	GEngine->AddOnScreenDebugMessage(26, 5.f, FColor::Blue, FString::Printf(TEXT("BlockVoxelLocation: %s"), *BlockVoxelLocation.ToString()));
 }
 
 FBlockState UInteractiveComponent::GetBlockDataFromLocation(const FVector& WorldLocation, const FVector& WorldNormal)
@@ -115,18 +118,18 @@ void UInteractiveComponent::UseItem()
 {
 	if (BlockHitResult.bBlockingHit && Player)
 	{
-		FItemData MainHandItemData = Player->GetMainHandItem();
-		if (!MainHandItemData.IsValid()) return;
+		FItemStack MainHandItemStack = Player->GetMainHandItem();
+		if (MainHandItemStack.IsEmpty()) return;
 
-		if (MainHandItemData.Type == EItemType::BuildingBlock)
+		if (MainHandItemStack.GetItem()->IsA<UItemBlock>())
 		{
-			PlaceBlock(MainHandItemData.ID);
+			PlaceBlock(MainHandItemStack);
 		}
 	}
 }
 
 // @TODO
-void UInteractiveComponent::PlaceBlock(int32 ItemID)
+bool UInteractiveComponent::PlaceBlock(const FItemStack& MainHandItemStack)
 {
 	FIntVector BlockVoxelLocation;
 	WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, BlockVoxelLocation);
@@ -137,7 +140,7 @@ void UInteractiveComponent::PlaceBlock(int32 ItemID)
 
 	FBlockState BlockSate = GetBlockDataFromLocation(BlockVoxelLocation);
 
-	if (!BlockSate.IsAir()) return;
+	if (!BlockSate.IsAir()) return false;
 
 	//if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnInteract();
 
@@ -146,14 +149,23 @@ void UInteractiveComponent::PlaceBlock(int32 ItemID)
 	{
 		//if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnBeforePlace();
 		//WorldManager->PlaceBlock(BlockVoxelLocation, BlockMeta.BlockID);
+		
+		UBlock* Block = Cast<UItemBlock>(MainHandItemStack.GetItem())->GetBlock();
+		WorldManager->PlaceBlock(BlockVoxelLocation, FBlockState(Block));
 
 		FVector WorldLocation = FVector(BlockVoxelLocation * WorldSettings::BlockSize);
 		WorldLocation = WorldLocation + (WorldSettings::BlockSize >> 1);
 		//if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnAfterPlace(WorldManager, WorldLocation, BlockMeta.PlaceSound);
+		
+		UGameplayStatics::PlaySoundAtLocation(this, Block->PlaceSound, WorldLocation);
 
 		Player->ConsumeItem();
 		Player->UpdateMainHandItem();
+
+		return true;
 	}
+
+	return false;
 }
 
 bool UInteractiveComponent::OnPlayerDestroyBlock(const FVector& WorldLocation, const FVector& WorldNormal)

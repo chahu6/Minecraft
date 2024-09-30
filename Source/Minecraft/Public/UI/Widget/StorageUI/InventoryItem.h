@@ -4,6 +4,9 @@
 #include "Blueprint/UserWidget.h"
 #include "InventoryItem.generated.h"
 
+class UImage;
+class UTextBlock;
+
 /**
  * 
  */
@@ -13,8 +16,8 @@ class MINECRAFT_API UInventoryItem : public UUserWidget
 	GENERATED_BODY()
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	class UImage* ItemIcon;
+	TObjectPtr<UImage> ItemIcon;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	class UTextBlock* Quantity;
+	TObjectPtr<UTextBlock> Quantity;
 };

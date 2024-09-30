@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Item/Data/ItemInfo.h"
 #include "Backpack.generated.h"
 
 class UBackpackComponent;
@@ -65,7 +64,4 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<APawn> Player;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	FItemData HangItemData;
 };

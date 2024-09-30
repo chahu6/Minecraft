@@ -14,6 +14,7 @@ class FWorldRunner;
 class UDataTable;
 class FChunkData;
 struct FItemStack;
+class AEntityItem;
 
 DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
 
@@ -52,7 +53,8 @@ public:
 
 	FProgressDelegate ProgressDelegate;
 
-	void SpawnEntity(const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack);
+	AEntityItem* SpawnEntity(const FVector& WorldLocation, const FItemStack& ItemStack);
+	AEntityItem* SpawnEntity(const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack);
 
 private:
 	void SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
@@ -101,7 +103,7 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "World Setting")
-	TSubclassOf<class AEntityItem> DroppedItemClass;
+	TSubclassOf<AEntityItem> DroppedItemClass;
 
 	UPROPERTY(EditAnywhere, Category = "World Setting")
 	int32 LoadDistance = 4;

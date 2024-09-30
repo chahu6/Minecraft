@@ -9,11 +9,27 @@ UInventoryComponent::UInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+void UInventoryComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Items.SetNum(InventorySize);
+}
+
+void UInventoryComponent::ConsumeItem(int32 SelectedIndex)
+{
+	if (IsValidIndex(SelectedIndex))
+	{
+		FItemStack& ItemStack = Items[SelectedIndex];
+		ItemStack.Decrement();
+	}
+}
+
 bool UInventoryComponent::AddItemToInventoryFromIndex(int32 Index, FItemStack& InItemStack)
 {
 	if (InItemStack.IsEmpty() || !IsValidIndex(Index)) return false;
 
-	FItemStack& ItemStack = Items_Test[Index];
+	FItemStack& ItemStack = Items[Index];
 
 	if (ItemStack.IsEmpty())
 	{
@@ -28,16 +44,16 @@ bool UInventoryComponent::AddItemToInventoryFromIndex(int32 Index, FItemStack& I
 			{
 				if (!ItemStack.IsFull())
 				{
-					int32 Sum = ItemStack.GetStackSize() + InItemStack.GetStackSize();
+					int32 Sum = ItemStack.GetCount() + InItemStack.GetCount();
 					if (Sum <= ItemStack.GetMaxStackSize())
 					{
-						ItemStack.SetStackSize(Sum);
+						ItemStack.SetCount(Sum);
 						InItemStack.Empty();
 					}
 					else
 					{
-						ItemStack.SetStackSize(ItemStack.GetMaxStackSize());
-						InItemStack.SetStackSize(Sum - ItemStack.GetStackSize());
+						ItemStack.SetCount(ItemStack.GetMaxStackSize());
+						InItemStack.SetCount(Sum - ItemStack.GetCount());
 					}
 				}
 			}
@@ -63,105 +79,18 @@ FItemStack UInventoryComponent::GetItemStack(int32 Index) const
 {
 	if (IsValidIndex(Index))
 	{
-		return Items_Test[Index];
+		return Items[Index];
 	}
 	return FItemStack();
 }
 
-void UInventoryComponent::BeginPlay()
+void UInventoryComponent::RemoveItemFromInventory(int32 Index, FItemStack& InItemStack)
 {
-	Super::BeginPlay();
-
-	Items.SetNum(InventorySize);
-
-	Items_Test.SetNum(InventorySize);
-}
-
-void UInventoryComponent::TryAddItem_Implementation(int32 Index, FItemData& InItemData)
-{
-	if (Items.IsValidIndex(Index) && InItemData.IsValid())
+	if (IsValidIndex(Index))
 	{
-		FItemData& ItemData = Items[Index];
-		if (ItemData.ID > 0 && ItemData.ID == InItemData.ID && ItemData.bIsStack)
-		{
-			int32 Sum = ItemData.Quantity + InItemData.Quantity;
-			if (ItemData.MaxCount >= Sum)
-			{
-				ItemData.Quantity = Sum;
-				InItemData.Clear();
-			}
-			else
-			{
-				ItemData.Quantity = ItemData.MaxCount;
-				InItemData.Quantity = Sum - ItemData.MaxCount;
-			}
-		}
-		else if(ItemData.ID > 0)
-		{
-			FItemData TempItemData = ItemData;
-			ItemData = InItemData;
-			InItemData = TempItemData;
-		}
-		else
-		{
-			ItemData = InItemData;
-			InItemData.Clear();
-		}
-
-		AfterDataUpdate();
+		InItemStack = Items[Index];
+		Items[Index].Empty();
 	}
-}
-
-void UInventoryComponent::RemoveItem_Implementation(int32 Index, FItemData& OutItemData)
-{
-	if (Items.IsValidIndex(Index))
-	{
-		OutItemData = Items[Index];
-		Items[Index].Clear();
-
-		AfterDataUpdate();
-	}
-	else
-	{
-		OutItemData.Clear();
-	}
-}
-
-void UInventoryComponent::TransferItem_Implementation(int32 Index, FItemData& OutItemData)
-{
-	if (Items.IsValidIndex(Index))
-	{
-		FItemData TempItemData = OutItemData;
-		OutItemData = Items[Index];
-		Items[Index] = TempItemData;
-		AfterDataUpdate();
-	}
-}
-
-bool UInventoryComponent::AddItemToInventory(FItemData& ItemData)
-{
-	if (!ItemData.IsValid()) return false;
-
-	for (int32 Index = 0; Index < Items.Num(); ++Index)
-	{
-		if (Items[Index].ID == ItemData.ID && ItemData.IsValid() && ItemData.bIsStack && Items[Index].Quantity < ItemData.MaxCount)
-		{
-			Execute_TryAddItem(this, Index, ItemData);
-		}
-	}
-
-	if (ItemData.IsValid())
-	{
-		for (int32 Index = 0; Index < Items.Num(); ++Index)
-		{
-			if (Items[Index].ID == 0)
-			{
-				Execute_TryAddItem(this, Index, ItemData);
-			}
-		}
-	}
-
-	return !ItemData.IsValid();
 }
 
 bool UInventoryComponent::AddItemToInventory(FItemStack& ItemStack)
@@ -180,14 +109,15 @@ bool UInventoryComponent::AddItemToInventory(FItemStack& ItemStack)
 	return ItemStack.IsEmpty();
 }
 
-void UInventoryComponent::AfterDataUpdate()
+void UInventoryComponent::DropAllItems()
 {
-	NotifyAndUpdateUI();
-}
-
-void UInventoryComponent::NotifyAndUpdateUI()
-{
-	OnInventoryUpdate.Broadcast();
+	for (FItemStack& ItemStack : Items)
+	{
+		if (!ItemStack.IsEmpty())
+		{
+			//DropItem(ItemStack);
+		}
+	}
 }
 
 bool UInventoryComponent::AddSameItem(FItemStack& InItemStack)
@@ -199,22 +129,22 @@ bool UInventoryComponent::AddSameItem(FItemStack& InItemStack)
 	// ²»¿É¶Ñµþ
 	if (!InItemStack.IsStack()) return bFlag;
 
-	for (FItemStack& ItemStack : Items_Test)
+	for (FItemStack& ItemStack : Items)
 	{
 		if (ItemStack.IsEmpty() || ItemStack.IsFull()) continue;
 
 		if (InItemStack.GetItem() == ItemStack.GetItem())
 		{
-			int32 Sum = InItemStack.GetStackSize() + ItemStack.GetStackSize();
+			int32 Sum = InItemStack.GetCount() + ItemStack.GetCount();
 			if (Sum <= ItemStack.GetMaxStackSize())
 			{
-				ItemStack.SetStackSize(Sum);
+				ItemStack.SetCount(Sum);
 				InItemStack.Empty();
 			}
 			else
 			{
-				ItemStack.SetStackSize(ItemStack.GetMaxStackSize());
-				InItemStack.SetStackSize(Sum - ItemStack.GetStackSize());
+				ItemStack.SetCount(ItemStack.GetMaxStackSize());
+				InItemStack.SetCount(Sum - ItemStack.GetCount());
 			}
 			bFlag = true;
 		}
@@ -229,7 +159,7 @@ bool UInventoryComponent::AddItemStack(FItemStack& InItemStack)
 
 	if (InItemStack.IsEmpty()) return bFlag;
 
-	for (FItemStack& ItemStack : Items_Test)
+	for (FItemStack& ItemStack : Items)
 	{
 		if (ItemStack.IsEmpty())
 		{

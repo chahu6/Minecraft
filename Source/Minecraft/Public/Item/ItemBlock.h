@@ -15,7 +15,7 @@ class MINECRAFT_API UItemBlock : public UItem
 {
 	GENERATED_BODY()
 public:
-	UBlock* GetBlock();
+	UBlock* GetBlock() const;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)

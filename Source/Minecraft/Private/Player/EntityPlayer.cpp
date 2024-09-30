@@ -12,6 +12,9 @@
 #include "Blueprint/UserWidget.h"
 
 #include "UI/Widget/StorageUI/Backpack.h"
+#include "Item/Item.h"
+#include "World/WorldManager.h"
+#include "Entity/Item/EntityItem.h"
 
 AEntityPlayer::AEntityPlayer()
 {
@@ -58,6 +61,10 @@ AEntityPlayer::AEntityPlayer()
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
 	ItemMesh->SetupAttachment(FirstCamera);
 	ItemMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
+	ItemMesh->SetRelativeRotation(FRotator(0.f, 30.f, 0.f));
+	ItemMesh->SetRelativeLocation(FVector(20.f, 14.f, -15.f));
+	ItemMesh->SetRelativeScale3D(FVector(0.1f));
+	ItemMesh->SetCastShadow(false);
 
 	SphereOverlap = CreateDefaultSubobject<USphereComponent>(TEXT("SphereOverlap"));
 	SphereOverlap->SetupAttachment(RootComponent);
@@ -190,7 +197,7 @@ void AEntityPlayer::OpenBackpack()
 
 void AEntityPlayer::SwitchingItem(const FInputActionValue& Value)
 {
-	int32 WheelValue = -Value.Get<float>();
+	const int32 WheelValue = -Value.Get<float>();
 	
 	MainHandIndex = (MainHandIndex + WheelValue + 9) % 9;
 
@@ -240,25 +247,59 @@ void AEntityPlayer::ToggleInventory()
 	}
 }
 
-void AEntityPlayer::UpdateMainHandItem()
+FVector AEntityPlayer::GetItemSpawnLocation()
 {
-	FItemData MainItemData = GetMainHandItem();
-
-	ItemMesh->SetStaticMesh(MainItemData.IsValid() ? MainItemData.Mesh : nullptr);
+	const FVector ForwardVector = GetController<APlayerController>()->PlayerCameraManager->GetActorForwardVector();
+	
+	return ForwardVector * 100.f + GetPawnViewLocation();
 }
 
-FItemData AEntityPlayer::GetMainHandItem()
+void AEntityPlayer::UpdateMainHandItem()
+{
+	FItemStack MainItemStack = GetMainHandItem();
+
+	if (!MainItemStack.IsEmpty())
+	{
+
+	}
+
+	ItemMesh->SetStaticMesh(MainItemStack.GetItem()->StaticMesh);
+}
+
+FItemStack AEntityPlayer::GetMainHandItem()
 {
 	if (BackpackComponent)
 	{
-		return BackpackComponent->GetSelected(MainHandIndex);
+		return BackpackComponent->GetHotbarItemStack(MainHandIndex);
 	}
 
 	return {};
 }
 
-void AEntityPlayer::DropItem()
+void AEntityPlayer::DropAction()
 {
+	//UGameplayStatics::DeprojectScreenToWorld // 2D坐标转3D
+
+	DropItem(false);
+}
+
+AEntityItem* AEntityPlayer::DropItem(bool bDropAll)
+{
+	FItemStack MainHandItemStack = GetMainHandItem();
+	int32 Count = bDropAll && !MainHandItemStack.IsEmpty() ? MainHandItemStack.GetCount() : 1;
+
+	return DropItem(BackpackComponent->DecreStackSize(MainHandIndex, Count));
+}
+
+AEntityItem* AEntityPlayer::DropItem(const FItemStack& ItemStack)
+{
+	const FVector ForwardVector = GetController<APlayerController>()->PlayerCameraManager->GetActorForwardVector();
+	AEntityItem* EntityItem = AWorldManager::Get()->SpawnEntity(GetItemSpawnLocation(), ItemStack);
+	if (EntityItem)
+	{
+		EntityItem->AddImpulse(ForwardVector * Thrust);
+	}
+	return EntityItem;
 }
 
 void AEntityPlayer::ConsumeItem()
@@ -267,11 +308,6 @@ void AEntityPlayer::ConsumeItem()
 	{
 		BackpackComponent->ConsumeItem(MainHandIndex);
 	}
-}
-
-bool AEntityPlayer::AddItemToInventory_Implementation(FItemData& ItemData)
-{
-	return BackpackComponent->AddItemToInventory(ItemData);
 }
 
 bool AEntityPlayer::OnItemPickup_Implementation(FItemStack& ItemStack)
@@ -301,6 +337,6 @@ void AEntityPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Triggered, this, &AEntityPlayer::SwitchingItem);
 
 		// DropItem
-		EnhancedInputComponent->BindAction(DropItemAction, ETriggerEvent::Started, this, &AEntityPlayer::DropItem);
+		EnhancedInputComponent->BindAction(DropItemAction, ETriggerEvent::Started, this, &AEntityPlayer::DropAction);
 	}
 }

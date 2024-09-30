@@ -27,6 +27,7 @@ void UItem::RegisterItems()
 			if (Item->IsA<UItemBlock>()) // Item->GetClass()->IsChildOf<UItemBlock>()
 			{
 				UItemBlock* ItemBlock = Cast<UItemBlock>(Item);
+				check(ItemBlock->GetBlock());
 				RegisterItemBlock(ItemBlock->GetBlock(), Item);
 			}
 			else
@@ -39,6 +40,7 @@ void UItem::RegisterItems()
 
 UItem* UItem::GetItemFromBlock(UBlock* Block)
 {
+	check(BLOCK_TO_ITEM.Contains(Block));
 	if (BLOCK_TO_ITEM.Contains(Block))
 	{
 		return BLOCK_TO_ITEM[Block];
