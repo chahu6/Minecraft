@@ -3,7 +3,7 @@
 
 #include "Item/ItemBlock.h"
 
-UBlock* UItemBlock::GetBlock()
+UBlock* UItemBlock::GetBlock() const
 {
     return Block;
 }

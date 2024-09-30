@@ -31,9 +31,11 @@ public:
 
 	virtual void UpdateTick();
 
-	virtual void OnDestroy(AWorldManager* WorldManager, const FVector& WorldLocation);
+	virtual void OnBlockDestroyedByPlayer(AWorldManager* WorldManager, const FVector& WorldLocation);
 
 	virtual void DropBlockAsItemWithChance(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, float Chance, int32 Forture);
+
+	virtual void OnBlockPlacedBy();
 
 	/**
 	* 获取此区块在收获时应掉落的物品。

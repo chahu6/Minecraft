@@ -7,6 +7,7 @@
 class AEntityPlayer;
 class ADroppedItem;
 struct FBlockState;
+struct FItemStack;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class MINECRAFT_API UInteractiveComponent : public UActorComponent
@@ -16,11 +17,8 @@ class MINECRAFT_API UInteractiveComponent : public UActorComponent
 	friend class AEntityPlayer;
 public:	
 	UInteractiveComponent();
-
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-protected:
 	virtual void BeginPlay() override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
 	bool OnPlayerDestroyBlock(const FVector& WorldLocation, const FVector& WorldNormal);
@@ -33,7 +31,7 @@ private:
 
 	void UseItem();
 
-	void PlaceBlock(int32 ItemID);
+	bool PlaceBlock(const FItemStack& MainHandItemStack);
 
 	bool RemoveBlockFromWorld(const FIntVector& BlockVoxelLocation);
 

@@ -1,6 +1,4 @@
 #include "UI/HUD/MinecraftHUD.h"
-#include "Blueprint/UserWidget.h"
-#include "UI/Widget/StorageUI/Backpack.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "UI/Widget/MainUI.h"
 
@@ -71,24 +69,6 @@ void AMinecraftHUD::RemoveDebugInfo()
 	if (DebugInfoUI)
 	{
 		DebugInfoUI->RemoveFromParent();
-	}
-}
-
-void AMinecraftHUD::AddBackpack()
-{
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && BackpackClass)
-	{
-		BackpackUI = CreateWidget<UBackpack>(PlayerController, BackpackClass);
-		BackpackUI->AddToViewport();
-	}
-}
-
-void AMinecraftHUD::RemoveBackpack()
-{
-	if (BackpackUI)
-	{
-		BackpackUI->RemoveFromParent();
 	}
 }
 

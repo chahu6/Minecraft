@@ -24,7 +24,4 @@ class MINECRAFT_API IPlayerControllerInterface
 public:
 	UFUNCTION(BlueprintNativeEvent)
 	void InitMainUI();
-
-	UFUNCTION(BlueprintNativeEvent)
-	void OpenBackpack();
 };

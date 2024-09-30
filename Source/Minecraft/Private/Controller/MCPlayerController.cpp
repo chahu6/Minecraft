@@ -41,14 +41,6 @@ void AMCPlayerController::InitMainUI_Implementation()
 	}
 }
 
-void AMCPlayerController::OpenBackpack_Implementation()
-{
-	if (MinecraftHUD)
-	{
-		MinecraftHUD->AddBackpack();
-	}
-}
-
 void AMCPlayerController::AddPrograssWidget()
 {
 	if (ProgressBarWidgetClass)

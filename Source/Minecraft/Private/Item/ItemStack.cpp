@@ -31,14 +31,19 @@ bool FItemStack::IsStack() const
 	return Item->bIsStack;
 }
 
-int32 FItemStack::GetStackSize() const
+int32 FItemStack::GetCount() const
 {
 	return StackSize;
 }
 
-void FItemStack::SetStackSize(int32 NewStackSize)
+void FItemStack::SetCount(int32 Size)
 {
-	StackSize = NewStackSize;
+	StackSize = Size;
+
+	if (StackSize == 0)
+	{
+		Empty();
+	}
 }
 
 const UItem* FItemStack::GetItem() const
@@ -54,6 +59,35 @@ void FItemStack::SetItem(UItem* NewItem)
 int32 FItemStack::GetMaxStackSize() const
 {
 	return Item->MaxStackSize;
+}
+
+void FItemStack::Decrement()
+{
+	if (IsEmpty()) return;
+
+	StackSize--;
+
+	if (StackSize <= 0) Empty();
+}
+
+FItemStack FItemStack::SplitStack(int32 Amount)
+{
+	int32 Num = FMath::Min(Amount, StackSize);
+
+	FItemStack ItemStack = *this;
+	ItemStack.SetCount(Num);
+	Shrink(Num);
+	return ItemStack;
+}
+
+void FItemStack::Shrink(int32 Quantity)
+{
+	Grow(-Quantity);
+}
+
+void FItemStack::Grow(int32 Quantity)
+{
+	SetCount(StackSize + Quantity);
 }
 
 bool FItemStack::operator==(const FItemStack& ItemStack) const

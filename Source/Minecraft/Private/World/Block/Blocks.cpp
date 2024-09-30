@@ -1,7 +1,7 @@
 #include "World/Block/Blocks.h"
 #include "MinecraftGameplayTags.h"
 
-#define REGISTER_BLOCK(BlockName) \
+#define REGISTER_BLOCKS(BlockName) \
 	BlockName = GetRegisteredBlock(GameplayTags.Minecraft_##BlockName)
 
 UBlocks* UBlocks::SingletonManager = nullptr;
@@ -28,15 +28,15 @@ void UBlocks::Initialization()
 
 	const FMinecraftGameplayTags& GameplayTags = FMinecraftGameplayTags::Get();
 
-	REGISTER_BLOCK(Air);
-	REGISTER_BLOCK(Stone);
-	REGISTER_BLOCK(Dirt);
-	REGISTER_BLOCK(Grass);
-	REGISTER_BLOCK(Bedrock);
-	REGISTER_BLOCK(Water);
-	REGISTER_BLOCK(Sand);
-	REGISTER_BLOCK(Tallgrass);
-	REGISTER_BLOCK(Rose);
+	REGISTER_BLOCKS(Air);
+	REGISTER_BLOCKS(Stone);
+	REGISTER_BLOCKS(Dirt);
+	REGISTER_BLOCKS(Grass);
+	REGISTER_BLOCKS(Bedrock);
+	REGISTER_BLOCKS(Water);
+	REGISTER_BLOCKS(Sand);
+	REGISTER_BLOCKS(Tallgrass);
+	REGISTER_BLOCKS(Rose);
 }
 
 UBlock* UBlocks::GetRegisteredBlock(const FName& Name)

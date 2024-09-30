@@ -9,11 +9,12 @@
 
 ## 二、效果演示：
 
-### 贪心网格化
+### 贪心网格化：
 <img src="docs/GreedyMeshing.png" alt="本地路径" style="zoom:50%;" />
 
 <img src="docs/Snipaste_2024-06-13_12-21-45.png" alt="本地路径" style="zoom:50%;" />
 
-<img src="docs/Snipaste_2024-06-13_12-22-21.png" alt="本地路径" style="zoom:50%;" />
+<img src="docs/Snipaste_2024-09-30_19-33-55.png" alt="本地路径" style="zoom:50%;" />
 
-<img src="docs/Snipaste_2024-06-13_12-22-30.png" alt="本地路径" style="zoom:50%;" />
+### 悬停式（非拖拽式）：
+<img src="docs/Snipaste_2024-09-30_19-34-20.png" alt="本地路径" style="zoom:50%;" />

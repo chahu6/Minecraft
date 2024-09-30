@@ -13,7 +13,7 @@ class USphereComponent;
 class UInteractiveComponent;
 class UCraftingComponent;
 class UInputAction;
-struct FItemData;
+class AEntityItem;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSwitchMainHand, int32);
 
@@ -54,12 +54,11 @@ public:
 	UFUNCTION()
 	void UpdateMainHandItem();
 
-	FItemData GetMainHandItem();
+	FItemStack GetMainHandItem();
 
 	void ConsumeItem();
 
 	/** Interactive Interface */
-	virtual bool AddItemToInventory_Implementation(FItemData& ItemData) override;
 	virtual bool OnItemPickup_Implementation(FItemStack& ItemStack) override;
 	/** Interactive Interface end*/
 
@@ -76,7 +75,12 @@ private:
 
 	void OpenBackpack();
 	void SwitchingItem(const FInputActionValue& Value);
-	void DropItem();
+	void DropAction();
+
+	AEntityItem* DropItem(bool bDropAll);
+
+	UFUNCTION(BlueprintCallable, Category = "Item")
+	AEntityItem* DropItem(const FItemStack& ItemStack);
 
 	void Initialization();
 
@@ -84,8 +88,14 @@ private:
 
 	void ToggleInventory();
 
+	FVector GetItemSpawnLocation();
+
 public:
 	FOnSwitchMainHand OnSwitchMainHand;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+	float Thrust = 50000.f;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")

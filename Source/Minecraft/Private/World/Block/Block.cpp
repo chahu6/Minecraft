@@ -27,7 +27,7 @@ void UBlock::UpdateTick()
 {
 }
 
-void UBlock::OnDestroy(AWorldManager* WorldManager, const FVector& WorldLocation)
+void UBlock::OnBlockDestroyedByPlayer(AWorldManager* WorldManager, const FVector& WorldLocation)
 {
 	if (DestroySound)
 	{
@@ -63,11 +63,16 @@ void UBlock::DropBlockAsItemWithChance(AWorldManager* WorldManager, const FIntVe
 			{
 				FItemStack ItemStack;
 				ItemStack.SetItem(Item);
-				ItemStack.SetStackSize(1);
+				ItemStack.SetCount(1);
 				SpawnAsEntity(WorldManager, BlockWorldVoxelLocation, ItemStack);
 			}
 		}
 	}
+}
+
+void UBlock::OnBlockPlacedBy()
+{
+
 }
 
 UItem* UBlock::GetItemDropped(int32 Forture)
@@ -77,7 +82,7 @@ UItem* UBlock::GetItemDropped(int32 Forture)
 
 void UBlock::OnBlockClicked(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Block Is Clicked")));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Block Is Clicked")));
 }
 
 FPrimaryAssetId UBlock::GetPrimaryAssetId() const

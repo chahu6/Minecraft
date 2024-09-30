@@ -7,7 +7,6 @@
 class UOverlayWidgetController;
 struct FWidgetControllerParams;
 class UMinecraftUserWidget;
-class UBackpack;
 class UMainUI;
 /**
  * 
@@ -31,10 +30,6 @@ public:
 
 	void RemoveDebugInfo();
 
-	void AddBackpack();
-
-	void RemoveBackpack();
-
 	void DrawCrosshairs();
 
 	void InitMainUI(APlayerController* PC, APlayerState* PS, APawn* Pawn);
@@ -45,12 +40,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UUserWidget> DebugInfoUI;
-
-	UPROPERTY(EditAnywhere, Category = "UI")
-	TSubclassOf<UUserWidget> BackpackClass;
-
-	UPROPERTY()
-	TObjectPtr<UBackpack> BackpackUI;
 
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UOverlayWidgetController> OverlayWidgetControllerClass;

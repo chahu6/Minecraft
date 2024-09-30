@@ -63,6 +63,14 @@ void AEntityItem::OnConstruction(const FTransform& Transform)
 	}
 }
 
+void AEntityItem::AddImpulse(const FVector& Impulse)
+{
+	if (Box)
+	{
+		Box->AddImpulse(Impulse);
+	}
+}
+
 void AEntityItem::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -85,7 +93,9 @@ void AEntityItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	const FVector DeltaLocation(0.0, 0.0, FMath::Sin(GetWorld()->GetTimeSeconds() * DeltaTime * FloatSpeed) * FloatAmplitude);
+	WorldTimer += DeltaTime * FloatSpeed;
+
+	const FVector DeltaLocation(0.0, 0.0, FMath::Sin(WorldTimer) * FloatAmplitude);
 
 	AvatarMesh->SetRelativeLocation(DeltaLocation);
 	AvatarMesh->AddRelativeRotation(FRotator(0.0, DeltaTime * RotationSpeed, 0.0));
@@ -102,7 +112,7 @@ void AEntityItem::Tick(float DeltaTime)
 				SetActorLocation(FMath::VInterpTo(GetActorLocation(), Player->GetActorLocation(), DeltaTime, InterpSeepd));
 				if (GetActorLocation().Equals(Player->GetActorLocation(), 10.0f))
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Red, TEXT("Pick Up"));
+					GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Red, TEXT("EntityItem: Pick Up"));
 					
 					if (IInteractiveInterface::Execute_OnItemPickup(Player, ItemStack))
 					{

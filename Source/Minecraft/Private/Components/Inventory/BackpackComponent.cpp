@@ -6,10 +6,6 @@
 UBackpackComponent::UBackpackComponent()
 {
 	InventorySize = 36;
-
-	ArmorItems.SetNum(4);
-
-	ArmorItems_Test.SetNum(4);
 }
 
 void UBackpackComponent::BeginPlay()
@@ -18,42 +14,23 @@ void UBackpackComponent::BeginPlay()
 
 }
 
-void UBackpackComponent::NotifyAndUpdateUI()
-{
-	OnHotbarUpdate.Broadcast();
-	OnInventoryUpdate.Broadcast();
-}
-
-FItemData UBackpackComponent::GetSelected(int32 SelectedIndex)
+FItemStack UBackpackComponent::GetHotbarItemStack(int32 SelectedIndex)
 {
 	if (IsHotbarIndex(SelectedIndex))
 	{
 		return Items[SelectedIndex];
 	}
-
+		
 	return {};
 }
 
 void UBackpackComponent::ConsumeItem(int32 SelectedIndex)
 {
-	if (Items.IsValidIndex(SelectedIndex))
-	{
-		FItemData& ItemData = Items[SelectedIndex];
-		if (ItemData.Quantity > 0)
-		{
-			ItemData.Quantity--;
-		}
-		if (ItemData.Quantity <= 0)
-		{
-			ItemData.Clear();
-		}
-		AfterDataUpdate();
-	}
-}
+	if (!IsValidIndex(SelectedIndex)) return;
 
-bool UBackpackComponent::AddItemToInventory(FItemData& ItemData)
-{
-	return Super::AddItemToInventory(ItemData);
+	Super::ConsumeItem(SelectedIndex);
+
+	NotifyAndUpdateUI(SelectedIndex);
 }
 
 bool UBackpackComponent::AddItemToInventory(FItemStack& ItemStack)
@@ -69,16 +46,16 @@ bool UBackpackComponent::AddItemToInventoryFromIndex(int32 Index, FItemStack& In
 
 	bool bFlag = Super::AddItemToInventoryFromIndex(Index, InItemStack);
 
-	if (IsHotbarIndex(Index))
-	{
-		OnHotbarUpdate.Broadcast();
-	}
-	else
-	{
-		OnInventoryUpdate.Broadcast();
-	}
+	NotifyAndUpdateUI(Index);
 
 	return bFlag;
+}
+
+void UBackpackComponent::RemoveItemFromInventory(int32 Index, FItemStack& InItemStack)
+{
+	Super::RemoveItemFromInventory(Index, InItemStack);
+
+	NotifyAndUpdateUI(Index);
 }
 
 bool UBackpackComponent::AddItemToBackpack(FItemStack& ItemStack)
@@ -105,23 +82,23 @@ bool UBackpackComponent::AddSameItemToBackpack(FItemStack& InItemStack)
 
 	if (!InItemStack.IsStack()) return bFlag;	// ²»¿É¶Ñµþ
 
-	for (int Index = 9; Index < Items_Test.Num(); ++Index)
+	for (int Index = 9; Index < Items.Num(); ++Index)
 	{
-		FItemStack& ItemStack = Items_Test[Index];
+		FItemStack& ItemStack = Items[Index];
 		if (ItemStack.IsEmpty() || ItemStack.IsFull()) continue;
 
 		if (InItemStack.GetItem() == ItemStack.GetItem())
 		{
-			int32 Sum = InItemStack.GetStackSize() + ItemStack.GetStackSize();
+			int32 Sum = InItemStack.GetCount() + ItemStack.GetCount();
 			if (Sum <= ItemStack.GetMaxStackSize())
 			{
-				ItemStack.SetStackSize(Sum);
+				ItemStack.SetCount(Sum);
 				InItemStack.Empty();
 			}
 			else
 			{
-				ItemStack.SetStackSize(ItemStack.GetMaxStackSize());
-				InItemStack.SetStackSize(Sum - ItemStack.GetStackSize());
+				ItemStack.SetCount(ItemStack.GetMaxStackSize());
+				InItemStack.SetCount(Sum - ItemStack.GetCount());
 			}
 			bFlag = true;
 		}
@@ -136,9 +113,9 @@ bool UBackpackComponent::AddItemStackBackpack(FItemStack& InItemStack)
 
 	if (InItemStack.IsEmpty()) return bFlag;
 
-	for (int Index = 9; Index < Items_Test.Num(); ++Index)
+	for (int Index = 9; Index < Items.Num(); ++Index)
 	{
-		FItemStack& ItemStack = Items_Test[Index];
+		FItemStack& ItemStack = Items[Index];
 		if (ItemStack.IsEmpty())
 		{
 			ItemStack = InItemStack;
@@ -176,21 +153,21 @@ bool UBackpackComponent::AddSameItemToHotbar(FItemStack& InItemStack)
 
 	for (int Index = 0; Index < 8; ++Index)
 	{
-		FItemStack& ItemStack = Items_Test[Index];
+		FItemStack& ItemStack = Items[Index];
 		if (ItemStack.IsEmpty() || ItemStack.IsFull()) continue;
 
 		if (InItemStack.GetItem() == ItemStack.GetItem())
 		{
-			int32 Sum = InItemStack.GetStackSize() + ItemStack.GetStackSize();
+			int32 Sum = InItemStack.GetCount() + ItemStack.GetCount();
 			if (Sum <= ItemStack.GetMaxStackSize())
 			{
-				ItemStack.SetStackSize(Sum);
+				ItemStack.SetCount(Sum);
 				InItemStack.Empty();
 			}
 			else
 			{
-				ItemStack.SetStackSize(ItemStack.GetMaxStackSize());
-				InItemStack.SetStackSize(Sum - ItemStack.GetStackSize());
+				ItemStack.SetCount(ItemStack.GetMaxStackSize());
+				InItemStack.SetCount(Sum - ItemStack.GetCount());
 			}
 			bFlag = true;
 		}
@@ -206,7 +183,7 @@ bool UBackpackComponent::AddItemStackHotbar(FItemStack& InItemStack)
 
 	for (int Index = 0; Index < 8; ++Index)
 	{
-		FItemStack& ItemStack = Items_Test[Index];
+		FItemStack& ItemStack = Items[Index];
 		if (ItemStack.IsEmpty())
 		{
 			ItemStack = InItemStack;
@@ -222,4 +199,42 @@ bool UBackpackComponent::AddItemStackHotbar(FItemStack& InItemStack)
 bool UBackpackComponent::IsHotbarIndex(int32 Index)
 {
 	return Index >= 0 && Index < 9;
+}
+
+void UBackpackComponent::NotifyAndUpdateUI(int32 Index)
+{
+	if (!IsValidIndex(Index)) return;
+
+	if (IsHotbarIndex(Index))
+	{
+		OnHotbarUpdate.Broadcast();
+	}
+	else
+	{
+		OnInventoryUpdate.Broadcast();
+	}
+}
+
+FItemStack UBackpackComponent::DecreStackSize(int32 Index, int32 Count)
+{
+	bool bFlag = false;
+
+	FItemStack ReturnValue;
+
+	if (IsValidIndex(Index))
+	{
+		FItemStack& ItemStack = Items[Index];
+		if (!ItemStack.IsEmpty())
+		{
+			ReturnValue = ItemStack.SplitStack(Count);
+			bFlag = true;
+		}
+	}
+
+	if (bFlag)
+	{
+		NotifyAndUpdateUI(Index);
+	}
+
+	return ReturnValue;
 }
