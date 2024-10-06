@@ -5,7 +5,7 @@
 #include "Kismet/MinecraftAssetLibrary.h"
 #include "World/WorldManager.h"
 #include "World/WorldSettings.h"
-#include "World/Block/Blocks.h"
+#include "Init/Blocks.h"
 #include "Item/ItemStack.h"
 #include "Item/Item.h"
 #include "Item/ItemBlock.h"
@@ -121,9 +121,22 @@ void UInteractiveComponent::UseItem()
 		FItemStack MainHandItemStack = Player->GetMainHandItem();
 		if (MainHandItemStack.IsEmpty()) return;
 
-		if (MainHandItemStack.GetItem()->IsA<UItemBlock>())
+		FIntVector BlockVoxelLocation;
+		WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, BlockVoxelLocation);
+
+		FBlockState BlockState = GetBlockDataFromLocation(BlockVoxelLocation);
+
+		UBlock* Block = BlockState.GetBlock();
+		if (Block->OnBlockActivated(AWorldManager::Get(), BlockVoxelLocation, Player))
 		{
-			PlaceBlock(MainHandItemStack);
+			UE_LOG(LogTemp, Warning, TEXT("Right Clicked!"));
+		}
+		else
+		{
+			if (MainHandItemStack.GetItem()->IsA<UItemBlock>())
+			{
+				PlaceBlock(MainHandItemStack);
+			}
 		}
 	}
 }
@@ -138,9 +151,9 @@ bool UInteractiveComponent::PlaceBlock(const FItemStack& MainHandItemStack)
 	BlockVoxelLocation.Y += BlockHitResult.ImpactNormal.Y;
 	BlockVoxelLocation.Z += BlockHitResult.ImpactNormal.Z;
 
-	FBlockState BlockSate = GetBlockDataFromLocation(BlockVoxelLocation);
+	FBlockState BlockState = GetBlockDataFromLocation(BlockVoxelLocation);
 
-	if (!BlockSate.IsAir()) return false;
+	if (!BlockState.IsAir()) return false;
 
 	//if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnInteract();
 

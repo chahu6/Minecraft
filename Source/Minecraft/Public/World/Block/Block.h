@@ -52,14 +52,17 @@ public:
 	*/
 	virtual int32 QuantityDropped();
 
-public:
-	void DropBlockAsItem(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, int32 Forture);
-
 	/** Block被点击 */
 	virtual void OnBlockClicked(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player);
 
+	/** 当玩家右键单击该块时调用 */
+	virtual bool OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player);
+
+public:
 	/** Overridden to use saved type */
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
+
+	void DropBlockAsItem(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, int32 Forture);
 
 	FBlockState GetDefaultBlockState() const;
 

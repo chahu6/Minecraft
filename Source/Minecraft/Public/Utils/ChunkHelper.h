@@ -1,6 +1,6 @@
 #pragma once
 
-class MINECRAFT_API ChunkHelper
+class ChunkHelper
 {
 public:
 	static int32 GetBlocksIndex(int32 OffsetX, int32 OffsetY, int32 OffsetZ);

@@ -25,8 +25,8 @@ public:
 	FGameplayTag Minecraft_Sand;
 	FGameplayTag Minecraft_Tallgrass;
 	FGameplayTag Minecraft_Rose;
-	FGameplayTag Minecraft_OakWood;
-	FGameplayTag Minecraft_OakPlants;
+	FGameplayTag Minecraft_Log;
+	FGameplayTag Minecraft_Planks;
 
 private:
 	FMinecraftGameplayTags() = default;

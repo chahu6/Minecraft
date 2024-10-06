@@ -2,7 +2,7 @@
 #include "SimplexNoiseLibrary.h"
 #include "World/WorldSettings.h"
 #include "World/Data/GlobalInfo.h"
-#include "World/Block/Blocks.h"
+#include "Init/Blocks.h"
 
 void CaveGenerator::GeneratorCave(GlobalInfo& WorldInfo, const FIntPoint& ChunkVoxelPos)
 {

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Item/Items.h"
+#include "Init/Items.h"
 #include "Item/Item.h"
 #include "MinecraftGameplayTags.h"
 

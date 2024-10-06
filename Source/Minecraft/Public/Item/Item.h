@@ -26,6 +26,8 @@ public:
 
 	static UItem* GetItemFromBlock(UBlock* Block);
 
+	static UItem* GetItemFromName(const FName& ItemName);
+
 	/** Overridden to use saved type */
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 

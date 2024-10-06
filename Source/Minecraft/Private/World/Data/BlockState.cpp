@@ -3,7 +3,7 @@
 
 #include "World/Data/BlockState.h"
 #include "World/Block/Block.h"
-#include "World/Block/Blocks.h"
+#include "Init/Blocks.h"
 
 FBlockState::FBlockState()
 	:BlockID(0),

@@ -4,6 +4,7 @@
 #include "Item/Item.h"
 #include "MinecraftAssetManager.h"
 #include "Item/ItemBlock.h"
+#include "MinecraftGameplayTags.h"
 
 TMap<FName, UItem*> UItem::REGISTER;
 TMap<UBlock*, UItem*> UItem::BLOCK_TO_ITEM;
@@ -45,7 +46,17 @@ UItem* UItem::GetItemFromBlock(UBlock* Block)
 	{
 		return BLOCK_TO_ITEM[Block];
 	}
-	return nullptr;
+	return REGISTER[FMinecraftGameplayTags::Get().Minecraft_Air.GetTagName()];
+}
+
+UItem* UItem::GetItemFromName(const FName& ItemName)
+{
+	//check(REGISTER.Contains(ItemName));
+	if (REGISTER.Contains(ItemName))
+	{
+		return REGISTER[ItemName];
+	}
+	return REGISTER[FMinecraftGameplayTags::Get().Minecraft_Air.GetTagName()];
 }
 
 FPrimaryAssetId UItem::GetPrimaryAssetId() const

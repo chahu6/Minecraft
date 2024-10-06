@@ -9,7 +9,7 @@
 #include "Math/PoissonDiscSampling.h"
 #include "Utils/ChunkHelper.h"
 #include "World/WorldManager.h"
-#include "World/Block/Blocks.h"
+#include "Init/Blocks.h"
 
 UTerrainComponent::UTerrainComponent()
 {
@@ -72,11 +72,11 @@ void UTerrainComponent::LoadTerrainBlockID(AWorldManager* WorldManager, const FI
 			{
 				if (Z > Height)
 				{
-					if (Z <= WorldSettings::WATER_LEVEL)
+	/*				if (Z <= WorldSettings::WATER_LEVEL)
 					{
 						ChunkData->SetBlockState(X, Y, Z, FBlockState(UBlocks::Water, FIntVector(ChunkWorldPos.X + X, ChunkWorldPos.Y + Y, Z)));
 						continue;
-					}
+					}*/
 					break;
 				}
 				else if (Z == Height)
@@ -193,7 +193,7 @@ void UTerrainComponent::GenerateHeight(AWorldManager* WorldManager, const FIntPo
 
 	for (int32 i = 0; i < WorldSettings::CHUNK_AREA; ++i)
 	{
-		WorldManager->WorldInfo.ChunkDataMap[ChunkVoxelPos]->SetHeight(i, 100 + NewNoiseMap[i] * 28);
+		WorldManager->WorldInfo.ChunkDataMap[ChunkVoxelPos]->SetHeight(i, WorldSettings::SURFACE_HEIGHT + NewNoiseMap[i] * 128);
 	}
 }
 

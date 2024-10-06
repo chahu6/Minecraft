@@ -1,4 +1,4 @@
-#include "World/Block/Blocks.h"
+#include "Init/Blocks.h"
 #include "MinecraftGameplayTags.h"
 
 #define REGISTER_BLOCKS(BlockName) \

@@ -80,7 +80,9 @@ private:
 	int32 BlockHitDelay = 0;
 	float CurBlockDamageMP = 0.0f;
 
+	UPROPERTY(Transient)
 	FIntVector LastHitBlockLocation;
 
+	UPROPERTY(Transient)
 	FHitResult BlockHitResult;
 };

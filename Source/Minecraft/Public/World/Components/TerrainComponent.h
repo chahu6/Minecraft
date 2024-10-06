@@ -65,7 +65,7 @@ protected:
 	FVector2D Offset = FVector2D::ZeroVector;
 
 	UPROPERTY(EditAnywhere, Category = "Terrain Setting", Meta = (ClampMin = "0.0001"))
-	float Scale = 200.0f;
+	float Scale = 1000.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Terrain Setting", Meta = (ClampMin = "0", ClampMax = "1"))
 	float Persistance = 0.5f;

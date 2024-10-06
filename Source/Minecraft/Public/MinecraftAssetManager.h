@@ -19,6 +19,7 @@ public:
 
 	static const FPrimaryAssetType BlockType;
 	static const FPrimaryAssetType ItemType;
+	static const FPrimaryAssetType BiomeType;
 
 	/**
 	 * Synchronously loads an RPGItem subclass, this can hitch but is useful when you cannot wait for an async load

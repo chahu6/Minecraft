@@ -1,9 +1,7 @@
 #include "Components/Crafting/CraftingComponent.h"
-#include "World/Block/Data/BlockID.h"
-#include "Item/Data/ItemID.h"
-#include "Kismet/MinecraftAssetLibrary.h"
-
-TMap<FString, FItemOutput> UCraftingComponent::ItemRecipes;
+#include "Utils/ItemStackHelper.h"
+#include "Item/Crafting/CraftingManager.h"
+#include "Item/Crafting/IRecipe.h"
 
 UCraftingComponent::UCraftingComponent()
 {
@@ -13,152 +11,178 @@ UCraftingComponent::UCraftingComponent()
 void UCraftingComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	Items.SetNum(Dimension * Dimension);
+
+	StackList.SetNum(InventoryWidth * InventoryHeight + 1);
 }
 
-void UCraftingComponent::InitialItemRecipes()
+int32 UCraftingComponent::GetSizeInventory_Implementation()
 {
-	ItemRecipes.Add(FString::Printf(TEXT("A%dB*C*D*"), EBlockID::Oak_Wood), { (int32)EBlockID::Oak_Planks, 4 });
+	return StackList.Num();
 }
 
-void UCraftingComponent::TryAddItem_Implementation(int32 Index, FItemData& InItemData)
+bool UCraftingComponent::IsEmpty_Implementation() const
 {
-	if (Items.IsValidIndex(Index) && InItemData.IsValid())
+	for (const FItemStack& ItemStack : StackList)
 	{
-		FItemData& ItemData = Items[Index];
-		if (ItemData.ID > 0 && ItemData.ID == InItemData.ID && ItemData.bIsStack)
+		if (!ItemStack.IsEmpty())
 		{
-			int32 Sum = ItemData.Quantity + InItemData.Quantity;
-			if (ItemData.MaxCount >= Sum)
+			return false;
+		}
+	}
+	return true;
+}
+
+bool UCraftingComponent::IsEmptyFromIndex_Implementation(int32 Index) const
+{
+	if (StackList.IsValidIndex(Index))
+	{
+		return StackList[Index].IsEmpty();
+	}
+	return false;
+}
+
+FItemStack UCraftingComponent::GetItemStack_Implementation(int32 Index)
+{
+	if (StackList.IsValidIndex(Index))
+	{
+		return StackList[Index];
+	}
+	return FItemStack();
+}
+
+FItemStack UCraftingComponent::DecrStackSize_Implementation(int32 Index, int32 Count)
+{
+	FItemStack ItemStack = ItemStackHelper::GetAndSplit(StackList, Index, Count);
+	
+	if (!ItemStack.IsEmpty())
+	{
+		NotifyAndUpdate();
+	}
+
+	return ItemStack;
+}
+
+FItemStack UCraftingComponent::RemoveStackFromSlot_Implementation(int32 Index)
+{
+	return ItemStackHelper::GetAndRemove(StackList, Index);
+}
+
+void UCraftingComponent::SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack)
+{
+	if (StackList.IsValidIndex(Index))
+	{
+		StackList[Index] = Stack;
+		NotifyAndUpdate();
+	}
+}
+
+bool UCraftingComponent::AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack)
+{
+	if (InItemStack.IsEmpty() || !StackList.IsValidIndex(Index)) return false;
+
+	FItemStack& ItemStack = StackList[Index];
+
+	if (ItemStack.IsEmpty())
+	{
+		ItemStack = InItemStack;
+		InItemStack.Empty();
+	}
+	else
+	{
+		if (InItemStack.IsStack())
+		{
+			if (ItemStack.GetItem() == InItemStack.GetItem())
 			{
-				ItemData.Quantity = Sum;
-				InItemData.Clear();
+				if (!ItemStack.IsFull())
+				{
+					int32 Sum = ItemStack.GetCount() + InItemStack.GetCount();
+					if (Sum <= ItemStack.GetMaxStackSize())
+					{
+						ItemStack.SetCount(Sum);
+						InItemStack.Empty();
+					}
+					else
+					{
+						ItemStack.SetCount(ItemStack.GetMaxStackSize());
+						InItemStack.SetCount(Sum - ItemStack.GetCount());
+					}
+				}
 			}
 			else
 			{
-				ItemData.Quantity = ItemData.MaxCount;
-				InItemData.Quantity = Sum - ItemData.MaxCount;
+				FItemStack TempItemStack = ItemStack;
+				ItemStack = InItemStack;
+				InItemStack = TempItemStack;
 			}
 		}
-		else if (ItemData.ID > 0)
-		{
-			FItemData TempItemData = ItemData;
-			ItemData = InItemData;
-			InItemData = TempItemData;
-		}
 		else
 		{
-			ItemData = InItemData;
-			InItemData.Clear();
-		}
-
-		MakeRecipe();
-		OnCraftingItem.Broadcast();
-	}
-	else
-	{
-
-	}
-}
-
-void UCraftingComponent::RemoveItem_Implementation(int32 Index, FItemData& OutItemData)
-{
-	if (Items.IsValidIndex(Index))
-	{
-		OutItemData = Items[Index];
-		Items[Index].Clear();
-
-		MakeRecipe();
-		OnCraftingItem.Broadcast();
-	}
-	else
-	{
-		OutItemData.Clear();
-	}
-}
-
-void UCraftingComponent::TransferItem_Implementation(int32 Index, FItemData& OutItemData)
-{
-	if (Items.IsValidIndex(Index))
-	{
-		FItemData TempItemData = OutItemData;
-		OutItemData = Items[Index];
-		Items[Index] = TempItemData;
-
-		MakeRecipe();
-		OnCraftingItem.Broadcast();
-	}
-}
-
-void UCraftingComponent::MakeRecipe()
-{
-	FString Formula;
-
-	for (int32 X = 0; X < Items.Num(); ++X)
-	{
-		FItemData ItemData = Items[X];
-		Formula.AppendChar('A' + X);
-		if (ItemData.ID > 0)
-		{
-			Formula.AppendInt(ItemData.ID);
-		}
-		else
-		{
-			Formula.AppendChar('*');
+			FItemStack TempItemStack = ItemStack;
+			ItemStack = InItemStack;
+			InItemStack = TempItemStack;
 		}
 	}
 
-	FItemOutput ItemOutput = GetRecipeOutput(Formula);
-	if (ItemOutput.ItemID > 0)
+	NotifyAndUpdate();
+
+	return InItemStack.IsEmpty();
+}
+
+void UCraftingComponent::RemoveItemFromInventory_Implementation(int32 Index, FItemStack& InItemStack)
+{
+	if (StackList.IsValidIndex(Index))
 	{
-		FItemInstance ItemInstance;
-		if (UMinecraftAssetLibrary::GetItemInstance(ItemOutput.ItemID, ItemInstance))
-		{
-			OutputItemData.CopyItemInstance(ItemInstance);
-			OutputItemData.Quantity = ItemOutput.Quantity;
-		}
-	}
-	else
-	{
-		OutputItemData.Clear();
+		InItemStack = StackList[Index];
+		StackList[Index].Empty();
+
+		NotifyAndUpdate();
 	}
 }
 
-FItemOutput UCraftingComponent::GetRecipeOutput(const FString& Formula)
+void UCraftingComponent::Clear_Implementation()
 {
-	if (FItemOutput* ItemOutput = ItemRecipes.Find(Formula))
+	for (FItemStack& ItemStack : StackList)
 	{
-		return *ItemOutput;
-	}
-	return {};
-}
-
-void UCraftingComponent::TryDecreaseItemAmount()
-{
-	for (int32 Index = 0; Index < Dimension * Dimension; ++Index)
-	{
-		DecreaseItemAmount(Index);
+		ItemStack.Empty();
 	}
 }
 
-void UCraftingComponent::IncreaseItemAmount(int32 Index)
+FItemStack UCraftingComponent::GetStackInRowAndColumn(int32 Row, int32 Column)
 {
-	if (Items.IsValidIndex(Index))
+	if (Row >= 0 && Row < InventoryWidth && Column >= 0 && Column < InventoryHeight)
 	{
-		Items[Index].Quantity++;
+		return GetItemStack_Implementation(Row + Column * InventoryWidth);
 	}
+	return FItemStack();
 }
 
-void UCraftingComponent::DecreaseItemAmount(int32 Index)
+void UCraftingComponent::ShrinkAllItems()
 {
-	if (Items.IsValidIndex(Index))
+	for (FItemStack& ItemStack : StackList)
 	{
-		FItemData& ItemData = Items[Index];
-		ItemData.Quantity--;
-		if (ItemData.Quantity <= 0)
-		{
-			ItemData.Clear();
-		}
+		if (ItemStack.IsEmpty()) continue;
+
+		ItemStack.Shrink(1);
 	}
+
+	NotifyAndUpdate();
+}
+
+void UCraftingComponent::NotifyAndUpdate()
+{
+	OnCraftMatrixChanged();
+	OnCraftingItem.Broadcast();
+}
+
+void UCraftingComponent::OnCraftMatrixChanged()
+{
+	FItemStack ItemStack;
+	TSharedPtr<IRecipe> Recipe = CraftingManager::FindMatchingRecipe(this);
+	if (Recipe.IsValid())
+	{
+		ItemStack = Recipe->GetCraftingResult();
+	}
+
+	StackList.Last() = ItemStack;
+	OutputItemStack = ItemStack;
 }
