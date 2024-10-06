@@ -5,13 +5,71 @@
 
 UBackpackComponent::UBackpackComponent()
 {
-	InventorySize = 36;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 void UBackpackComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Items.SetNum(InventorySize);
+}
+
+int32 UBackpackComponent::GetSizeInventory_Implementation()
+{
+	return Items.Num();
+}
+
+bool UBackpackComponent::IsEmpty_Implementation() const
+{
+	for (const FItemStack& ItemStack : Items)
+	{
+		if (!ItemStack.IsEmpty())
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool UBackpackComponent::IsEmptyFromIndex_Implementation(int32 Index) const
+{
+	if (Items.IsValidIndex(Index))
+	{
+		return Items[Index].IsEmpty();
+	}
+	return false;
+}
+
+FItemStack UBackpackComponent::GetItemStack_Implementation(int32 Index)
+{
+	if (Items.IsValidIndex(Index))
+	{
+		return Items[Index];
+	}
+	return FItemStack();
+}
+
+FItemStack UBackpackComponent::DecrStackSize_Implementation(int32 Index, int32 Count)
+{
+	return FItemStack();
+}
+
+FItemStack UBackpackComponent::RemoveStackFromSlot_Implementation(int32 Index)
+{
+	return FItemStack();
+}
+
+void UBackpackComponent::SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack)
+{
+}
+
+void UBackpackComponent::Clear_Implementation()
+{
+	for (FItemStack& ItemStack : Items)
+	{
+		ItemStack.Empty();
+	}
 }
 
 FItemStack UBackpackComponent::GetHotbarItemStack(int32 SelectedIndex)
@@ -28,7 +86,11 @@ void UBackpackComponent::ConsumeItem(int32 SelectedIndex)
 {
 	if (!IsValidIndex(SelectedIndex)) return;
 
-	Super::ConsumeItem(SelectedIndex);
+	if (IsValidIndex(SelectedIndex))
+	{
+		FItemStack& ItemStack = Items[SelectedIndex];
+		ItemStack.Decrement();
+	}
 
 	NotifyAndUpdateUI(SelectedIndex);
 }
@@ -40,22 +102,66 @@ bool UBackpackComponent::AddItemToInventory(FItemStack& ItemStack)
 	return bHotbar || bBackpack;
 }
 
-bool UBackpackComponent::AddItemToInventoryFromIndex(int32 Index, FItemStack& InItemStack)
+bool UBackpackComponent::AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack)
 {
-	if (!IsValidIndex(Index) || InItemStack.IsEmpty()) return false;
+	if (InItemStack.IsEmpty() || !IsValidIndex(Index)) return false;
 
-	bool bFlag = Super::AddItemToInventoryFromIndex(Index, InItemStack);
+	FItemStack& ItemStack = Items[Index];
+
+	if (ItemStack.IsEmpty())
+	{
+		ItemStack = InItemStack;
+		InItemStack.Empty();
+	}
+	else
+	{
+		if (InItemStack.IsStack())
+		{
+			if (ItemStack.GetItem() == InItemStack.GetItem())
+			{
+				if (!ItemStack.IsFull())
+				{
+					int32 Sum = ItemStack.GetCount() + InItemStack.GetCount();
+					if (Sum <= ItemStack.GetMaxStackSize())
+					{
+						ItemStack.SetCount(Sum);
+						InItemStack.Empty();
+					}
+					else
+					{
+						ItemStack.SetCount(ItemStack.GetMaxStackSize());
+						InItemStack.SetCount(Sum - ItemStack.GetCount());
+					}
+				}
+			}
+			else
+			{
+				FItemStack TempItemStack = ItemStack;
+				ItemStack = InItemStack;
+				InItemStack = TempItemStack;
+			}
+		}
+		else
+		{
+			FItemStack TempItemStack = ItemStack;
+			ItemStack = InItemStack;
+			InItemStack = TempItemStack;
+		}
+	}
 
 	NotifyAndUpdateUI(Index);
 
-	return bFlag;
+	return InItemStack.IsEmpty();
 }
 
-void UBackpackComponent::RemoveItemFromInventory(int32 Index, FItemStack& InItemStack)
+void UBackpackComponent::RemoveItemFromInventory_Implementation(int32 Index, FItemStack& InItemStack)
 {
-	Super::RemoveItemFromInventory(Index, InItemStack);
-
-	NotifyAndUpdateUI(Index);
+	if (IsValidIndex(Index))
+	{
+		InItemStack = Items[Index];
+		Items[Index].Empty();
+		NotifyAndUpdateUI(Index);
+	}
 }
 
 bool UBackpackComponent::AddItemToBackpack(FItemStack& ItemStack)

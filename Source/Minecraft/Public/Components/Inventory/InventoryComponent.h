@@ -19,22 +19,22 @@ public:
 
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Item")
+	//UFUNCTION(BlueprintCallable, Category = "Item")
 	virtual void ConsumeItem(int32 SelectedIndex);
 
-	UFUNCTION(BlueprintCallable, Category = "Item")
+	//UFUNCTION(BlueprintCallable, Category = "Item")
 	virtual bool AddItemToInventory(UPARAM(ref) FItemStack& ItemStack);
 
-	UFUNCTION(BlueprintCallable, Category = "Item")
+	//UFUNCTION(BlueprintCallable, Category = "Item")
 	virtual bool AddItemToInventoryFromIndex(int32 Index, UPARAM(ref) FItemStack& InItemStack);
 
-	UFUNCTION(BlueprintCallable, Category = "Item")
+	//UFUNCTION(BlueprintCallable, Category = "Item")
 	FItemStack GetItemStack(int32 Index) const;
 
-	UFUNCTION(BlueprintCallable, Category = "Item")
+	//UFUNCTION(BlueprintCallable, Category = "Item")
 	virtual void RemoveItemFromInventory(int32 Index, UPARAM(ref) FItemStack& InItemStack);
 
-	UFUNCTION(BlueprintCallable, Category = "Item")
+	//UFUNCTION(BlueprintCallable, Category = "Item")
 	virtual void DropAllItems();
 
 protected:

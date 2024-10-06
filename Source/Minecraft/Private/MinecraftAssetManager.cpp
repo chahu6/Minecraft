@@ -4,12 +4,12 @@
 #include "MinecraftAssetManager.h"
 #include "Engine/DataTable.h"
 #include "MinecraftGameplayTags.h"
-#include "Components/Crafting/CraftingComponent.h"
 #include "World/MinecraftSettings.h"
 #include "Item/Item.h"
 
 const FPrimaryAssetType UMinecraftAssetManager::BlockType = TEXT("Block");
 const FPrimaryAssetType UMinecraftAssetManager::ItemType = TEXT("Item");
+const FPrimaryAssetType UMinecraftAssetManager::BiomeType = TEXT("Biome");
 
 UMinecraftAssetManager& UMinecraftAssetManager::Get()
 {
@@ -26,8 +26,6 @@ void UMinecraftAssetManager::StartInitialLoading()
 	//ScanPathForPrimaryAssets(ItemType, TEXT("/Game/Datas/Items"), UItem::StaticClass(), false);
 
 	FMinecraftGameplayTags::InitializeNativeGameplayTags();
-
-	UCraftingComponent::InitialItemRecipes();
 
 	const UMinecraftSettings* Setting = GetDefault<UMinecraftSettings>();
 	check(Setting);

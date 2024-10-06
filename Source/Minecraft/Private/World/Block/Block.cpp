@@ -5,7 +5,7 @@
 #include "MinecraftAssetManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Item/Item.h"
-#include "Item/Items.h"
+#include "Init/Items.h"
 #include "World/WorldManager.h"
 #include "Item/ItemStack.h"
 
@@ -83,6 +83,11 @@ UItem* UBlock::GetItemDropped(int32 Forture)
 void UBlock::OnBlockClicked(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player)
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Block Is Clicked")));
+}
+
+bool UBlock::OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player)
+{
+	return false;
 }
 
 FPrimaryAssetId UBlock::GetPrimaryAssetId() const

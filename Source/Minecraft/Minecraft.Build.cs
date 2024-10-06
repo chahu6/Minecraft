@@ -8,7 +8,7 @@ public class Minecraft : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "SlateCore", "ProceduralMeshComponent", "GameplayTags" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "SlateCore", "ProceduralMeshComponent", "GameplayTags", "Json" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "SimplexNoise", "Eigen" });
 

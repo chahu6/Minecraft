@@ -2,7 +2,7 @@
 #include "World/WorldSettings.h"
 #include "World/Data/GlobalInfo.h"
 #include "Chunk/MeshData.h"
-#include "World/Block/Blocks.h"
+#include "Init/Blocks.h"
 
 void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FIntPoint& ChunkVoxelPos)
 {

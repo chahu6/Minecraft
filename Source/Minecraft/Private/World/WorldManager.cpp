@@ -11,7 +11,7 @@
 #include "World/Runnable/ChunkGenerateRunner.h"
 #include "Chunk/MeshData.h"
 
-#include "World/Block/Blocks.h"
+#include "Init/Blocks.h"
 #include "Utils/ChunkHelper.h"
 #include "World/Generator/GreedyMeshGenerator.h"
 #include "Entity/Item/EntityItem.h"

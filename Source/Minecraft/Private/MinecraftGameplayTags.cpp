@@ -44,11 +44,11 @@ void FMinecraftGameplayTags::InitializeNativeGameplayTags()
 		FName("Minecraft.Rose")
 	);
 
-	GameplayTags.Minecraft_OakWood = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Minecraft.OakWood")
+	GameplayTags.Minecraft_Log = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Minecraft.Log")
 	);
 
-	GameplayTags.Minecraft_OakPlants = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Minecraft.OakPlants")
+	GameplayTags.Minecraft_Planks = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Minecraft.Planks")
 	);
 }

@@ -77,9 +77,8 @@ AEntityPlayer::AEntityPlayer()
 	// 背包
 	BackpackComponent = CreateDefaultSubobject<UBackpackComponent>(TEXT("BackpackComponent"));
 
-	// 合成组件
+	// 工艺组件
 	CraftingComponent = CreateDefaultSubobject<UCraftingComponent>(TEXT("CraftingComponent"));
-	CraftingComponent->SetSize(2);
 }
 
 void AEntityPlayer::PossessedBy(AController* NewController)
@@ -293,6 +292,8 @@ AEntityItem* AEntityPlayer::DropItem(bool bDropAll)
 
 AEntityItem* AEntityPlayer::DropItem(const FItemStack& ItemStack)
 {
+	if (ItemStack.IsEmpty()) return nullptr;
+
 	const FVector ForwardVector = GetController<APlayerController>()->PlayerCameraManager->GetActorForwardVector();
 	AEntityItem* EntityItem = AWorldManager::Get()->SpawnEntity(GetItemSpawnLocation(), ItemStack);
 	if (EntityItem)
@@ -313,6 +314,11 @@ void AEntityPlayer::ConsumeItem()
 bool AEntityPlayer::OnItemPickup_Implementation(FItemStack& ItemStack)
 {
 	return BackpackComponent->AddItemToInventory(ItemStack);
+}
+
+void AEntityPlayer::DisplayGui(TSubclassOf<UUserWidget> UserWidgetClass)
+{
+	
 }
 
 void AEntityPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

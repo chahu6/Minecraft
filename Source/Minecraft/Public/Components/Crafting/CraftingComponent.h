@@ -1,67 +1,57 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/Data/ItemInfo.h"
+#include "Item/ItemStack.h"
 #include "Components/ActorComponent.h"
 #include "Interfaces/InventoryInterface.h"
 #include "CraftingComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnCraftingItem);
 
-struct FItemOutput
-{
-	int32 ItemID = 0;
-
-	int32 Quantity = 0;
-};
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MINECRAFT_API UCraftingComponent : public UActorComponent, public IInventoryInterface
 {
 	GENERATED_BODY()
-
-	static TMap<FString, FItemOutput> ItemRecipes;
-
 public:	
 	UCraftingComponent();
-
-protected:
 	virtual void BeginPlay() override;
 
-public:	
-	static void InitialItemRecipes();
-
 	/** Inventory Interface */
-	virtual void TryAddItem_Implementation(int32 Index, FItemData& InItemData) override;
-	virtual void RemoveItem_Implementation(int32 Index, FItemData& OutItemData) override;
-	virtual void TransferItem_Implementation(int32 Index, FItemData& OutItemData) override;
-	/** End Inventory Interface */
+	virtual int32 GetSizeInventory_Implementation() override;
+	virtual bool IsEmpty_Implementation() const override;
+	virtual bool IsEmptyFromIndex_Implementation(int32 Index) const override;
+	virtual FItemStack GetItemStack_Implementation(int32 Index) override;
+	virtual FItemStack DecrStackSize_Implementation(int32 Index, int32 Count) override;
+	virtual FItemStack RemoveStackFromSlot_Implementation(int32 Index) override;
+	virtual void SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack) override;
+	virtual bool AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack);
+	virtual void RemoveItemFromInventory_Implementation(int32 Index, FItemStack& InItemStack);
+	virtual void Clear_Implementation() override;
+	/** end Inventory Interface */
 
-	void MakeRecipe();
+	FItemStack GetStackInRowAndColumn(int32 Row, int32 Column);
 
-	FItemOutput GetRecipeOutput(const FString& Formula);
+	UFUNCTION(BlueprintCallable)
+	void ShrinkAllItems();
 
-	void TryDecreaseItemAmount();
+protected:
+	void NotifyAndUpdate();
 
-private:
-	void IncreaseItemAmount(int32 Index);
-
-	void DecreaseItemAmount(int32 Index);
+	void OnCraftMatrixChanged();
 
 public:
 	FOnCraftingItem OnCraftingItem;
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties", meta = (AllowPrivateAccess = "true"))
-	int32 Dimension = 3;
+	int32 InventoryWidth = 2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties", meta = (AllowPrivateAccess = "true"))
+	int32 InventoryHeight = 2;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TArray<FItemData> Items;
+	TArray<FItemStack> StackList;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FItemData OutputItemData;
-
-public:
-	FORCEINLINE int32 GetSize() const { return Dimension; }
-	FORCEINLINE void SetSize(int32 NewSize) { Dimension = NewSize; Items.SetNum(Dimension * Dimension); }
+	FItemStack OutputItemStack;
 };

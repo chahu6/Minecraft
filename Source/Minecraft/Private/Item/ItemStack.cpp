@@ -2,7 +2,7 @@
 
 
 #include "Item/ItemStack.h"
-#include "Item/Items.h"
+#include "Init/Items.h"
 #include "Item/Item.h"
 
 FItemStack::FItemStack()
@@ -40,7 +40,7 @@ void FItemStack::SetCount(int32 Size)
 {
 	StackSize = Size;
 
-	if (StackSize == 0)
+	if (StackSize <= 0)
 	{
 		Empty();
 	}

@@ -32,11 +32,8 @@ public:
 	void RemovePrograssWidget();
 	void SetPrograssPercent(float Percent);
 
-public:
-#if 0
-	UFUNCTION(BlueprintCallable)
-	UTexture2D* CreateTextureFromArray();
-#endif
+	void DisplayGUI(const TSubclassOf<UUserWidget>& UserWidgetClass);
+
 private:
 	void ShowDebugInfo();
 
@@ -49,6 +46,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UProgressBarWidget> ProgressBarWidget;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> OpenContainer;
 
 	UPROPERTY(EditAnywhere, Category = "AAA")
 	float Factor = 0.05f;

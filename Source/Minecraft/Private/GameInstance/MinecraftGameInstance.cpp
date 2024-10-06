@@ -5,8 +5,11 @@
 #include "MinecraftAssetManager.h"
 #include "World/Block/Block.h"
 #include "Item/Item.h"
-#include "Item/Items.h"
-#include "World/Block/Blocks.h"
+#include "Init/Items.h"
+#include "Init/Blocks.h"
+#include "Init/Biomes.h"
+#include "Item/Crafting/CraftingManager.h"
+#include "World/Biome/Biome.h"
 
 void UMinecraftGameInstance::Init()
 {
@@ -30,7 +33,11 @@ void UMinecraftGameInstance::Init()
 
 	UBlock::RegisterBlocks();
 	UItem::RegisterItems();
+	UBiome::RegisterBiomes();
 
 	UBlocks::Initialization();
 	UItems::Initialization();
+	UBiomes::Initialization();
+
+	CraftingManager::Init();
 }

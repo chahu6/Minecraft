@@ -62,6 +62,8 @@ public:
 	virtual bool OnItemPickup_Implementation(FItemStack& ItemStack) override;
 	/** Interactive Interface end*/
 
+	void DisplayGui(TSubclassOf<UUserWidget> UserWidgetClass);
+
 private:
 	void SwitchPerspectives();
 
@@ -144,6 +146,6 @@ private:
 
 	EPerspective NextPerspective = EPerspective::Third;
 
-	UPROPERTY()
+	UPROPERTY(Transient)
 	int32 MainHandIndex = 0;
 };

@@ -31,6 +31,8 @@ namespace WorldSettings
 
 	// 世界高度
 	constexpr int32 WORLD_HEIGHT = 16;		// 高
+
+	constexpr int32 SURFACE_HEIGHT = 20;
 }
 
 // 一些工具宏函数

@@ -5,7 +5,6 @@
 #include "World/MinecraftSettings.h"
 #include "World/Block/Data/BlockData.h"
 #include "Item/Data/ItemInfo.h"
-#include "Item/Items.h"
 #include "Item/ItemStack.h"
 
 bool UMinecraftAssetLibrary::GetBlockMeta(int32 BlockID, FBlockMeta& OutBlockInfo)
