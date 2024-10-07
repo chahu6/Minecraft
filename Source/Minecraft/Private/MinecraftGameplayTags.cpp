@@ -51,4 +51,8 @@ void FMinecraftGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Minecraft_Planks = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Minecraft.Planks")
 	);
+
+	GameplayTags.Minecraft_Crafting_Table = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Minecraft.Crafting_Table")
+	);
 }

@@ -27,6 +27,7 @@ public:
 	FGameplayTag Minecraft_Rose;
 	FGameplayTag Minecraft_Log;
 	FGameplayTag Minecraft_Planks;
+	FGameplayTag Minecraft_Crafting_Table;
 
 private:
 	FMinecraftGameplayTags() = default;

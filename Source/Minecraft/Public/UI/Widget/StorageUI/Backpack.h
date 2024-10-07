@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UI/Widget/Container.h"
 #include "Backpack.generated.h"
 
 class UBackpackComponent;
@@ -12,12 +12,12 @@ class UInventoryItem;
  * 
  */
 UCLASS()
-class MINECRAFT_API UBackpack : public UUserWidget
+class MINECRAFT_API UBackpack : public UContainer
 {
 	GENERATED_BODY()
 
 public:
-	UBackpack(const FObjectInitializer& ObjectInitializer);
+	UBackpack();
 
 protected:
 	virtual void NativePreConstruct() override;

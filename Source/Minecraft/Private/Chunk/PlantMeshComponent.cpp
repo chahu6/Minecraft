@@ -3,9 +3,8 @@
 
 #include "Chunk/PlantMeshComponent.h"
 #include "Chunk/MeshData.h"
-#include "World/Block/Data/BlockData.h"
-#include "Kismet/MinecraftAssetLibrary.h"
 #include "Chunk/Chunk.h"
+#include "World/Block/Block.h"
 
 UPlantMeshComponent::UPlantMeshComponent(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
@@ -27,11 +26,10 @@ void UPlantMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMe
 {
 	TSharedPtr<FMeshData> NewMeshData =  NewMeshDatas[6];
 
-	FBlockMeta BlockMeta;
 	CreateMeshSection_LinearColor(0, NewMeshData->Vertices, NewMeshData->Triangles, NewMeshData->Normals, NewMeshData->UV0, NewMeshData->VertexColors, NewMeshData->Tangents, false);
-	if (UMinecraftAssetLibrary::GetBlockMeta(6, BlockMeta))
+	if (const UBlock* Block = UBlock::GetBlockById(6))
 	{
-		SetMaterial(0, BlockMeta.Material);
+		SetMaterial(0, Block->Material);
 	}
 }
 

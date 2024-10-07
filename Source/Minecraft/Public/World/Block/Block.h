@@ -23,9 +23,12 @@ class MINECRAFT_API UBlock : public UPrimaryDataAsset
 public:
 	UBlock();
 
-	static TMap<FName, UBlock*> Registry;
+	static TMap<FName, const UBlock*> REGISTER_NAME;
+	static TMap<int32, const UBlock*> REGISTER_ID;
 
 	static void RegisterBlocks();
+
+	static const UBlock* GetBlockById(int32 Id);
 
 	virtual void RandomTick();
 
@@ -110,6 +113,9 @@ public:
 	int32 TickRate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	TObjectPtr<UMaterialInterface> Material;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	TObjectPtr<USoundBase> PlaceSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
@@ -119,5 +125,5 @@ private:
 	FBlockState DefaultBlockState;
 
 private:
-	static void RegisterBlock(const FName& Name, UBlock* Block);
+	static void RegisterBlock(UBlock* Block);
 };

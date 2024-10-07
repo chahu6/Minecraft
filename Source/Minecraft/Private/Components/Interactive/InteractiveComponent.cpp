@@ -1,6 +1,5 @@
 ﻿#include "Components/Interactive/InteractiveComponent.h"
 #include "Player/EntityPlayer.h"
-#include "Item/DroppedItem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/MinecraftAssetLibrary.h"
 #include "World/WorldManager.h"
@@ -118,21 +117,20 @@ void UInteractiveComponent::UseItem()
 {
 	if (BlockHitResult.bBlockingHit && Player)
 	{
-		FItemStack MainHandItemStack = Player->GetMainHandItem();
-		if (MainHandItemStack.IsEmpty()) return;
-
 		FIntVector BlockVoxelLocation;
 		WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, BlockVoxelLocation);
-
 		FBlockState BlockState = GetBlockDataFromLocation(BlockVoxelLocation);
-
 		UBlock* Block = BlockState.GetBlock();
+
 		if (Block->OnBlockActivated(AWorldManager::Get(), BlockVoxelLocation, Player))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Right Clicked!"));
 		}
 		else
 		{
+			FItemStack MainHandItemStack = Player->GetMainHandItem();
+			if (MainHandItemStack.IsEmpty()) return;
+
 			if (MainHandItemStack.GetItem()->IsA<UItemBlock>())
 			{
 				PlaceBlock(MainHandItemStack);

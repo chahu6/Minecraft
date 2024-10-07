@@ -9,7 +9,8 @@
 #include "World/WorldManager.h"
 #include "Item/ItemStack.h"
 
-TMap<FName, UBlock*> UBlock::Registry;
+TMap<FName, const UBlock*> UBlock::REGISTER_NAME;
+TMap<int32, const UBlock*> UBlock::REGISTER_ID;
 
 UBlock::UBlock()
 {
@@ -21,6 +22,15 @@ UBlock::UBlock()
 void UBlock::RandomTick()
 {
 	this->UpdateTick();
+}
+
+const UBlock* UBlock::GetBlockById(int32 Id)
+{
+	if (REGISTER_ID.Contains(Id))
+	{
+		return REGISTER_ID[Id];
+	}
+	return nullptr;
 }
 
 void UBlock::UpdateTick()
@@ -140,15 +150,17 @@ void UBlock::RegisterBlocks()
 	{
 		if (UBlock* Block = Cast<UBlock>(Object))
 		{
-			RegisterBlock(Block->Tag.GetTagName(), Block);
+			RegisterBlock(Block);
 		}
 	}
 }
 
-void UBlock::RegisterBlock(const FName& Name, UBlock* Block)
+void UBlock::RegisterBlock(UBlock* Block)
 {
 	//if (!Registry.Contains(Name))
 	{
-		Registry.Add(Name, Block);
+		REGISTER_NAME.Add(Block->Tag.GetTagName(), Block);
 	}
+
+	REGISTER_ID.Add(Block->BlockID, Block);
 }

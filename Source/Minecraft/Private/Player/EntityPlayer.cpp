@@ -186,11 +186,6 @@ void AEntityPlayer::OnResetAction()
 
 void AEntityPlayer::OpenBackpack()
 {
-	/*if (IPlayerControllerInterface* PlayerControllerInterface = GetController<IPlayerControllerInterface>())
-	{
-		IPlayerControllerInterface::Execute_OpenBackpack(GetController());
-	}*/
-
 	ToggleInventory();
 }
 
@@ -218,6 +213,7 @@ void AEntityPlayer::InitialInventoryUI()
 	InventoryWidgetRef = CreateWidget<UBackpack>(GetWorld()->GetFirstPlayerController(), InventoryWidgetClass);
 	InventoryWidgetRef->AddToViewport();
 	InventoryWidgetRef->SetVisibility(ESlateVisibility::Hidden);
+	OpenContainer = InventoryWidgetRef;
 }
 
 void AEntityPlayer::ToggleInventory()
@@ -316,9 +312,18 @@ bool AEntityPlayer::OnItemPickup_Implementation(FItemStack& ItemStack)
 	return BackpackComponent->AddItemToInventory(ItemStack);
 }
 
-void AEntityPlayer::DisplayGui(TSubclassOf<UUserWidget> UserWidgetClass)
+void AEntityPlayer::DisplayGui(const TSubclassOf<UContainer>& ContainerClass)
 {
-	
+	if (ContainerClass)
+	{
+		OpenContainer = CreateWidget<UContainer>(GetController<APlayerController>(), ContainerClass);
+		OpenContainer->AddToViewport();
+	}
+}
+
+void AEntityPlayer::CloseContainer()
+{
+
 }
 
 void AEntityPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

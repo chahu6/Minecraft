@@ -5,7 +5,6 @@
 #include "InteractiveComponent.generated.h"
 
 class AEntityPlayer;
-class ADroppedItem;
 struct FBlockState;
 struct FItemStack;
 
@@ -59,9 +58,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<APlayerController> PlayerController;
-
-	UPROPERTY(EditAnywhere, Category = Initialization)
-	TSubclassOf<ADroppedItem> DroppedItemClass;
 
 	UPROPERTY(EditAnywhere, Category = Initialization)
 	TObjectPtr<UStaticMesh> MarkerMesh;

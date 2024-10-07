@@ -2,6 +2,8 @@
 
 
 #include "Components/Inventory/BackpackComponent.h"
+#include "Item/Item.h"
+#include "Init/Blocks.h"
 
 UBackpackComponent::UBackpackComponent()
 {
@@ -13,6 +15,11 @@ void UBackpackComponent::BeginPlay()
 	Super::BeginPlay();
 
 	Items.SetNum(InventorySize);
+
+	FItemStack ItemStack;
+	ItemStack.SetCount(1);
+	ItemStack.SetItem(UItem::GetItemFromBlock(UBlocks::Crafting_Table));
+	Items[0] = ItemStack;
 }
 
 int32 UBackpackComponent::GetSizeInventory_Implementation()

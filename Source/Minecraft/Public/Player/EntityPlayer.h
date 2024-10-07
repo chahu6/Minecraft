@@ -15,6 +15,9 @@ class UCraftingComponent;
 class UInputAction;
 class AEntityItem;
 
+class UContainer;
+class UBackpack;
+
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSwitchMainHand, int32);
 
 UCLASS()
@@ -62,7 +65,8 @@ public:
 	virtual bool OnItemPickup_Implementation(FItemStack& ItemStack) override;
 	/** Interactive Interface end*/
 
-	void DisplayGui(TSubclassOf<UUserWidget> UserWidgetClass);
+	void DisplayGui(const TSubclassOf<UContainer>& ContainerClass);
+	void CloseContainer();
 
 private:
 	void SwitchPerspectives();
@@ -131,10 +135,13 @@ private:
 	TObjectPtr<UBackpackComponent> BackpackComponent;
 
 	UPROPERTY(EditAnywhere, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UBackpack> InventoryWidgetClass;
+	TSubclassOf<UBackpack> InventoryWidgetClass;
 
 	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UBackpack> InventoryWidgetRef;
+
+	UPROPERTY()
+	TObjectPtr<UContainer> OpenContainer;
 
 private:
 	enum class EPerspective : uint8

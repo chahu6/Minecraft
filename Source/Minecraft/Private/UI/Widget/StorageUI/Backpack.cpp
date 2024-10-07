@@ -2,8 +2,7 @@
 #include "Components/Inventory/BackpackComponent.h"
 #include "Components/Crafting/CraftingComponent.h"
 
-UBackpack::UBackpack(const FObjectInitializer& ObjectInitializer)
-	:UUserWidget(ObjectInitializer)
+UBackpack::UBackpack()
 {
 	//SetIsFocusable(true);
 }

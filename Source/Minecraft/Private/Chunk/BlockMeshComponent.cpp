@@ -1,8 +1,7 @@
 #include "Chunk/BlockMeshComponent.h"
-#include "World/Block/Data/BlockData.h"
-#include "Kismet/MinecraftAssetLibrary.h"
 #include "Chunk/MeshData.h"
 #include "Chunk/Chunk.h"
+#include "World/Block/Block.h"
 
 UBlockMeshComponent::UBlockMeshComponent(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
@@ -22,7 +21,7 @@ void UBlockMeshComponent::BeginPlay()
 
 void UBlockMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMeshDatas)
 {
-	FBlockMeta BlockMeta;
+	//FBlockMeta BlockMeta;
 	ClearAllMeshSections();
 	for (auto MeshData = NewMeshDatas.CreateConstIterator(); MeshData; ++MeshData)
 	{
@@ -30,9 +29,9 @@ void UBlockMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMe
 
 		CreateMeshSection_LinearColor(MeshData->Key, MeshData->Value->Vertices, MeshData->Value->Triangles, MeshData->Value->Normals, MeshData->Value->UV0, MeshData->Value->VertexColors, MeshData->Value->Tangents, true);
 
-		if (UMinecraftAssetLibrary::GetBlockMeta(MeshData->Key, BlockMeta))
+		if (const UBlock* Block = UBlock::GetBlockById(MeshData->Key))
 		{
-			SetMaterial(MeshData->Key, BlockMeta.Material);
+			SetMaterial(MeshData->Key, Block->Material);
 		}
 	}
 }

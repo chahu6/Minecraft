@@ -39,7 +39,7 @@ void UItem::RegisterItems()
 	}
 }
 
-UItem* UItem::GetItemFromBlock(UBlock* Block)
+UItem* UItem::GetItemFromBlock(const UBlock* Block)
 {
 	check(BLOCK_TO_ITEM.Contains(Block));
 	if (BLOCK_TO_ITEM.Contains(Block))
