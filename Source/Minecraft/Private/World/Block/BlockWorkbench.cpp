@@ -6,6 +6,5 @@
 
 bool UBlockWorkbench::OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player)
 {
-	Player->DisplayGui(WorkbenchClass);
-	return true;
+	return Player->DisplayGui(WorkbenchClass);
 }

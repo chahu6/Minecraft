@@ -22,7 +22,7 @@ class MINECRAFT_API IInventoryInterface
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
-	int32 GetSizeInventory();
+	int32 GetSizeInventory() const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 	bool IsEmpty() const;
@@ -31,7 +31,7 @@ public:
 	bool IsEmptyFromIndex(int32 Index) const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
-	FItemStack GetItemStack(int32 Index);
+	FItemStack GetItemStack(int32 Index) const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 	FItemStack DecrStackSize(int32 Index, int32 Count);
@@ -44,9 +44,6 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 	bool AddItemToInventoryFromIndex(int32 Index, UPARAM(ref) FItemStack& InItemStack);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
-	void RemoveItemFromInventory(int32 Index, UPARAM(ref) FItemStack& InItemStack);
 
 	//void OpenInventory(AEntityPlayer* Player);
 

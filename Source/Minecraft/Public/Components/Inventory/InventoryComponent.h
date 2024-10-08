@@ -54,4 +54,5 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	int32 InventorySize = 9;
+
 };

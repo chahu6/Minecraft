@@ -1,64 +1,47 @@
 #include "UI/Widget/StorageUI/Backpack.h"
-#include "Components/Inventory/BackpackComponent.h"
 #include "Components/Crafting/CraftingComponent.h"
-
-UBackpack::UBackpack()
-{
-	//SetIsFocusable(true);
-}
+#include "Components/Crafting/CraftingResultComponent.h"
+#include "Player/EntityPlayer.h"
 
 void UBackpack::NativePreConstruct()
 {
+	Player = Player == nullptr ? GetOwningPlayerPawn<AEntityPlayer>() : Player;
+
 	Super::NativePreConstruct();
 	
-	Player = GetOwningPlayerPawn();
 	if (Player)
 	{
 		CraftingSystem = Player->GetComponentByClass<UCraftingComponent>();
-		BackpackComponent = Player->GetComponentByClass<UBackpackComponent>();
-	}
-
-	if (BackpackComponent)
-	{
-		BackpackComponent->OnHotbarUpdate.AddDynamic(this, &UBackpack::FlushHotbar);
-		BackpackComponent->OnInventoryUpdate.AddDynamic(this, &UBackpack::FlushBackpack);
+		CraftingResult = Player->GetComponentByClass<UCraftingResultComponent>();
 	}
 
 	if (CraftingSystem)
 	{
-		CraftingSystem->OnCraftingItem.AddUObject(this, &UBackpack::FlushCrafting);
+		CraftingSystem->OnCraftingItem.AddUObject(this, &UBackpack::OnCraftMatrixChanged);
 	}
 }
 
 void UBackpack::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	InitUI();
-}
-
-void UBackpack::NativeDestruct()
-{
-	Super::NativeDestruct();
-
-}
-
-FReply UBackpack::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
-{
-	Super::NativeOnKeyDown(InGeometry, InKeyEvent);
-
-	/*FKey Key = InKeyEvent.GetKey();
-	if (Key == EKeys::E || Key == EKeys::Escape)
-	{
-		RemoveFromParent();
-	}*/
-
-	return FReply::Handled();
 }
 
 void UBackpack::InitUI()
 {
-	FlushHotbar();
-	FlushBackpack();
+	Super::InitUI();
+
 	FlushCrafting();
+}
+
+void UBackpack::OnCraftMatrixChanged()
+{
+	SlotChangedCraftingGrid(Player, CraftingSystem, CraftingResult);
+	FlushCrafting();
+}
+
+void UBackpack::OnContainerClosed(AEntityPlayer* PlayerIn)
+{
+	Super::OnContainerClosed(PlayerIn);
+
+	ClearContainer(PlayerIn, CraftingSystem);
 }

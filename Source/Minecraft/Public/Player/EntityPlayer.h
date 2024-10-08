@@ -12,6 +12,7 @@ class UCameraComponent;
 class USphereComponent;
 class UInteractiveComponent;
 class UCraftingComponent;
+class UCraftingResultComponent;
 class UInputAction;
 class AEntityItem;
 
@@ -65,8 +66,13 @@ public:
 	virtual bool OnItemPickup_Implementation(FItemStack& ItemStack) override;
 	/** Interactive Interface end*/
 
-	void DisplayGui(const TSubclassOf<UContainer>& ContainerClass);
+	bool DisplayGui(const TSubclassOf<UContainer>& ContainerClass);
 	void CloseContainer();
+
+	AEntityItem* DropItem(bool bDropAll = false);
+
+	UFUNCTION(BlueprintCallable, Category = "Item")
+	AEntityItem* DropItem(const FItemStack& ItemStack);
 
 private:
 	void SwitchPerspectives();
@@ -83,18 +89,16 @@ private:
 	void SwitchingItem(const FInputActionValue& Value);
 	void DropAction();
 
-	AEntityItem* DropItem(bool bDropAll);
-
-	UFUNCTION(BlueprintCallable, Category = "Item")
-	AEntityItem* DropItem(const FItemStack& ItemStack);
-
 	void Initialization();
 
 	void InitialInventoryUI();
 
-	void ToggleInventory();
+	//void ToggleInventory();
 
 	FVector GetItemSpawnLocation();
+
+	void SetInputModeUIOnly();
+	void SetInputModeGameOnly();
 
 public:
 	FOnSwitchMainHand OnSwitchMainHand;
@@ -131,6 +135,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Interactive", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCraftingComponent> CraftingComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Interactive", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCraftingResultComponent> CraftingResultComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UBackpackComponent> BackpackComponent;
 
@@ -138,7 +145,7 @@ private:
 	TSubclassOf<UBackpack> InventoryWidgetClass;
 
 	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UBackpack> InventoryWidgetRef;
+	TObjectPtr<UBackpack> InventoryContainer;
 
 	UPROPERTY()
 	TObjectPtr<UContainer> OpenContainer;

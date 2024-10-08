@@ -4,6 +4,7 @@
 #include "Components/Inventory/BackpackComponent.h"
 #include "Item/Item.h"
 #include "Init/Blocks.h"
+#include "Utils/ItemStackHelper.h"
 
 UBackpackComponent::UBackpackComponent()
 {
@@ -22,7 +23,7 @@ void UBackpackComponent::BeginPlay()
 	Items[0] = ItemStack;
 }
 
-int32 UBackpackComponent::GetSizeInventory_Implementation()
+int32 UBackpackComponent::GetSizeInventory_Implementation() const
 {
 	return Items.Num();
 }
@@ -48,7 +49,7 @@ bool UBackpackComponent::IsEmptyFromIndex_Implementation(int32 Index) const
 	return false;
 }
 
-FItemStack UBackpackComponent::GetItemStack_Implementation(int32 Index)
+FItemStack UBackpackComponent::GetItemStack_Implementation(int32 Index) const
 {
 	if (Items.IsValidIndex(Index))
 	{
@@ -64,7 +65,11 @@ FItemStack UBackpackComponent::DecrStackSize_Implementation(int32 Index, int32 C
 
 FItemStack UBackpackComponent::RemoveStackFromSlot_Implementation(int32 Index)
 {
-	return FItemStack();
+	FItemStack ItemStack = ItemStackHelper::GetAndRemove(Items, Index);
+
+	NotifyAndUpdateUI(Index);
+
+	return ItemStack;
 }
 
 void UBackpackComponent::SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack)
@@ -107,6 +112,11 @@ bool UBackpackComponent::AddItemToInventory(FItemStack& ItemStack)
 	bool bHotbar = AddItemToHotbar(ItemStack);
 	bool bBackpack = AddItemToBackpack(ItemStack);
 	return bHotbar || bBackpack;
+}
+
+void UBackpackComponent::PlaceItemBackInInventory(const FItemStack& ItemStack)
+{
+
 }
 
 bool UBackpackComponent::AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack)
@@ -159,16 +169,6 @@ bool UBackpackComponent::AddItemToInventoryFromIndex_Implementation(int32 Index,
 	NotifyAndUpdateUI(Index);
 
 	return InItemStack.IsEmpty();
-}
-
-void UBackpackComponent::RemoveItemFromInventory_Implementation(int32 Index, FItemStack& InItemStack)
-{
-	if (IsValidIndex(Index))
-	{
-		InItemStack = Items[Index];
-		Items[Index].Empty();
-		NotifyAndUpdateUI(Index);
-	}
 }
 
 bool UBackpackComponent::AddItemToBackpack(FItemStack& ItemStack)
