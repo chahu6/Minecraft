@@ -42,13 +42,19 @@ protected:
 	UFUNCTION(Category = "Player Inventory")
 	void InitInventoryWidget();
 
-	void RemoveDroppableItem();
+	void RemoveDroppableItemWidget();
 
 	virtual void HandleLMB_Implementation(UInventoryItem* InventoryItem) override;
 	virtual void HandleRMB_Implementation(UInventoryItem* InventoryItem) override;
 
+	virtual void OnHandleLMB(UInventoryItem* InventoryItem);
+
 	virtual void OnCraftMatrixChanged();
 	void SlotChangedCraftingGrid(AEntityPlayer* PlayerIn, UCraftingComponent* CraftingMatrix, UCraftingResultComponent* CraftingResult);
+
+	void CreateDroppableItemWidget(const FItemStack& ItemStack);
+
+	void UpdateDroppableItemWidget();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = Inventory)

@@ -6,11 +6,11 @@
   ],
   "key": {
     "#": {
-      "item": "Minecraft.Log"
+      "item": "minecraft.log"
     }
   },
   "result": {
-    "item": "Minecraft.Planks",
+    "item": "minecraft.planks",
     "count": 4
   }
 }

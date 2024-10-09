@@ -12,6 +12,7 @@
 #include "Item/Crafting/IRecipe.h"
 #include "Components/Crafting/CraftingComponent.h"
 #include "Components/Crafting/CraftingResultComponent.h"
+#include "Interfaces/InventoryInterface.h"
 
 void UInventory::NativePreConstruct()
 {
@@ -129,16 +130,6 @@ void UInventory::InitInventoryWidget()
 	}
 }
 
-void UInventory::RemoveDroppableItem()
-{
-	if (IsValid(DroppableItem))
-	{
-		DroppableItem->RemoveFromParent();
-		DroppableItem = nullptr;
-		bIsDragInProgress = false;
-	}
-}
-
 void UInventory::HandleLMB_Implementation(UInventoryItem* InventoryItem)
 {
 	if (!bIsDragInProgress)
@@ -146,38 +137,76 @@ void UInventory::HandleLMB_Implementation(UInventoryItem* InventoryItem)
 		if (!InventoryItem->GetItemStack().IsEmpty())
 		{
 			DragFromCellIndex = InventoryItem->Index;
-			if (UDroppableInventoryCellWidget* DroppableInventoryCellWidget = CreateWidget<UDroppableInventoryCellWidget>(this, DroppableInventoryCellWidgetClass))
-			{
-				HangItemStack = IInventoryInterface::Execute_RemoveStackFromSlot(InventoryItem->Inventory.GetObject(), InventoryItem->Index);
+			HangItemStack = IInventoryInterface::Execute_RemoveStackFromSlot(InventoryItem->Inventory.GetObject(), InventoryItem->Index);
+			CreateDroppableItemWidget(HangItemStack);
 
-				DroppableInventoryCellWidget->FlushItemData(HangItemStack);
-				UCanvasPanelSlot* CanvasPanelSlot = CanvasPanel->AddChildToCanvas(DroppableInventoryCellWidget);
-				CanvasPanelSlot->SetSize(HangImageSize);
-				DroppableInventoryCellWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
-				DroppableItem = DroppableInventoryCellWidget;
-				bIsDragInProgress = true;
-			}
+			OnHandleLMB(InventoryItem);
 		}
 	}
 	else
 	{
 		if (IInventoryInterface::Execute_AddItemToInventoryFromIndex(InventoryItem->Inventory.GetObject(), InventoryItem->Index, HangItemStack))
 		{
-			RemoveDroppableItem();
+			
 		}
 		else
 		{
-			if (IsValid(DroppableItem))
-			{
-				DroppableItem->FlushItemData(HangItemStack);
-			}
+
 		}
+	}
+
+	UpdateDroppableItemWidget();
+}
+
+void UInventory::RemoveDroppableItemWidget()
+{
+	if (bIsDragInProgress && IsValid(DroppableItem))
+	{
+		DroppableItem->RemoveFromParent();
+		DroppableItem = nullptr;
+		bIsDragInProgress = false;
 	}
 }
 
 void UInventory::HandleRMB_Implementation(UInventoryItem* InventoryItem)
 {
-	
+	if (bIsDragInProgress)
+	{
+		FItemStack ClickedItemStack = InventoryItem->GetItemStack();
+
+		if (HangItemStack.GetItem() == ClickedItemStack.GetItem())
+		{
+			HangItemStack.Shrink(1);
+			InventoryItem->Grow(1);
+		}
+		else
+		{
+			FItemStack ItemStack = InventoryItem->GetItemStack();
+			if (ItemStack.IsEmpty())
+			{
+				InventoryItem->SetInventorySlotContents(HangItemStack.SplitStack(1));
+			}
+			else
+			{
+				InventoryItem->SetInventorySlotContents(HangItemStack);
+				HangItemStack = ItemStack;
+			}
+			
+		}
+	}
+	else
+	{
+		if (InventoryItem->IsEmpty()) return;
+
+		HangItemStack = InventoryItem->DecrStackSize(1);
+		CreateDroppableItemWidget(HangItemStack);
+	}
+
+	UpdateDroppableItemWidget();
+}
+
+void UInventory::OnHandleLMB(UInventoryItem* InventoryItem)
+{
 }
 
 void UInventory::OnCraftMatrixChanged()
@@ -197,4 +226,29 @@ void UInventory::SlotChangedCraftingGrid(AEntityPlayer* PlayerIn, UCraftingCompo
 	}
 
 	CraftingResult->SetInventorySlotContents_Implementation(0, ItemStack);
+}
+
+void UInventory::CreateDroppableItemWidget(const FItemStack& ItemStack)
+{
+	if (UDroppableInventoryCellWidget* DroppableInventoryCellWidget = CreateWidget<UDroppableInventoryCellWidget>(this, DroppableInventoryCellWidgetClass))
+	{
+		DroppableInventoryCellWidget->FlushItemData(ItemStack);
+		UCanvasPanelSlot* CanvasPanelSlot = CanvasPanel->AddChildToCanvas(DroppableInventoryCellWidget);
+		CanvasPanelSlot->SetSize(HangImageSize);
+		DroppableInventoryCellWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+		DroppableItem = DroppableInventoryCellWidget;
+		bIsDragInProgress = true;
+	}
+}
+
+void UInventory::UpdateDroppableItemWidget()
+{
+	if (bIsDragInProgress && IsValid(DroppableItem))
+	{
+		DroppableItem->FlushItemData(HangItemStack);
+		if (HangItemStack.IsEmpty())
+		{
+			RemoveDroppableItemWidget();
+		}
+	}
 }

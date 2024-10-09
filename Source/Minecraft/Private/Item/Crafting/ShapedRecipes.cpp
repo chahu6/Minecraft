@@ -17,17 +17,16 @@ ShapedRecipes::ShapedRecipes(FStringView InGroup, int32 Width, int32 Height, con
 
 TSharedPtr<IRecipe> ShapedRecipes::Deserialize(TSharedPtr<FJsonObject> JsonRoot)
 {
-	TSharedPtr<FJsonValue> GroupValue = JsonRoot->TryGetField(TEXT("group"));
-	TSharedPtr<FJsonValue> PatternValue = JsonRoot->TryGetField(TEXT("pattern"));
-	TSharedPtr<FJsonValue> KeyValue = JsonRoot->TryGetField(TEXT("key"));
-	TSharedPtr<FJsonValue> ResultValue = JsonRoot->TryGetField(TEXT("result"));
+	TSharedPtr<FJsonObject> KeyObject = JsonRoot->GetObjectField(TEXT("key"));
+	TSharedPtr<FJsonObject> ResultObject = JsonRoot->GetObjectField(TEXT("result"));
 
-	FString Group = GroupValue->AsString();
+	FString Group = JsonRoot->HasField(TEXT("group")) ? JsonRoot->GetStringField(TEXT("group")) : TEXT("");
+
 	int32 Width = 0;
 	int32 Height = 0;
 	TMap<TCHAR, Ingredient> IngredientMap;
 
-	TArray<TSharedPtr<FJsonValue>> PatternsArray = PatternValue->AsArray();
+	TArray<TSharedPtr<FJsonValue>> PatternsArray = JsonRoot->GetArrayField(TEXT("pattern"));
 	if (!PatternsArray.IsEmpty())
 	{
 		FString Pattern = PatternsArray[0]->AsString();
@@ -35,12 +34,11 @@ TSharedPtr<IRecipe> ShapedRecipes::Deserialize(TSharedPtr<FJsonObject> JsonRoot)
 		Width = Pattern.Len();
 		Height = PatternsArray.Num();
 
-		IngredientMap = DeserializeKey(KeyValue->AsObject());
+		IngredientMap = DeserializeKey(KeyObject);
 	}
 
 	TArray<Ingredient> RecipeItems = DeserializeIngredients(PatternsArray, IngredientMap, Width, Height);
-	TSharedPtr<FJsonObject> ItemObject = ResultValue->AsObject();
-	FItemStack ItemStack = DeserializeItem(ItemObject);
+	FItemStack ItemStack = DeserializeItem(ResultObject);
 
 	return TSharedPtr<IRecipe>(new ShapedRecipes(Group, Width, Height, RecipeItems, ItemStack));
 }
@@ -49,11 +47,8 @@ FItemStack ShapedRecipes::DeserializeItem(TSharedPtr<FJsonObject> JsonRoot, bool
 {
 	FItemStack ItemStack;
 
-	TSharedPtr<FJsonValue> ItemValue = JsonRoot->TryGetField(TEXT("item"));
-	TSharedPtr<FJsonValue> CountValue = JsonRoot->TryGetField(TEXT("count"));
-
-	FString ItemName = ItemValue->AsString();
-	int32 Count = bUseCount ? CountValue->AsNumber() : 1;
+	FString ItemName = JsonRoot->HasField(TEXT("item")) ? JsonRoot->GetStringField(TEXT("item")) : TEXT("");
+	int32 Count = bUseCount && JsonRoot->HasField(TEXT("count")) ? JsonRoot->GetNumberField(TEXT("count")) : 1;
 
 	ItemStack.SetItem(UItem::GetItemFromName(FName(ItemName)));
 	ItemStack.SetCount(Count);

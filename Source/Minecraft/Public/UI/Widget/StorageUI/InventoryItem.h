@@ -23,6 +23,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FItemStack GetItemStack() const;
 
+	FItemStack DecrStackSize(int32 Amount);
+
+	void Grow(int32 Count);
+
+	void SetInventorySlotContents(const FItemStack& InItemStack);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsEmpty() const;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UImage> ItemIcon;
 

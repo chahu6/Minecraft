@@ -3,6 +3,8 @@
 #include "Components/Crafting/CraftingResultComponent.h"
 #include "Player/EntityPlayer.h"
 
+#include "UI/Widget/StorageUI/InventoryItem.h"
+
 void UBackpack::NativePreConstruct()
 {
 	Player = Player == nullptr ? GetOwningPlayerPawn<AEntityPlayer>() : Player;
@@ -37,6 +39,14 @@ void UBackpack::OnCraftMatrixChanged()
 {
 	SlotChangedCraftingGrid(Player, CraftingSystem, CraftingResult);
 	FlushCrafting();
+}
+
+void UBackpack::OnHandleLMB(UInventoryItem* InventoryItem)
+{
+	if (UCraftingResultComponent* Result = Cast<UCraftingResultComponent>(InventoryItem->Inventory.GetObject()))
+	{
+		CraftingSystem->ShrinkAllItems();
+	}
 }
 
 void UBackpack::OnContainerClosed(AEntityPlayer* PlayerIn)

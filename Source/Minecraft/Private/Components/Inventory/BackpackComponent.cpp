@@ -60,7 +60,14 @@ FItemStack UBackpackComponent::GetItemStack_Implementation(int32 Index) const
 
 FItemStack UBackpackComponent::DecrStackSize_Implementation(int32 Index, int32 Count)
 {
-	return FItemStack();
+	FItemStack ItemStack = ItemStackHelper::GetAndSplit(Items, Index, Count);
+
+	if (!ItemStack.IsEmpty())
+	{
+		NotifyAndUpdateUI(Index);
+	}
+
+	return ItemStack;
 }
 
 FItemStack UBackpackComponent::RemoveStackFromSlot_Implementation(int32 Index)
@@ -74,6 +81,11 @@ FItemStack UBackpackComponent::RemoveStackFromSlot_Implementation(int32 Index)
 
 void UBackpackComponent::SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack)
 {
+	if (IsValidIndex(Index))
+	{
+		Items[Index] = Stack;
+		NotifyAndUpdateUI(Index);
+	}
 }
 
 void UBackpackComponent::Clear_Implementation()
@@ -101,7 +113,7 @@ void UBackpackComponent::ConsumeItem(int32 SelectedIndex)
 	if (IsValidIndex(SelectedIndex))
 	{
 		FItemStack& ItemStack = Items[SelectedIndex];
-		ItemStack.Decrement();
+		ItemStack.Shrink(1);
 	}
 
 	NotifyAndUpdateUI(SelectedIndex);

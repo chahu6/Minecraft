@@ -18,6 +18,14 @@
 ### 制作系统：
 <img src="docs/Snipaste_2024-10-06_22-03-07.png" alt="本地路径" style="zoom:50%;" />
 
+<img src="docs/Snipaste_2024-10-09_10-48-57.png" alt="本地路径" style="zoom:50%;" />
+
+#### 配方：
+
+<img src="docs/Code.png" alt="本地路径" style="zoom:50%;" />
+
+### 地形：
+
 <img src="docs/Snipaste_2024-06-13_12-21-45.png" alt="本地路径" style="zoom:50%;" />
 
 <img src="docs/Snipaste_2024-09-30_19-33-55.png" alt="本地路径" style="zoom:50%;" />

@@ -21,7 +21,7 @@ void UInventoryComponent::ConsumeItem(int32 SelectedIndex)
 	if (IsValidIndex(SelectedIndex))
 	{
 		FItemStack& ItemStack = Items[SelectedIndex];
-		ItemStack.Decrement();
+		ItemStack.Shrink(1);
 	}
 }
 

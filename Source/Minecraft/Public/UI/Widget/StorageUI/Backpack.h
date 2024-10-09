@@ -32,6 +32,8 @@ protected:
 
 	virtual void OnCraftMatrixChanged() override;
 
+	virtual void OnHandleLMB(UInventoryItem* InventoryItem) override;
+
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UInventoryItem> Armor_Helmet;
