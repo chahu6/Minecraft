@@ -22,15 +22,14 @@ public:
 	virtual void BeginPlay() override;
 
 	/** Inventory Interface */
-	virtual int32 GetSizeInventory_Implementation() override;
+	virtual int32 GetSizeInventory_Implementation() const override;
 	virtual bool IsEmpty_Implementation() const override;
 	virtual bool IsEmptyFromIndex_Implementation(int32 Index) const override;
-	virtual FItemStack GetItemStack_Implementation(int32 Index) override;
+	virtual FItemStack GetItemStack_Implementation(int32 Index) const override;
 	virtual FItemStack DecrStackSize_Implementation(int32 Index, int32 Count) override;
 	virtual FItemStack RemoveStackFromSlot_Implementation(int32 Index) override;
 	virtual void SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack) override;
-	virtual bool AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack);
-	virtual void RemoveItemFromInventory_Implementation(int32 Index, FItemStack& InItemStack);
+	virtual bool AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack) override;
 	virtual void Clear_Implementation() override;
 	/** end Inventory Interface */
 
@@ -39,6 +38,8 @@ public:
 	virtual void ConsumeItem(int32 SelectedIndex);
 
 	virtual bool AddItemToInventory(FItemStack& ItemStack);
+
+	void PlaceItemBackInInventory(const FItemStack& ItemStack);
 
 	FItemStack DecreStackSize(int32 Index, int32 Count);
 
@@ -68,6 +69,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	TArray<FItemStack> Items;
 
+	UPROPERTY(BlueprintReadOnly)
+	FItemStack HangItemStack;
+
 	UPROPERTY(EditAnywhere)
 	int32 InventorySize = 36;
 
@@ -76,4 +80,7 @@ protected:
 
 	/*UPROPERTY()
 	FItemData OffHand_Test;*/
+
+public:
+	FORCEINLINE FItemStack GetItemStack() const { return HangItemStack; }
 };

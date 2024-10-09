@@ -11,7 +11,6 @@ class UTerrainComponent;
 class UChunkManagerComponent;
 class FChunkGenerateRunner;
 class FWorldRunner;
-class UDataTable;
 class FChunkData;
 struct FItemStack;
 class AEntityItem;

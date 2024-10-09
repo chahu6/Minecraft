@@ -6,6 +6,8 @@
 #include "World/Block/Block.h"
 #include "BlockWorkbench.generated.h"
 
+class UContainer;
+
 /**
  * 
  */
@@ -15,4 +17,8 @@ class MINECRAFT_API UBlockWorkbench : public UBlock
 	GENERATED_BODY()
 public:
 	virtual bool OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player) override;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	TSubclassOf<UContainer> WorkbenchClass;
 };

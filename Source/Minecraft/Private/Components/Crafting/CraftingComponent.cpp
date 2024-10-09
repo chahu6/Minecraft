@@ -1,5 +1,6 @@
 #include "Components/Crafting/CraftingComponent.h"
 #include "Utils/ItemStackHelper.h"
+
 #include "Item/Crafting/CraftingManager.h"
 #include "Item/Crafting/IRecipe.h"
 
@@ -12,10 +13,10 @@ void UCraftingComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	StackList.SetNum(InventoryWidth * InventoryHeight + 1);
+	Init();
 }
 
-int32 UCraftingComponent::GetSizeInventory_Implementation()
+int32 UCraftingComponent::GetSizeInventory_Implementation() const
 {
 	return StackList.Num();
 }
@@ -41,7 +42,7 @@ bool UCraftingComponent::IsEmptyFromIndex_Implementation(int32 Index) const
 	return false;
 }
 
-FItemStack UCraftingComponent::GetItemStack_Implementation(int32 Index)
+FItemStack UCraftingComponent::GetItemStack_Implementation(int32 Index) const
 {
 	if (StackList.IsValidIndex(Index))
 	{
@@ -64,7 +65,10 @@ FItemStack UCraftingComponent::DecrStackSize_Implementation(int32 Index, int32 C
 
 FItemStack UCraftingComponent::RemoveStackFromSlot_Implementation(int32 Index)
 {
-	return ItemStackHelper::GetAndRemove(StackList, Index);
+	FItemStack ItemStack = ItemStackHelper::GetAndRemove(StackList, Index);
+
+	NotifyAndUpdate();
+	return ItemStack;
 }
 
 void UCraftingComponent::SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack)
@@ -128,17 +132,6 @@ bool UCraftingComponent::AddItemToInventoryFromIndex_Implementation(int32 Index,
 	return InItemStack.IsEmpty();
 }
 
-void UCraftingComponent::RemoveItemFromInventory_Implementation(int32 Index, FItemStack& InItemStack)
-{
-	if (StackList.IsValidIndex(Index))
-	{
-		InItemStack = StackList[Index];
-		StackList[Index].Empty();
-
-		NotifyAndUpdate();
-	}
-}
-
 void UCraftingComponent::Clear_Implementation()
 {
 	for (FItemStack& ItemStack : StackList)
@@ -168,9 +161,14 @@ void UCraftingComponent::ShrinkAllItems()
 	NotifyAndUpdate();
 }
 
+void UCraftingComponent::Init()
+{
+	StackList.Init(FItemStack(), InventoryWidth * InventoryHeight);
+}
+
 void UCraftingComponent::NotifyAndUpdate()
 {
-	OnCraftMatrixChanged();
+	//OnCraftMatrixChanged();
 	OnCraftingItem.Broadcast();
 }
 
@@ -184,5 +182,5 @@ void UCraftingComponent::OnCraftMatrixChanged()
 	}
 
 	StackList.Last() = ItemStack;
-	OutputItemStack = ItemStack;
+	//OutputItemStack = ItemStack;
 }

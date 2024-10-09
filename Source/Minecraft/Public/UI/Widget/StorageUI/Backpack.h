@@ -1,43 +1,38 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UI/Widget/Inventory.h"
 #include "Backpack.generated.h"
 
 class UBackpackComponent;
 class UCraftingComponent;
+class UCraftingResultComponent;
 class UInventoryItem;
 
 /**
  * 
  */
 UCLASS()
-class MINECRAFT_API UBackpack : public UUserWidget
+class MINECRAFT_API UBackpack : public UInventory
 {
 	GENERATED_BODY()
 
 public:
-	UBackpack(const FObjectInitializer& ObjectInitializer);
+	virtual void OnContainerClosed(AEntityPlayer* PlayerIn) override;
 
 protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
 
 protected:
-	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
-
-protected:
-	void InitUI();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void FlushBackpack();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void FlushHotbar();
+	virtual void InitUI() override;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void FlushCrafting();
+
+	virtual void OnCraftMatrixChanged() override;
+
+	virtual void OnHandleLMB(UInventoryItem* InventoryItem) override;
 
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -57,11 +52,8 @@ public:
 
 private:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UBackpackComponent> BackpackComponent;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCraftingComponent> CraftingSystem;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<APawn> Player;
+	TObjectPtr<UCraftingResultComponent> CraftingResult;
 };

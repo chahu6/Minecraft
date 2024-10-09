@@ -6,8 +6,6 @@
 #include "UObject/Interface.h"
 #include "ChunkInterface.generated.h"
 
-struct FBlockData;
-
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UChunkInterface : public UInterface

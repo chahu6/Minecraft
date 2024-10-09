@@ -41,13 +41,13 @@ void AChunk::UpdateChunk()
 	//AWorldManager::Get()->TaskQueue.Enqueue(this);
 }
 
-void AChunk::AddActiveVoxel(const FBlockData& BlockData)
-{
+//void AChunk::AddActiveVoxel(const FBlockData& BlockData)
+//{
 	/*if (!ActiveVoxels.Contains(BlockData))
 	{
 		ActiveVoxels.Add(BlockData);
 	}*/
-}
+//}
 
 void AChunk::RenderMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
 {

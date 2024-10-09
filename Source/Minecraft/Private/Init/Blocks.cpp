@@ -15,6 +15,7 @@ const UBlock* UBlocks::Water;
 const UBlock* UBlocks::Sand;
 const UBlock* UBlocks::Tallgrass;
 const UBlock* UBlocks::Rose;
+const UBlock* UBlocks::Crafting_Table;
 
 UBlocks::~UBlocks()
 {
@@ -37,13 +38,14 @@ void UBlocks::Initialization()
 	REGISTER_BLOCKS(Sand);
 	REGISTER_BLOCKS(Tallgrass);
 	REGISTER_BLOCKS(Rose);
+	REGISTER_BLOCKS(Crafting_Table);
 }
 
-UBlock* UBlocks::GetRegisteredBlock(const FName& Name)
+const UBlock* UBlocks::GetRegisteredBlock(const FName& Name)
 {
-	if (UBlock::Registry.Contains(Name))
+	if (UBlock::REGISTER_NAME.Contains(Name))
 	{
-		return UBlock::Registry[Name];
+		return UBlock::REGISTER_NAME[Name];
 	}
 	else
 	{
@@ -52,7 +54,7 @@ UBlock* UBlocks::GetRegisteredBlock(const FName& Name)
 	return nullptr;
 }
 
-UBlock* UBlocks::GetRegisteredBlock(const FGameplayTag& Tag)
+const UBlock* UBlocks::GetRegisteredBlock(const FGameplayTag& Tag)
 {
 	return GetRegisteredBlock(Tag.GetTagName());
 }

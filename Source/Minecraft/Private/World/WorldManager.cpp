@@ -5,7 +5,6 @@
 #include "SimplexNoiseLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/MinecraftAssetLibrary.h"
-#include "World/Behavior/BlockBehavior.h"
 #include "World/Components/TerrainComponent.h"
 #include "World/Runnable/WorldRunner.h"
 #include "World/Runnable/ChunkGenerateRunner.h"

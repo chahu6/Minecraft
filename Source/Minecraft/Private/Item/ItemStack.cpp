@@ -40,10 +40,7 @@ void FItemStack::SetCount(int32 Size)
 {
 	StackSize = Size;
 
-	if (StackSize <= 0)
-	{
-		Empty();
-	}
+	if (StackSize <= 0) Empty();
 }
 
 const UItem* FItemStack::GetItem() const
@@ -59,15 +56,6 @@ void FItemStack::SetItem(UItem* NewItem)
 int32 FItemStack::GetMaxStackSize() const
 {
 	return Item->MaxStackSize;
-}
-
-void FItemStack::Decrement()
-{
-	if (IsEmpty()) return;
-
-	StackSize--;
-
-	if (StackSize <= 0) Empty();
 }
 
 FItemStack FItemStack::SplitStack(int32 Amount)

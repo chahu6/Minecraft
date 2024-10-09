@@ -2,9 +2,9 @@
 
 
 #include "World/Block/BlockWorkbench.h"
+#include "Player/EntityPlayer.h"
 
 bool UBlockWorkbench::OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player)
 {
-
-	return true;
+	return Player->DisplayGui(WorkbenchClass);
 }

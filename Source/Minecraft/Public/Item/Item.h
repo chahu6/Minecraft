@@ -24,7 +24,7 @@ public:
 
 	static void RegisterItems();
 
-	static UItem* GetItemFromBlock(UBlock* Block);
+	static UItem* GetItemFromBlock(const UBlock* Block);
 
 	static UItem* GetItemFromName(const FName& ItemName);
 

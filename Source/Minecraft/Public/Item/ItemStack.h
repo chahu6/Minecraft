@@ -32,8 +32,6 @@ public:
 	bool IsStack() const;
 	int32 GetMaxStackSize() const;
 
-	void Decrement();
-
 	FItemStack SplitStack(int32 Amount);
 
 	void Shrink(int32 Quantity);

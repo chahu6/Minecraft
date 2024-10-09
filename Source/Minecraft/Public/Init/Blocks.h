@@ -21,6 +21,7 @@ public:
 	static const UBlock* Sand;
 	static const UBlock* Tallgrass;
 	static const UBlock* Rose;
+	static const UBlock* Crafting_Table;
 
 public:
 	~UBlocks();
@@ -37,9 +38,9 @@ public:
 	static void Initialization();
 
 private:
-	static UBlock* GetRegisteredBlock(const FName& Name);
+	static const UBlock* GetRegisteredBlock(const FName& Name);
 
-	static UBlock* GetRegisteredBlock(const FGameplayTag& Tag);
+	static const UBlock* GetRegisteredBlock(const FGameplayTag& Tag);
 
 private:
 	static UBlocks* SingletonManager;

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "World/Block/Data/BlockData.h"
 #include "World/Data/FaceType.h"
 
 class UBlock;

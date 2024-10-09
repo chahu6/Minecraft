@@ -9,6 +9,7 @@
 #include "Components/Crafting/CraftingComponent.h"
 #include "UI/HUD/MinecraftHUD.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/Crafting/CraftingResultComponent.h"
 #include "Blueprint/UserWidget.h"
 
 #include "UI/Widget/StorageUI/Backpack.h"
@@ -77,8 +78,9 @@ AEntityPlayer::AEntityPlayer()
 	// 背包
 	BackpackComponent = CreateDefaultSubobject<UBackpackComponent>(TEXT("BackpackComponent"));
 
-	// 工艺组件
+	// 制作组件
 	CraftingComponent = CreateDefaultSubobject<UCraftingComponent>(TEXT("CraftingComponent"));
+	CraftingResultComponent = CreateDefaultSubobject<UCraftingResultComponent>(TEXT("CraftingResultComponent"));
 }
 
 void AEntityPlayer::PossessedBy(AController* NewController)
@@ -186,12 +188,14 @@ void AEntityPlayer::OnResetAction()
 
 void AEntityPlayer::OpenBackpack()
 {
-	/*if (IPlayerControllerInterface* PlayerControllerInterface = GetController<IPlayerControllerInterface>())
-	{
-		IPlayerControllerInterface::Execute_OpenBackpack(GetController());
-	}*/
+	check(InventoryWidgetClass);
+	InventoryContainer = CreateWidget<UBackpack>(GetWorld()->GetFirstPlayerController(), InventoryWidgetClass);
+	InventoryContainer->AddToViewport();
+	OpenContainer = InventoryContainer;
 
-	ToggleInventory();
+	SetInputModeUIOnly();
+
+	//ToggleInventory();
 }
 
 void AEntityPlayer::SwitchingItem(const FInputActionValue& Value)
@@ -207,7 +211,7 @@ void AEntityPlayer::SwitchingItem(const FInputActionValue& Value)
 
 void AEntityPlayer::Initialization()
 {
-	InitialInventoryUI();
+	//InitialInventoryUI();
 
 	UpdateMainHandItem();
 }
@@ -215,42 +219,65 @@ void AEntityPlayer::Initialization()
 void AEntityPlayer::InitialInventoryUI()
 {
 	check(InventoryWidgetClass);
-	InventoryWidgetRef = CreateWidget<UBackpack>(GetWorld()->GetFirstPlayerController(), InventoryWidgetClass);
-	InventoryWidgetRef->AddToViewport();
-	InventoryWidgetRef->SetVisibility(ESlateVisibility::Hidden);
+	InventoryContainer = CreateWidget<UBackpack>(GetWorld()->GetFirstPlayerController(), InventoryWidgetClass);
+	InventoryContainer->AddToViewport();
+	InventoryContainer->SetVisibility(ESlateVisibility::Hidden);
+	OpenContainer = InventoryContainer;
 }
 
-void AEntityPlayer::ToggleInventory()
-{
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-
-	if (InventoryWidgetRef->GetVisibility() == ESlateVisibility::Visible)
-	{
-		InventoryWidgetRef->SetVisibility(ESlateVisibility::Hidden);
-
-		FInputModeGameOnly InputModeGameOnly;
-		PlayerController->SetInputMode(InputModeGameOnly);
-		PlayerController->bShowMouseCursor = false;
-		PlayerController->SetIgnoreLookInput(false);
-	}
-	else if (InventoryWidgetRef->GetVisibility() == ESlateVisibility::Hidden)
-	{
-		InventoryWidgetRef->SetVisibility(ESlateVisibility::Visible);
-
-		FInputModeGameAndUI InputModeGameAndUI;
-		InputModeGameAndUI.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		InputModeGameAndUI.SetWidgetToFocus(InventoryWidgetRef->TakeWidget());
-		PlayerController->SetInputMode(InputModeGameAndUI);
-		PlayerController->bShowMouseCursor = true;
-		PlayerController->SetIgnoreLookInput(true);
-	}
-}
+//void AEntityPlayer::ToggleInventory()
+//{
+//	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+//
+//	if (InventoryContainer->GetVisibility() == ESlateVisibility::Visible)
+//	{
+//		InventoryContainer->SetVisibility(ESlateVisibility::Hidden);
+//
+//		FInputModeGameOnly InputModeGameOnly;
+//		PlayerController->SetInputMode(InputModeGameOnly);
+//		PlayerController->bShowMouseCursor = false;
+//		PlayerController->SetIgnoreLookInput(false);
+//	}
+//	else if (InventoryContainer->GetVisibility() == ESlateVisibility::Hidden)
+//	{
+//		InventoryContainer->SetVisibility(ESlateVisibility::Visible);
+//
+//		FInputModeGameAndUI InputModeGameAndUI;
+//		InputModeGameAndUI.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+//		InputModeGameAndUI.SetWidgetToFocus(InventoryContainer->TakeWidget());
+//		PlayerController->SetInputMode(InputModeGameAndUI);
+//		PlayerController->bShowMouseCursor = true;
+//		PlayerController->SetIgnoreLookInput(true);
+//	}
+//}
 
 FVector AEntityPlayer::GetItemSpawnLocation()
 {
 	const FVector ForwardVector = GetController<APlayerController>()->PlayerCameraManager->GetActorForwardVector();
 	
 	return ForwardVector * 100.f + GetPawnViewLocation();
+}
+
+void AEntityPlayer::SetInputModeUIOnly()
+{
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+
+	FInputModeUIOnly InputModeUIOnly;
+	InputModeUIOnly.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	InputModeUIOnly.SetWidgetToFocus(OpenContainer->TakeWidget());
+	PlayerController->SetInputMode(InputModeUIOnly);
+	PlayerController->bShowMouseCursor = true;
+	PlayerController->SetIgnoreLookInput(true);
+}
+
+void AEntityPlayer::SetInputModeGameOnly()
+{
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+
+	FInputModeGameOnly InputModeGameOnly;
+	PlayerController->SetInputMode(InputModeGameOnly);
+	PlayerController->bShowMouseCursor = false;
+	PlayerController->SetIgnoreLookInput(false);
 }
 
 void AEntityPlayer::UpdateMainHandItem()
@@ -316,9 +343,23 @@ bool AEntityPlayer::OnItemPickup_Implementation(FItemStack& ItemStack)
 	return BackpackComponent->AddItemToInventory(ItemStack);
 }
 
-void AEntityPlayer::DisplayGui(TSubclassOf<UUserWidget> UserWidgetClass)
+bool AEntityPlayer::DisplayGui(const TSubclassOf<UContainer>& ContainerClass)
 {
-	
+	if (ContainerClass)
+	{
+		OpenContainer = CreateWidget<UContainer>(GetController<APlayerController>(), ContainerClass);
+		OpenContainer->AddToViewport();
+		SetInputModeUIOnly();
+		return true;
+	}
+
+	return false;
+}
+
+void AEntityPlayer::CloseContainer()
+{
+	OpenContainer->OnContainerClosed(this);
+	OpenContainer = InventoryContainer;
 }
 
 void AEntityPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

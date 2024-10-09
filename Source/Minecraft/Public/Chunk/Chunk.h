@@ -5,7 +5,7 @@
 #include "Interfaces/ChunkInterface.h"
 #include "Chunk.generated.h"
 
-struct FBlockData;
+//struct FBlockData;
 struct FMeshData;
 
 UENUM()
@@ -47,7 +47,7 @@ public:
 	* new
 	*/
 
-	void AddActiveVoxel(const FBlockData& BlockData);
+	//void AddActiveVoxel(const FBlockData& BlockData);
 
 	void RenderMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
 
