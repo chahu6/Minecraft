@@ -8,6 +8,8 @@
 #include "Item.generated.h"
 
 class UBlock;
+class AEntityPlayer;
+class AWorldManager;
 
 /**
  * 
@@ -26,6 +28,8 @@ public:
 
 	static UItem* GetItemFromBlock(const UBlock* Block);
 
+	static UItem* GetItemFromName(const FGameplayTag& TagName);
+
 	static UItem* GetItemFromName(const FName& ItemName);
 
 	/** Overridden to use saved type */
@@ -34,6 +38,9 @@ public:
 	/** Returns the logical name, equivalent to the primary asset id */
 	UFUNCTION(BlueprintCallable, Category = Item)
 	FString GetIdentifierString() const;
+
+public:
+	virtual bool OnItemUse(AEntityPlayer* Player, AWorldManager* WorldManager, const FIntVector& BlockVoxelLocation, const FVector& HitNormal);
 
 private:
 	static void RegisterItemBlock(UBlock* Block, UItem* Item);

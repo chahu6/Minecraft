@@ -21,6 +21,8 @@ public:
 	static const UBlock* Sand;
 	static const UBlock* Tallgrass;
 	static const UBlock* Rose;
+	static const UBlock* Log;
+	static const UBlock* Planks;
 	static const UBlock* Crafting_Table;
 
 public:

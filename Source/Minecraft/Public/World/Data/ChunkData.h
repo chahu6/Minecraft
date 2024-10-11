@@ -20,9 +20,9 @@ public:
 
 	FBlockState GetBlockState(int32 OffsetX, int32 OffsetY, int32 OffsetZ) const;
 
-	void SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockSate);
+	bool SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockSate);
 
-	void SetBlockState(int32 OffsetX, int32 OffsetY, int32 OffsetZ, const FBlockState& BlockSate);
+	bool SetBlockState(int32 OffsetX, int32 OffsetY, int32 OffsetZ, const FBlockState& BlockSate);
 
 	void SetHeight(int32 Index, int32 Height);
 

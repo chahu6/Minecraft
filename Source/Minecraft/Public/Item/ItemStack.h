@@ -26,7 +26,7 @@ public:
 	int32 GetCount() const;
 	void SetCount(int32 Size);
 
-	const UItem* GetItem() const;
+	UItem* GetItem() const;
 	void SetItem(UItem* NewItem);
 
 	bool IsStack() const;

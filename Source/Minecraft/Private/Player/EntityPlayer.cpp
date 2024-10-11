@@ -67,6 +67,14 @@ AEntityPlayer::AEntityPlayer()
 	ItemMesh->SetRelativeScale3D(FVector(0.1f));
 	ItemMesh->SetCastShadow(false);
 
+	ItemSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ItemSkeletalMesh"));
+	ItemSkeletalMesh->SetupAttachment(FirstCamera);
+	ItemSkeletalMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
+	ItemSkeletalMesh->SetRelativeRotation(FRotator(0.f, 30.f, 0.f));
+	ItemSkeletalMesh->SetRelativeLocation(FVector(20.f, 14.f, -15.f));
+	ItemSkeletalMesh->SetRelativeScale3D(FVector(0.1f));
+	ItemSkeletalMesh->SetCastShadow(false);
+
 	SphereOverlap = CreateDefaultSubobject<USphereComponent>(TEXT("SphereOverlap"));
 	SphereOverlap->SetupAttachment(RootComponent);
 	SphereOverlap->SetSphereRadius(145.0f);
@@ -290,6 +298,7 @@ void AEntityPlayer::UpdateMainHandItem()
 	}
 
 	ItemMesh->SetStaticMesh(MainItemStack.GetItem()->StaticMesh);
+	ItemSkeletalMesh->SetSkeletalMesh(MainItemStack.GetItem()->SkeletalMesh);
 }
 
 FItemStack AEntityPlayer::GetMainHandItem()

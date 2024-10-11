@@ -11,9 +11,11 @@ UCLASS()
 class MINECRAFT_API UHotbar : public UMinecraftUserWidget
 {
 	GENERATED_BODY()
-	
 protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void FlushHotbar();
 };

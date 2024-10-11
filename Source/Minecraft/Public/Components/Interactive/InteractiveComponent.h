@@ -30,8 +30,6 @@ private:
 
 	void UseItem();
 
-	bool PlaceBlock(const FItemStack& MainHandItemStack);
-
 	bool RemoveBlockFromWorld(const FIntVector& BlockVoxelLocation);
 
 	void OngoingClick();

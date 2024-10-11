@@ -7,6 +7,10 @@
 #include "Item/ItemStack.h"
 #include "InventoryComponent.generated.h"
 
+/**
+* 废弃了，这个类
+*/
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )

@@ -6,6 +6,8 @@
 #include "Init/Blocks.h"
 #include "Utils/ItemStackHelper.h"
 
+#include "MinecraftGameplayTags.h"
+
 UBackpackComponent::UBackpackComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -21,6 +23,17 @@ void UBackpackComponent::BeginPlay()
 	ItemStack.SetCount(1);
 	ItemStack.SetItem(UItem::GetItemFromBlock(UBlocks::Crafting_Table));
 	Items[0] = ItemStack;
+
+
+	FItemStack WoodItemStack;
+	WoodItemStack.SetCount(1);
+	WoodItemStack.SetItem(UItem::GetItemFromBlock(UBlocks::Log));
+	Items[1] = WoodItemStack;
+
+	FItemStack ChestItemStack;
+	ChestItemStack.SetCount(1);
+	ChestItemStack.SetItem(UItem::GetItemFromName(FMinecraftGameplayTags::Get().Minecraft_Chest));
+	Items[2] = ChestItemStack;
 }
 
 int32 UBackpackComponent::GetSizeInventory_Implementation() const

@@ -14,6 +14,7 @@ class FWorldRunner;
 class FChunkData;
 struct FItemStack;
 class AEntityItem;
+class ATileEntity;
 
 DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
 
@@ -49,6 +50,7 @@ public:
 	FBlockState GetBlockState(const FIntVector& BlockWorldVoxelLocation);
 
 	TSharedPtr<FChunkData> GetChunkData(const FIntPoint& ChunkVoxelLocation);
+	AChunk* GetChunk(const FIntPoint& ChunkVoxelLocation);
 
 	FProgressDelegate ProgressDelegate;
 
@@ -57,6 +59,8 @@ public:
 
 private:
 	void SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
+
+	void SetTileEntity(const FIntVector& BlockWorldVoxelLocation, ATileEntity* TileEntity);
 
 	void InitialWorldChunkLoad();
 
@@ -92,6 +96,9 @@ public:
 	TQueue<FIntPoint, EQueueMode::Mpsc> UnloadChunkQueue;
 
 	TMap<FIntPoint, AChunk*> ActiveChunks;
+
+	UPROPERTY()
+	TArray<class ATileEntity*> TileEntityList;
 
 protected:
 	UPROPERTY(VisibleAnywhere)

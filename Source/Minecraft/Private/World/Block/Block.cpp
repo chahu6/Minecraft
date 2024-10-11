@@ -85,6 +85,11 @@ void UBlock::OnBlockPlacedBy()
 
 }
 
+EBlockRenderType UBlock::GetRenderType() const
+{
+	return EBlockRenderType::Surface;
+}
+
 UItem* UBlock::GetItemDropped(int32 Forture)
 {
 	return UItem::GetItemFromBlock(this);
@@ -132,6 +137,11 @@ float UBlock::GetPlayerRelativeBlockHardness()
 float UBlock::GetBlockHardness()
 {
 	return BlockHardness;
+}
+
+bool UBlock::IsFullBlock() const
+{
+	return bFullBlock;
 }
 
 void UBlock::SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack)

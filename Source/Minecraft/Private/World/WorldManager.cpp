@@ -14,6 +14,7 @@
 #include "Utils/ChunkHelper.h"
 #include "World/Generator/GreedyMeshGenerator.h"
 #include "Entity/Item/EntityItem.h"
+#include "Interfaces/Block/TileEntityProvider.h"
 
 AWorldManager* AWorldManager::Instance = nullptr;
 
@@ -204,12 +205,27 @@ void AWorldManager::SetBlockState(const FIntVector& BlockWorldVoxelLocation, con
 		OffsetLocation.Y %= WorldSettings::CHUNK_SIZE;
 		//const int32 WorldZ = OffsetLocation.Z;
 
-		ChunkData->SetBlockState(OffsetLocation, BlockState);
+		if (ChunkData->SetBlockState(OffsetLocation, BlockState))
+		{
+			if (BlockState.GetBlock()->Implements<UTileEntityProvider>())
+			{
+				if (ITileEntityProvider* TileEntityProvider = Cast<ITileEntityProvider>(BlockState.GetBlock()))
+				{
+					ATileEntity* TileEntity = TileEntityProvider->CreateNewTileEntity(this, BlockWorldVoxelLocation);
+					SetTileEntity(BlockWorldVoxelLocation, TileEntity);
+				}
+			}
+		}
 
 		AddChunkToUpdate(BlockWorldVoxelLocation);
 
 		CheckSurroundingChunkNeedUpdate(OffsetLocation, ChunkVoxelLocationX, ChunkVoxelLocationY);
 	}
+}
+
+void AWorldManager::SetTileEntity(const FIntVector& BlockWorldVoxelLocation, ATileEntity* TileEntity)
+{
+	TileEntityList.Add(TileEntity);
 }
 
 void AWorldManager::CheckSurroundingChunkNeedUpdate(const FIntVector& BlockOffsetLocation, int32 ChunkVoxelLocationX, int32 ChunkVoxelLocationY)
@@ -249,6 +265,15 @@ TSharedPtr<FChunkData> AWorldManager::GetChunkData(const FIntPoint& ChunkVoxelLo
 	if (WorldInfo.ChunkDataMap.Contains(ChunkVoxelLocation))
 	{
 		return WorldInfo.ChunkDataMap[ChunkVoxelLocation];
+	}
+	return nullptr;
+}
+
+AChunk* AWorldManager::GetChunk(const FIntPoint& ChunkVoxelLocation)
+{
+	if (ActiveChunks.Contains(ChunkVoxelLocation))
+	{
+		return ActiveChunks[ChunkVoxelLocation];
 	}
 	return nullptr;
 }

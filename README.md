@@ -22,7 +22,7 @@
 
 #### 配方：
 
-<img src="docs/Code.png" alt="本地路径" style="zoom:50%;" />
+<img src="docs/code.png" alt="本地路径" style="zoom:50%;" />
 
 ### 地形：
 

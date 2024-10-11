@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "GameplayTagContainer.h"
 #include "World/Data/BlockState.h"
+#include "World/Block/Data/BlockRenderType.h"
 #include "Block.generated.h"
 
 class AWorldManager;
@@ -39,6 +40,8 @@ public:
 	virtual void DropBlockAsItemWithChance(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, float Chance, int32 Forture);
 
 	virtual void OnBlockPlacedBy();
+
+	virtual EBlockRenderType GetRenderType() const;
 
 	/**
 	* 获取此区块在收获时应掉落的物品。
@@ -77,6 +80,8 @@ public:
 
 	float GetBlockHardness();
 
+	bool IsFullBlock() const;
+
 protected:
 	static void SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack);
 
@@ -94,7 +99,7 @@ public:
 	bool bIsActive;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
-	bool bFullBlock;
+	bool bFullBlock = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	int32 LightOpacity;

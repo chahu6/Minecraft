@@ -6,7 +6,6 @@
 AMCEntity::AMCEntity()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 void AMCEntity::BeginPlay()

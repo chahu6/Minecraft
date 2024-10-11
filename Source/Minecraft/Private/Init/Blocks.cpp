@@ -15,6 +15,8 @@ const UBlock* UBlocks::Water;
 const UBlock* UBlocks::Sand;
 const UBlock* UBlocks::Tallgrass;
 const UBlock* UBlocks::Rose;
+const UBlock* UBlocks::Log;
+const UBlock* UBlocks::Planks;
 const UBlock* UBlocks::Crafting_Table;
 
 UBlocks::~UBlocks()
@@ -38,6 +40,8 @@ void UBlocks::Initialization()
 	REGISTER_BLOCKS(Sand);
 	REGISTER_BLOCKS(Tallgrass);
 	REGISTER_BLOCKS(Rose);
+	REGISTER_BLOCKS(Log);
+	REGISTER_BLOCKS(Planks);
 	REGISTER_BLOCKS(Crafting_Table);
 }
 

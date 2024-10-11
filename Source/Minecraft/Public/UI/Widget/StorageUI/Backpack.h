@@ -16,7 +16,6 @@ UCLASS()
 class MINECRAFT_API UBackpack : public UInventory
 {
 	GENERATED_BODY()
-
 public:
 	virtual void OnContainerClosed(AEntityPlayer* PlayerIn) override;
 
