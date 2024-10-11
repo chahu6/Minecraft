@@ -17,6 +17,8 @@ class MINECRAFT_API UItemBlock : public UItem
 public:
 	UBlock* GetBlock() const;
 
+	virtual bool OnItemUse(AEntityPlayer* Player, AWorldManager* WorldManager, const FIntVector& BlockVoxelLocation, const FVector& HitNormal) override;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	TObjectPtr<UBlock> Block;

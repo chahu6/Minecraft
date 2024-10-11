@@ -140,7 +140,7 @@ void UInventory::HandleLMB_Implementation(UInventoryItem* InventoryItem)
 			HangItemStack = IInventoryInterface::Execute_RemoveStackFromSlot(InventoryItem->Inventory.GetObject(), InventoryItem->Index);
 			CreateDroppableItemWidget(HangItemStack);
 
-			OnHandleLMB(InventoryItem);
+			OnHandleLMB(InventoryItem); 
 		}
 	}
 	else

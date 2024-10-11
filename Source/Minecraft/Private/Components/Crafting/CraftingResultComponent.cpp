@@ -13,6 +13,11 @@ void UCraftingResultComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	Init();
+}
+
+void UCraftingResultComponent::Init()
+{
 	StackResult.Init(FItemStack(), 1);
 }
 

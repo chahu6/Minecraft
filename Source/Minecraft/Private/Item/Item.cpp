@@ -49,6 +49,11 @@ UItem* UItem::GetItemFromBlock(const UBlock* Block)
 	return REGISTER[FMinecraftGameplayTags::Get().Minecraft_Air.GetTagName()];
 }
 
+UItem* UItem::GetItemFromName(const FGameplayTag& TagName)
+{
+	return GetItemFromName(TagName.GetTagName());
+}
+
 UItem* UItem::GetItemFromName(const FName& ItemName)
 {
 	//check(REGISTER.Contains(ItemName));
@@ -69,6 +74,11 @@ FPrimaryAssetId UItem::GetPrimaryAssetId() const
 FString UItem::GetIdentifierString() const
 {
 	return GetPrimaryAssetId().ToString();
+}
+
+bool UItem::OnItemUse(AEntityPlayer* Player, AWorldManager* WorldManager, const FIntVector& BlockVoxelLocation, const FVector& HitNormal)
+{
+	return false;
 }
 
 void UItem::RegisterItemBlock(UBlock* Block, UItem* Item)

@@ -31,6 +31,8 @@ protected:
 
 	virtual void OnCraftMatrixChanged() override;
 
+	virtual void OnHandleLMB(UInventoryItem* InventoryItem) override;
+
 private:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UCraftingComponent> CraftingComponent;

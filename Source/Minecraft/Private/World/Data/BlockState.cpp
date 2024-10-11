@@ -26,7 +26,7 @@ FBlockState::FBlockState(const UBlock* InBlock, const FIntVector& InPosition)
 	SetBlock(InBlock);
 }
 
-UBlock* FBlockState::GetBlock()
+UBlock* FBlockState::GetBlock() const
 {
 	return Block;
 }

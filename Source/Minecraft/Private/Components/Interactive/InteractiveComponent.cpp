@@ -131,52 +131,12 @@ void UInteractiveComponent::UseItem()
 			FItemStack MainHandItemStack = Player->GetMainHandItem();
 			if (MainHandItemStack.IsEmpty()) return;
 
-			if (MainHandItemStack.GetItem()->IsA<UItemBlock>())
+			if (MainHandItemStack.GetItem()->OnItemUse(Player, AWorldManager::Get(), BlockVoxelLocation, BlockHitResult.ImpactNormal))
 			{
-				PlaceBlock(MainHandItemStack);
+
 			}
 		}
 	}
-}
-
-// @TODO
-bool UInteractiveComponent::PlaceBlock(const FItemStack& MainHandItemStack)
-{
-	FIntVector BlockVoxelLocation;
-	WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, BlockVoxelLocation);
-
-	BlockVoxelLocation.X += BlockHitResult.ImpactNormal.X;
-	BlockVoxelLocation.Y += BlockHitResult.ImpactNormal.Y;
-	BlockVoxelLocation.Z += BlockHitResult.ImpactNormal.Z;
-
-	FBlockState BlockState = GetBlockDataFromLocation(BlockVoxelLocation);
-
-	if (!BlockState.IsAir()) return false;
-
-	//if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnInteract();
-
-	AWorldManager* WorldManager = AWorldManager::Get();
-	if (WorldManager)
-	{
-		//if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnBeforePlace();
-		//WorldManager->PlaceBlock(BlockVoxelLocation, BlockMeta.BlockID);
-		
-		UBlock* Block = Cast<UItemBlock>(MainHandItemStack.GetItem())->GetBlock();
-		WorldManager->PlaceBlock(BlockVoxelLocation, FBlockState(Block));
-
-		FVector WorldLocation = FVector(BlockVoxelLocation * WorldSettings::BlockSize);
-		WorldLocation = WorldLocation + (WorldSettings::BlockSize >> 1);
-		//if (BlockMeta.BehaviorClass) BlockMeta.BehaviorClass->GetDefaultObject<UBlockBehavior>()->OnAfterPlace(WorldManager, WorldLocation, BlockMeta.PlaceSound);
-		
-		UGameplayStatics::PlaySoundAtLocation(this, Block->PlaceSound, WorldLocation);
-
-		Player->ConsumeItem();
-		Player->UpdateMainHandItem();
-
-		return true;
-	}
-
-	return false;
 }
 
 bool UInteractiveComponent::OnPlayerDestroyBlock(const FVector& WorldLocation, const FVector& WorldNormal)

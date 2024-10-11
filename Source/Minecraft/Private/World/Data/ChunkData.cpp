@@ -19,18 +19,20 @@ FBlockState FChunkData::GetBlockState(int32 OffsetX, int32 OffsetY, int32 Offset
 	return FBlockState();
 }
 
-void FChunkData::SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockSate)
+bool FChunkData::SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockSate)
 {
-	SetBlockState(BlockOffsetLocation.X, BlockOffsetLocation.Y, BlockOffsetLocation.Z, BlockSate);
+	return SetBlockState(BlockOffsetLocation.X, BlockOffsetLocation.Y, BlockOffsetLocation.Z, BlockSate);
 }
 
-void FChunkData::SetBlockState(int32 OffsetX, int32 OffsetY, int32 OffsetZ, const FBlockState& BlockSate)
+bool FChunkData::SetBlockState(int32 OffsetX, int32 OffsetY, int32 OffsetZ, const FBlockState& BlockSate)
 {
 	const int32 Index = ChunkHelper::GetBlocksIndex(OffsetX, OffsetY, OffsetZ);
 	if (BlockStateMap.IsValidIndex(Index))
 	{
 		BlockStateMap[Index] = BlockSate;
+		return true;
 	}
+	return false;
 }
 
 void FChunkData::SetHeight(int32 Index, int32 Height)

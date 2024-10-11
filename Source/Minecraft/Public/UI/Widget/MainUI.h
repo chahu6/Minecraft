@@ -12,7 +12,6 @@ UCLASS()
 class MINECRAFT_API UMainUI : public UMinecraftUserWidget
 {
 	GENERATED_BODY()
-	
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UHotbar> Hotbar;

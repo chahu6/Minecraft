@@ -43,7 +43,7 @@ void FItemStack::SetCount(int32 Size)
 	if (StackSize <= 0) Empty();
 }
 
-const UItem* FItemStack::GetItem() const
+UItem* FItemStack::GetItem() const
 {
 	return Item;
 }

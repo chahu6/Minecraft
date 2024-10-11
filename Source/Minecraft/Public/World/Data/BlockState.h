@@ -33,7 +33,7 @@ private:
 	UBlock* Block = nullptr;
 
 public:
-	UBlock* GetBlock();
+	UBlock* GetBlock() const;
 
 	void SetBlock(const UBlock* InBlock);
 
