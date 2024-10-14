@@ -24,7 +24,6 @@ void UBackpackComponent::BeginPlay()
 	ItemStack.SetItem(UItem::GetItemFromBlock(UBlocks::Crafting_Table));
 	Items[0] = ItemStack;
 
-
 	FItemStack WoodItemStack;
 	WoodItemStack.SetCount(1);
 	WoodItemStack.SetItem(UItem::GetItemFromBlock(UBlocks::Log));

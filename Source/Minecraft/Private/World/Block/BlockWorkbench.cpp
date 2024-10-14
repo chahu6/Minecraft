@@ -3,8 +3,9 @@
 
 #include "World/Block/BlockWorkbench.h"
 #include "Player/EntityPlayer.h"
+#include "UI/Widget/Container.h"
 
 bool UBlockWorkbench::OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player)
 {
-	return Player->DisplayGui(WorkbenchClass);
+	return Player->DisplayGui(CreateWidget<UContainer>(Player->GetController<APlayerController>(), WorkbenchClass));
 }

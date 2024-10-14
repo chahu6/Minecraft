@@ -7,6 +7,9 @@
 #include "Item/ItemStack.h"
 #include "TileEntityChest.generated.h"
 
+class UInventoryComponent;
+class UChest;
+
 /**
  * 
  */
@@ -17,6 +20,9 @@ class MINECRAFT_API ATileEntityChest : public ATileEntity
 public:
 	ATileEntityChest();
 
+	/** 当玩家右键单击该块时调用 */
+	virtual bool OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player) override;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -24,6 +30,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 	TObjectPtr<USkeletalMeshComponent> SkeletalMesh;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Properties")
-	TArray<FItemStack> ChestContents;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Properties")
+	TObjectPtr<UInventoryComponent> InventoryComponent;
+
+	UPROPERTY(EditAnywhere, Category = "Properties")
+	TSubclassOf<UChest> ChestClass;
 };
