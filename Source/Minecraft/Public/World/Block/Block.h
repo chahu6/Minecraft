@@ -58,7 +58,7 @@ public:
 	*/
 	virtual int32 QuantityDropped();
 
-	/** Block被点击 */
+	/** Block被左键点击 */
 	virtual void OnBlockClicked(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player);
 
 	/** 当玩家右键单击该块时调用 */

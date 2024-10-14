@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
 #include "Item/ItemStack.h"
+#include "Components/ActorComponent.h"
+#include "Interfaces/InventoryInterface.h"
 #include "InventoryComponent.generated.h"
 
 /**
@@ -14,7 +15,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MINECRAFT_API UInventoryComponent : public UActorComponent
+class MINECRAFT_API UInventoryComponent : public UActorComponent, public IInventoryInterface
 {
 	GENERATED_BODY()
 
@@ -23,29 +24,19 @@ public:
 
 	virtual void BeginPlay() override;
 
-	//UFUNCTION(BlueprintCallable, Category = "Item")
-	virtual void ConsumeItem(int32 SelectedIndex);
-
-	//UFUNCTION(BlueprintCallable, Category = "Item")
-	virtual bool AddItemToInventory(UPARAM(ref) FItemStack& ItemStack);
-
-	//UFUNCTION(BlueprintCallable, Category = "Item")
-	virtual bool AddItemToInventoryFromIndex(int32 Index, UPARAM(ref) FItemStack& InItemStack);
-
-	//UFUNCTION(BlueprintCallable, Category = "Item")
-	FItemStack GetItemStack(int32 Index) const;
-
-	//UFUNCTION(BlueprintCallable, Category = "Item")
-	virtual void RemoveItemFromInventory(int32 Index, UPARAM(ref) FItemStack& InItemStack);
-
-	//UFUNCTION(BlueprintCallable, Category = "Item")
-	virtual void DropAllItems();
+	/** Inventory Interface */
+	virtual int32 GetSizeInventory_Implementation() const override;
+	virtual bool IsEmpty_Implementation() const override;
+	virtual bool IsEmptyFromIndex_Implementation(int32 Index) const override;
+	virtual FItemStack GetItemStack_Implementation(int32 Index) const override;
+	virtual FItemStack DecrStackSize_Implementation(int32 Index, int32 Count) override;
+	virtual FItemStack RemoveStackFromSlot_Implementation(int32 Index) override;
+	virtual void SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack) override;
+	virtual bool AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack) override;
+	virtual void Clear_Implementation() override;
+	/** end Inventory Interface */
 
 protected:
-	bool AddSameItem(FItemStack& InItemStack);
-
-	bool AddItemStack(FItemStack& InItemStack);
-
 	FORCEINLINE bool IsValidIndex(int32 Index) const { return Items.IsValidIndex(Index); }
 
 public:
@@ -57,6 +48,5 @@ protected:
 	TArray<FItemStack> Items;
 
 	UPROPERTY(EditAnywhere)
-	int32 InventorySize = 9;
-
+	int32 InventorySize = 27;
 };

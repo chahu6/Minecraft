@@ -6,6 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "TileEntity.generated.h"
 
+class UBlock;
+class AWorldManager;
+class AEntityPlayer;
+
 /**
  * 
  */
@@ -16,6 +20,17 @@ class MINECRAFT_API ATileEntity : public AActor
 public:
 	ATileEntity();
 
+	/** 当玩家右键单击该块时调用 */
+	virtual bool OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player);
+
 protected:
 	virtual void BeginPlay() override;
+
+protected:
+	UPROPERTY()
+	TObjectPtr<UBlock> Block;
+
+public:
+	FORCEINLINE void SetBlock(UBlock* InBlock) { Block = InBlock; }
+	FORCEINLINE UBlock* GetBlock() const { return Block; }
 };

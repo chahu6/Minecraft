@@ -352,11 +352,11 @@ bool AEntityPlayer::OnItemPickup_Implementation(FItemStack& ItemStack)
 	return BackpackComponent->AddItemToInventory(ItemStack);
 }
 
-bool AEntityPlayer::DisplayGui(const TSubclassOf<UContainer>& ContainerClass)
+bool AEntityPlayer::DisplayGui(UContainer* Container)
 {
-	if (ContainerClass)
+	if (Container)
 	{
-		OpenContainer = CreateWidget<UContainer>(GetController<APlayerController>(), ContainerClass);
+		OpenContainer = Container;
 		OpenContainer->AddToViewport();
 		SetInputModeUIOnly();
 		return true;

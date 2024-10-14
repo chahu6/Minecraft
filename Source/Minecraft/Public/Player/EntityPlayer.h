@@ -66,7 +66,7 @@ public:
 	virtual bool OnItemPickup_Implementation(FItemStack& ItemStack) override;
 	/** Interactive Interface end*/
 
-	bool DisplayGui(const TSubclassOf<UContainer>& ContainerClass);
+	bool DisplayGui(UContainer* Container);
 	void CloseContainer();
 
 	AEntityItem* DropItem(bool bDropAll = false);

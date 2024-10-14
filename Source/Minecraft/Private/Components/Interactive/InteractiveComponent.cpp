@@ -9,6 +9,8 @@
 #include "Item/Item.h"
 #include "Item/ItemBlock.h"
 
+#include "TileEntity/TileEntity.h"
+
 UInteractiveComponent::UInteractiveComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -119,21 +121,30 @@ void UInteractiveComponent::UseItem()
 	{
 		FIntVector BlockVoxelLocation;
 		WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, BlockVoxelLocation);
-		FBlockState BlockState = GetBlockDataFromLocation(BlockVoxelLocation);
-		UBlock* Block = BlockState.GetBlock();
 
-		if (Block->OnBlockActivated(AWorldManager::Get(), BlockVoxelLocation, Player))
+		if (BlockHitResult.GetActor()->IsA<ATileEntity>())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Right Clicked!"));
+			ATileEntity* TileEntity = Cast<ATileEntity>(BlockHitResult.GetActor());
+			TileEntity->OnBlockActivated(AWorldManager::Get(), BlockVoxelLocation, Player);
 		}
 		else
 		{
-			FItemStack MainHandItemStack = Player->GetMainHandItem();
-			if (MainHandItemStack.IsEmpty()) return;
+			FBlockState BlockState = GetBlockDataFromLocation(BlockVoxelLocation);
+			UBlock* Block = BlockState.GetBlock();
 
-			if (MainHandItemStack.GetItem()->OnItemUse(Player, AWorldManager::Get(), BlockVoxelLocation, BlockHitResult.ImpactNormal))
+			if (Block->OnBlockActivated(AWorldManager::Get(), BlockVoxelLocation, Player))
 			{
+				UE_LOG(LogTemp, Warning, TEXT("Right Clicked!"));
+			}
+			else
+			{
+				FItemStack MainHandItemStack = Player->GetMainHandItem();
+				if (MainHandItemStack.IsEmpty()) return;
 
+				if (MainHandItemStack.GetItem()->OnItemUse(Player, AWorldManager::Get(), BlockVoxelLocation, BlockHitResult.ImpactNormal))
+				{
+
+				}
 			}
 		}
 	}

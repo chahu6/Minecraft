@@ -75,7 +75,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UUniformGridPanel> Hotbar;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = "Player")
 	TObjectPtr<UBackpackComponent> BackpackComponent;
 
 	UPROPERTY(BlueprintReadOnly)
