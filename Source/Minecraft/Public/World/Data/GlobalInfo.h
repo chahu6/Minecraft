@@ -14,6 +14,9 @@ public:
 	// 所有可见Chunk的MeshData
 	TMap<FIntPoint, TMap<int32, TSharedPtr<FMeshData>>> MeshDataCache;
 
+	// 所有植物Mesh
+	TMap<FIntPoint, TMap<int32, TSharedPtr<FMeshData>>> PlantMeshDataCache;
+
 public:
 	FBlockState GetBlockState(const FIntVector& BlockWorldVoxelLocation);
 	//void SetBlockState(const FIntVector& BlockWorldVoxelLocation);

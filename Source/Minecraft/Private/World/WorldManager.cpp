@@ -78,7 +78,7 @@ void AWorldManager::Tick(float DeltaTime)
 		{
 			if (AChunk* ModifyChunk = ActiveChunks[ChunkVoxelPos])
 			{
-				ModifyChunk->RenderMesh(WorldInfo.MeshDataCache[ChunkVoxelPos]);
+				ModifyChunk->RenderTerrainMesh(WorldInfo.MeshDataCache[ChunkVoxelPos]);
 			}
 		}
 	}
@@ -291,7 +291,8 @@ void AWorldManager::RenderChunk()
 				if (SpawnChunk)
 				{
 					SpawnChunk->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
-					SpawnChunk->RenderMesh(WorldInfo.MeshDataCache[ChunkPos]);
+					SpawnChunk->RenderTerrainMesh(WorldInfo.MeshDataCache[ChunkPos]);
+					SpawnChunk->RenderPlantMesh(WorldInfo.PlantMeshDataCache[ChunkPos]);
 
 					ActiveChunks.Add(ChunkPos, SpawnChunk);
 
@@ -323,6 +324,7 @@ void AWorldManager::UnloadChunk()
 					ActiveChunks.Remove(ChunkPos);
 				}
 				WorldInfo.MeshDataCache.Remove(ChunkPos);
+				WorldInfo.PlantMeshDataCache.Remove(ChunkPos);
 				WorldInfo.ChunkDataMap.Remove(ChunkPos);
 			}
 		}

@@ -49,7 +49,9 @@ public:
 
 	//void AddActiveVoxel(const FBlockData& BlockData);
 
-	void RenderMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
+	void RenderTerrainMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
+
+	void RenderPlantMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
 
 private:
 	UPROPERTY(VisibleAnywhere)

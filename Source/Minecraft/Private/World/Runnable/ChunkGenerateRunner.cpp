@@ -98,6 +98,7 @@ void FChunkGenerateRunner::Exit()
 void FChunkGenerateRunner::GenerateChunks()
 {
 	TArray<FIntPoint> Locations;
+	TArray<FIntPoint> LastActiveLoc;
 	int32 CurrentRadius = 0;
 
 	for (auto Itr = WorldManager->WorldInfo.MeshDataCache.CreateConstIterator(); Itr; ++Itr)
@@ -178,7 +179,12 @@ void FChunkGenerateRunner::GenerateChunks()
 	{
 		WorldManager->WorldInfo.ChunkDataMap.Add(Locations[i], MakeShared<FChunkData>(Locations[i]));
 		WorldManager->WorldInfo.MeshDataCache.Add(Locations[i], {});
+		WorldManager->WorldInfo.PlantMeshDataCache.Add(Locations[i], {});
 	}
+
+	/*
+	* µØÐÎ
+	*/
 
 	for (int32 i = 0; i < Locations.Num(); ++i)
 	{
@@ -189,6 +195,15 @@ void FChunkGenerateRunner::GenerateChunks()
 	{
 		if (!bRun) return;
 		GreedyMeshGenerator::BuildGreedyChunkMesh(WorldManager->WorldInfo, Locations[i]);
+	}
+
+	/*
+	* Ö²±»
+	*/
+
+	for (int32 i = 0; i < Locations.Num(); ++i)
+	{
+		WorldManager->TerrainManager->LoadPlantInfo(WorldManager, Locations[i]);
 	}
 
 	for (int32 i = 0; i < Locations.Num(); ++i)

@@ -11,6 +11,8 @@
 #include "World/WorldManager.h"
 #include "Init/Blocks.h"
 
+#include "Chunk/MeshData.h"
+
 UTerrainComponent::UTerrainComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -39,7 +41,10 @@ void UTerrainComponent::LoadTerrainInfo(AWorldManager* WorldManager, const FIntP
 	LoadTerrainBlockID(WorldManager, ChunkVoxelPos);
 
 	CaveGenerator::GeneratorCave(WorldManager->WorldInfo, ChunkVoxelPos);
+}
 
+void UTerrainComponent::LoadPlantInfo(AWorldManager* WorldManager, const FIntPoint& ChunkVoxelPos)
+{
 	GeneratePlant(WorldManager, ChunkVoxelPos);
 }
 
@@ -204,13 +209,57 @@ void UTerrainComponent::GeneratePlant(AWorldManager* WorldManager, const FIntPoi
 
 	TSharedPtr<FChunkData> ChunkData = WorldManager->WorldInfo.ChunkDataMap[ChunkVoxelPos];
 
+	TMap<int32, TSharedPtr<FMeshData>>& PlantMeshData = WorldManager->WorldInfo.PlantMeshDataCache[ChunkVoxelPos];
+
+	TSharedPtr<FMeshData> MeshData = MakeShared<FMeshData>();
 	for (const FVector2D& Point : Points)
 	{
 		int32 X = FMath::TruncToInt32(Point.X);
 		int32 Y = FMath::TruncToInt32(Point.Y);
-		int32 Z = ChunkData->GetHeight(X, Y);
-		ChunkData->SetBlockState(X, Y, Z + 1, FBlockState(UBlocks::Tallgrass, {}));
+		int32 Z = ChunkData->GetHeight(X, Y) + 1;
+		ChunkData->SetBlockState(X, Y, Z, FBlockState(UBlocks::Tallgrass, {}));
+
+
+		int32 Index = MeshData->Vertices.Num();
+		MeshData->Vertices.Append({
+			FVector(X, Y, Z) * WorldSettings::BlockSize,
+			FVector(X + 1, Y + 1, Z) * WorldSettings::BlockSize,
+			FVector(X, Y, Z + 1) * WorldSettings::BlockSize,
+			FVector(X + 1, Y + 1, Z + 1) * WorldSettings::BlockSize,
+
+			FVector(X + 1, Y, Z) * WorldSettings::BlockSize,
+			FVector(X, Y + 1, Z) * WorldSettings::BlockSize,
+			FVector(X + 1, Y, Z + 1) * WorldSettings::BlockSize,
+			FVector(X, Y + 1, Z + 1) * WorldSettings::BlockSize
+		});
+		MeshData->Triangles.Append({
+			Index,
+			Index + 1,
+			Index + 2,
+			Index + 1,
+			Index + 3,
+			Index + 2,
+
+			Index + 4,
+			Index + 6,
+			Index + 5,
+			Index + 5,
+			Index + 6,
+			Index + 7
+		});
+		MeshData->UV0.Append({
+			{ 1.f, 1.f },
+			{ 0.f, 1.f },
+			{ 1.f, 0.f },
+			{ 0.f, 0.f },
+
+			{ 1.f, 1.f },
+			{ 0.f, 1.f },
+			{ 1.f, 0.f },
+			{ 0.f, 0.f }
+		});
 	}
+	PlantMeshData.Add(UBlocks::Tallgrass->BlockID, MeshData);
 }
 
 float UTerrainComponent::FBM(float InX, float InY, const TArray<FVector2D>& InOctaveOffsets, ETerrainFBMType InFBMType) const

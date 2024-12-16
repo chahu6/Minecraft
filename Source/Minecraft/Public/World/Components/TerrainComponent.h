@@ -39,9 +39,11 @@ protected:
 public:	
 	void LoadTerrainInfo(AWorldManager* WorldManager, const FIntPoint& ChunkVoxelPos);
 
-	void LoadTerrainBlockID(AWorldManager* WorldManager, const FIntPoint& ChunkVoxelPos);
+	void LoadPlantInfo(AWorldManager* WorldManager, const FIntPoint& ChunkVoxelPos);
 
 private:
+	void LoadTerrainBlockID(AWorldManager* WorldManager, const FIntPoint& ChunkVoxelPos);
+
 	void GenerateHeight(AWorldManager* WorldManager, const FIntPoint& ChunkVoxelPos);
 
 	void GeneratePlant(AWorldManager* WorldManager, const FIntPoint& ChunkVoxelPos);

@@ -13,6 +13,8 @@ UPlantMeshComponent::UPlantMeshComponent(const FObjectInitializer& ObjectInitial
 
 	//  «∑ÒÕ∂…‰“ı”∞
 	SetCastShadow(false);
+
+	SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void UPlantMeshComponent::BeginPlay()
@@ -24,12 +26,24 @@ void UPlantMeshComponent::BeginPlay()
 
 void UPlantMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMeshDatas)
 {
-	TSharedPtr<FMeshData> NewMeshData =  NewMeshDatas[6];
+	//TSharedPtr<FMeshData> NewMeshData =  NewMeshDatas[6];
+	//CreateMeshSection_LinearColor(0, NewMeshData->Vertices, NewMeshData->Triangles, NewMeshData->Normals, NewMeshData->UV0, NewMeshData->VertexColors, NewMeshData->Tangents, false);
+	//if (const UBlock* Block = UBlock::GetBlockById(6))
+	//{
+	//	SetMaterial(0, Block->Material);
+	//}
 
-	CreateMeshSection_LinearColor(0, NewMeshData->Vertices, NewMeshData->Triangles, NewMeshData->Normals, NewMeshData->UV0, NewMeshData->VertexColors, NewMeshData->Tangents, false);
-	if (const UBlock* Block = UBlock::GetBlockById(6))
+	ClearAllMeshSections();
+	for (auto MeshData = NewMeshDatas.CreateConstIterator(); MeshData; ++MeshData)
 	{
-		SetMaterial(0, Block->Material);
+		if (MeshData->Value->Vertices.IsEmpty()) continue;
+
+		CreateMeshSection_LinearColor(0, MeshData->Value->Vertices, MeshData->Value->Triangles, MeshData->Value->Normals, MeshData->Value->UV0, MeshData->Value->VertexColors, MeshData->Value->Tangents, true);
+
+		if (const UBlock* Block = UBlock::GetBlockById(MeshData->Key))
+		{
+			SetMaterial(0, Block->Material);
+		}
 	}
 }
 

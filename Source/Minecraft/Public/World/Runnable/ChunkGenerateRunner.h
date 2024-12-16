@@ -46,8 +46,6 @@ private:
 
 	FEvent* ThreadEvent;
 
-	TArray<FIntPoint> LastActiveLoc;
-
 	FRunnableThread* ThreadIns;
 
 	uint32 m_ThreadID;

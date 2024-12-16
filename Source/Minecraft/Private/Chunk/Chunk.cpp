@@ -49,11 +49,14 @@ void AChunk::UpdateChunk()
 	}*/
 //}
 
-void AChunk::RenderMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
+void AChunk::RenderTerrainMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
 {
 	BlockMeshComponent->Render(MeshDatas);
+}
 
-	//PlantMeshComponent->Render(MeshDatas);
+void AChunk::RenderPlantMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
+{
+	PlantMeshComponent->Render(MeshDatas);
 }
 
 void AChunk::Dirty()
