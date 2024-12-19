@@ -1,17 +1,17 @@
 #include "World/Data/ChunkData.h"
 #include "Utils/ChunkHelper.h"
 #include "World/Block/Block.h"
+#include "World/WorldGenerator.h"
 
-FChunkData::FChunkData(const FIntPoint& ChunkPos)
-	:ChunkPosition(ChunkPos)
+FChunkData::FChunkData()
 {
-	BlockStateMap.Init({}, WorldSettings::CHUNK_VOLUME);
-	HeightMap.Init(0, WorldSettings::CHUNK_AREA);
+	BlockStateMap.Init({}, WorldGenerator::CHUNK_VOLUME);
+	HeightMap.Init(0, WorldGenerator::CHUNK_AREA);
 }
 
 FBlockState FChunkData::GetBlockState(int32 OffsetX, int32 OffsetY, int32 OffsetZ) const
 {
-	const int32 Index = ChunkHelper::GetBlocksIndex(OffsetX, OffsetY, OffsetZ);
+	const int32 Index = FChunkHelper::GetBlocksIndex(OffsetX, OffsetY, OffsetZ);
 	if (BlockStateMap.IsValidIndex(Index))
 	{
 		return BlockStateMap[Index];
@@ -26,7 +26,7 @@ bool FChunkData::SetBlockState(const FIntVector& BlockOffsetLocation, const FBlo
 
 bool FChunkData::SetBlockState(int32 OffsetX, int32 OffsetY, int32 OffsetZ, const FBlockState& BlockSate)
 {
-	const int32 Index = ChunkHelper::GetBlocksIndex(OffsetX, OffsetY, OffsetZ);
+	const int32 Index = FChunkHelper::GetBlocksIndex(OffsetX, OffsetY, OffsetZ);
 	if (BlockStateMap.IsValidIndex(Index))
 	{
 		BlockStateMap[Index] = BlockSate;
@@ -54,7 +54,7 @@ int32 FChunkData::GetHeight(int32 Index) const
 
 int32 FChunkData::GetHeight(int32 OffsetX, int32 OffsetY) const
 {
-	return GetHeight(ChunkHelper::GetHeightIndex(OffsetX, OffsetY));
+	return GetHeight(FChunkHelper::GetHeightIndex(OffsetX, OffsetY));
 }
 
 void FChunkData::TickUpdate()

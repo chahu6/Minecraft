@@ -4,17 +4,20 @@
 #include "GameFramework/Actor.h"
 #include "World/Data/GenerationMethod.h"
 #include "World/Data/GlobalInfo.h"
+#include "Math/ChunkPos.h"
 #include "WorldManager.generated.h"
 
 class AChunk;
-class UTerrainComponent;
-class UChunkManagerComponent;
-class FChunkGenerateRunner;
+class UChunkPoolComponent;
 class FWorldRunner;
-class FChunkData;
+struct FChunkData;
 struct FItemStack;
 class AEntityItem;
 class ATileEntity;
+class FChunkTickRunner;
+class UChunkTaskPoolComponent;
+class UTerrainBase;
+class UWorldProviderComponent;
 
 DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
 
@@ -23,10 +26,7 @@ class MINECRAFT_API AWorldManager : public AActor
 {
 	GENERATED_BODY()
 	
-	friend class UChunkManagerComponent;
-	friend class UTerrainComponent;
 	friend class FWorldRunner;
-	friend class FChunkGenerateRunner;
 
 	static AWorldManager* Instance;
 
@@ -49,13 +49,28 @@ public:
 
 	FBlockState GetBlockState(const FIntVector& BlockWorldVoxelLocation);
 
-	TSharedPtr<FChunkData> GetChunkData(const FIntPoint& ChunkVoxelLocation);
-	AChunk* GetChunk(const FIntPoint& ChunkVoxelLocation);
+	TSharedPtr<FChunkData> GetChunkData(const FChunkPos& InChunkPos) const;
+	AChunk* GetChunk(const FChunkPos& InChunkPos) const;
 
 	FProgressDelegate ProgressDelegate;
 
 	AEntityItem* SpawnEntity(const FVector& WorldLocation, const FItemStack& ItemStack);
 	AEntityItem* SpawnEntity(const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack);
+
+	FORCEINLINE uint64 GetCurrentTick() const { return m_Tick.load(); }
+	FORCEINLINE void NextTick()
+	{
+		m_Tick.fetch_add(1);
+	}
+	FORCEINLINE FChunkPos GetCenterChunkPos() const { return CenterChunkPos; }
+
+	void LoadChunks(const TArray<FChunkPos>& InChunksPos);
+	void LoadChunk(const FChunkPos& InChunkPos);
+
+	void UnloadChunks(const TSet<FChunkPos>& InChunksPos);
+	void UnloadChunk(const FChunkPos& InChunkPos);
+
+	AChunk* SpawnChunk(const FChunkPos& InChunkPos);
 
 private:
 	void SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
@@ -68,10 +83,6 @@ private:
 	* 
 	* 新版
 	*/
-	bool UpdatePosition();
-
-	//void EnqueueDirtyChunk()
-
 	void AddChunkToUpdate(const FIntVector& BlockWorldVoxelLocation, bool bTop = false);
 
 	void AddChunkToUpdate(const FIntPoint& ChunkVoxelLocation, bool bTop = false);
@@ -88,34 +99,47 @@ private:
 
 	void CheckSurroundingChunkNeedUpdate(const FIntVector& BlockOffsetLocation, int32 ChunkVoxelLocationX, int32 ChunkVoxelLocationY);
 
+
+
+	bool CoordsChanged();
+	void SetCenterPos(const FChunkPos& InChunkPos);
+
+	void UpdateWorld();
+
+	void RemoveChunk(const FChunkPos& InChunkPos);
+
 public:
-	TQueue<FIntPoint, EQueueMode::Mpsc> SpawnChunkQueue;
-
-	TQueue<FIntPoint, EQueueMode::Mpsc> DirtyChunkQueue;
-
-	TQueue<FIntPoint, EQueueMode::Mpsc> UnloadChunkQueue;
-
-	TMap<FIntPoint, AChunk*> ActiveChunks;
+	TQueue<FChunkPos, EQueueMode::Mpsc> LoadChunkQueue;
+	TQueue<FChunkPos, EQueueMode::Mpsc> DirtyChunkQueue;
+	TQueue<FChunkPos, EQueueMode::Mpsc> UnloadChunkQueue;
 
 	UPROPERTY()
 	TArray<class ATileEntity*> TileEntityList;
 
+	/*
+	* 最新的
+	*/
+	GlobalInfo WorldInfo;
+
 protected:
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UChunkManagerComponent> ChunkManager;
+	TObjectPtr<UChunkPoolComponent> ChunkPool;
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UTerrainComponent> TerrainManager;
+	TObjectPtr<UChunkTaskPoolComponent> ChunkTaskPool;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UWorldProviderComponent> WorldProvider;
+
+	UPROPERTY(EditAnywhere, Category = "World Setting")
+	TSubclassOf<UTerrainBase> TerrainBaseClass;
+
+	UPROPERTY()
+	TObjectPtr<UTerrainBase> TerrainBase;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "World Setting")
 	TSubclassOf<AEntityItem> DroppedItemClass;
-
-	UPROPERTY(EditAnywhere, Category = "World Setting")
-	int32 LoadDistance = 4;
-
-	UPROPERTY(EditAnywhere, Category = "World Setting")
-	int32 ChunkRenderRange = 8;
 
 	UPROPERTY(EditAnywhere, Category = "World Setting")
 	int32 Seed = 0;
@@ -146,15 +170,13 @@ protected:
 
 	FTimerHandle UnloadHandle;
 
+	std::atomic<uint64> m_Tick;
+
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	FIntPoint CharacterChunkPosition = { 1, 1 };
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FIntPoint PlayerPosition;
-
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FVector2D DefaultCharacterPosition;
+	FChunkPos CenterChunkPos = { 1, 1 };
 
 	/*
 	* First Initializer
@@ -163,18 +185,13 @@ private:
 
 	std::atomic<int32> Count = 0;
 
-	/*
-	* 最新的
-	*/
-	GlobalInfo WorldInfo;
-
 private:
 	TArray<FIntPoint> ChunksToUpdate;
 	FCriticalSection ChunkUpdateCritical;
 
 	FWorldRunner* ChunkUpdateThread;
-	FChunkGenerateRunner* ChunkGenerateThread;
+	FChunkTickRunner* ChunkTickThread;
 
 public:
-	FORCEINLINE FVector2D GetDefaultCharacterPosition() const { return DefaultCharacterPosition; }
+	FORCEINLINE UTerrainBase* GetTerrain() const { return TerrainBase; }
 };

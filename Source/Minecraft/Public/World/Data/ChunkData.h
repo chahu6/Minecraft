@@ -1,22 +1,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "World/WorldSettings.h"
 #include "World/Data/BlockState.h"
+#include "Chunk/MeshData.h"
 
-class MINECRAFT_API FChunkData
+struct MINECRAFT_API FChunkData
 {
 public:
-	FIntPoint ChunkPosition;
-
 	TArray<int32> HeightMap;
 
 	TArray<FBlockState> BlockStateMap;
 
 	TArray<FBlockState> ActiveVoxels;
 
+	// 所有可见Chunk的MeshData
+	TMap<int32, TSharedPtr<FMeshData>> MeshDataCache;
+
+	// 所有植物Mesh
+	TMap<int32, TSharedPtr<FMeshData>> PlantMeshDataCache;
+
 public:
-	explicit FChunkData(const FIntPoint& ChunkPos);
+	explicit FChunkData();
 
 	FBlockState GetBlockState(int32 OffsetX, int32 OffsetY, int32 OffsetZ) const;
 

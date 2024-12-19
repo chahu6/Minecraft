@@ -8,6 +8,10 @@ FMinecraftGameplayTags FMinecraftGameplayTags::GameplayTags;
 
 void FMinecraftGameplayTags::InitializeNativeGameplayTags()
 {
+	/*
+	* 物品
+	*/
+
 	GameplayTags.Minecraft_Air = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Minecraft.Air")
 	);
@@ -58,5 +62,37 @@ void FMinecraftGameplayTags::InitializeNativeGameplayTags()
 
 	GameplayTags.Minecraft_Crafting_Table = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Minecraft.Crafting_Table")
+	);
+
+	/*
+	* 生物群系
+	*/
+
+	GameplayTags.Biomes_FlourishIceField = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biomes.FlourishIceField")
+	);
+	GameplayTags.Biomes_BarrenIceField = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biomes.BarrenIceField")
+	);
+	GameplayTags.Biomes_InlandForest = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biomes.InlandForest")
+	);
+	GameplayTags.Biomes_InlandPlain = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biomes.InlandPlain")
+	);
+	GameplayTags.Biomes_Desert = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biomes.Desert")
+	);
+	GameplayTags.Biomes_Forest = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biomes.Forest")
+	);
+	GameplayTags.Biomes_RainForest = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biomes.RainForest")
+	); 
+	GameplayTags.Biomes_Savanna = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biomes.Savanna")
+	);
+	GameplayTags.Biomes_Ocean = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biomes.Ocean")
 	);
 }

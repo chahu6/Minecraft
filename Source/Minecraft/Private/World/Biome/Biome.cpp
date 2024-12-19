@@ -4,8 +4,8 @@
 #include "World/Biome/Biome.h"
 #include "MinecraftAssetManager.h"
 
-TMap<int32, const UBiome*> UBiome::REGISTER_ID;
-TMap<FName, const UBiome*> UBiome::REGISTER_NAME;
+TMap<int32, UBiome*> UBiome::REGISTER_ID;
+TMap<FName, UBiome*> UBiome::REGISTER_NAME;
 
 UBiome::UBiome()
 {
@@ -28,10 +28,19 @@ void UBiome::RegisterBiomes()
 	}
 }
 
-void UBiome::RegisterBiome(const UBiome* Biome)
+void UBiome::RegisterBiome(UBiome* Biome)
 {
 	REGISTER_ID.Add(Biome->BiomeID, Biome);
-	REGISTER_NAME.Add(Biome->Name, Biome);
+	REGISTER_NAME.Add(Biome->Tag.GetTagName(), Biome);
+}
+
+UBiome* UBiome::GetBiome(const FGameplayTag& BiomeTag)
+{
+	if (REGISTER_NAME.Contains(BiomeTag.GetTagName()))
+	{
+		return REGISTER_NAME[BiomeTag.GetTagName()];
+	}
+	return nullptr;
 }
 
 FPrimaryAssetId UBiome::GetPrimaryAssetId() const

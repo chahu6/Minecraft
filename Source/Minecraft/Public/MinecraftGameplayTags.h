@@ -16,6 +16,10 @@ public:
 	static const FMinecraftGameplayTags& Get() { return GameplayTags; }
 	static void InitializeNativeGameplayTags();
 
+	/*
+	* 物品
+	*/
+
 	FGameplayTag Minecraft_Air;
 	FGameplayTag Minecraft_Stone;
 	FGameplayTag Minecraft_Grass;
@@ -29,6 +33,20 @@ public:
 	FGameplayTag Minecraft_Planks;
 	FGameplayTag Minecraft_Chest;
 	FGameplayTag Minecraft_Crafting_Table;
+
+	/*
+	* 生物群系
+	*/
+
+	FGameplayTag Biomes_FlourishIceField;
+	FGameplayTag Biomes_BarrenIceField;
+	FGameplayTag Biomes_InlandForest;
+	FGameplayTag Biomes_InlandPlain;
+	FGameplayTag Biomes_Desert;
+	FGameplayTag Biomes_Forest;
+	FGameplayTag Biomes_RainForest;
+	FGameplayTag Biomes_Savanna;
+	FGameplayTag Biomes_Ocean;
 
 private:
 	FMinecraftGameplayTags() = default;

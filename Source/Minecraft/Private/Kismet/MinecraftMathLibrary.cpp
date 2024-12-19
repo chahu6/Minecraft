@@ -12,5 +12,5 @@ void UMinecraftMathLibrary::PoissonDiscSampling(TArray<FVector2D>& Points, float
 
 int32 UMinecraftMathLibrary::GetBlocksIndex(int32 OffsetX, int32 OffsetY, int32 OffsetZ)
 {
-	return ChunkHelper::GetBlocksIndex(OffsetX, OffsetY, OffsetZ);
+	return FChunkHelper::GetBlocksIndex(OffsetX, OffsetY, OffsetZ);
 }

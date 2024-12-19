@@ -32,6 +32,26 @@
 		{
 			"Name": "LandscapeExtraTerrain",
 			"Enabled": false
+		},
+		{
+			"Name": "LuaProtobuf",
+			"Enabled": false
+		},
+		{
+			"Name": "LuaRapidjson",
+			"Enabled": false
+		},
+		{
+			"Name": "LuaSocket",
+			"Enabled": false
+		},
+		{
+			"Name": "UnLua",
+			"Enabled": false
+		},
+		{
+			"Name": "HotPatcher",
+			"Enabled": false
 		}
 	]
 }

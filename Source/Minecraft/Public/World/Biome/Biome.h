@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "GameplayTagContainer.h"
 #include "Biome.generated.h"
 
 /**
@@ -16,12 +17,14 @@ class MINECRAFT_API UBiome : public UPrimaryDataAsset
 public:
 	UBiome();
 
-	static TMap<int32, const UBiome*> REGISTER_ID;
-	static TMap<FName, const UBiome*> REGISTER_NAME;
+	static TMap<int32, UBiome*> REGISTER_ID;
+	static TMap<FName, UBiome*> REGISTER_NAME;
 
 	static void RegisterBiomes();
 
-	static void RegisterBiome(const UBiome* Biome);
+	static void RegisterBiome(UBiome* Biome);
+
+	static UBiome* GetBiome(const FGameplayTag& BiomeTag);
 
 public:
 	/** Overridden to use saved type */
@@ -35,5 +38,5 @@ public:
 	int32 BiomeID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
-	FName Name;
+	FGameplayTag Tag;
 };

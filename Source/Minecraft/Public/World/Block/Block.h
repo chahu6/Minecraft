@@ -127,8 +127,5 @@ public:
 	TObjectPtr<USoundBase> DestroySound;
 
 private:
-	FBlockState DefaultBlockState;
-
-private:
 	static void RegisterBlock(UBlock* Block);
 };

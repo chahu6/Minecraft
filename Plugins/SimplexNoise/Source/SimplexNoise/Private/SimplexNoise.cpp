@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "SimplexNoise.h"
+#include "SimplexNoise.h"
 
 #define LOCTEXT_NAMESPACE "FSimplexNoiseModule"
 

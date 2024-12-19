@@ -65,7 +65,7 @@ void AMCGameMode::EnterWorld(APlayerController* NewPlayer)
 {
 	check(WorldManagerClass);
 
-	AWorldManager* WorldManager = GetWorld()->SpawnActorDeferred<AWorldManager>(WorldManagerClass, FTransform());
+	//AWorldManager* WorldManager = GetWorld()->SpawnActorDeferred<AWorldManager>(WorldManagerClass, FTransform());
 	//WorldManager->ProgressDelegate.BindLambda([&](float Percent) {
 	//	//SetPrograssPercent(Percent);
 	//	GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Red, FString::Printf(TEXT("Percent: %f"), Percent));
@@ -81,7 +81,7 @@ void AMCGameMode::EnterWorld(APlayerController* NewPlayer)
 
 	NewPlayer->GetPawn()->SetActorLocation(FVector(0, 0, 35000));
 
-	WorldManager->FinishSpawning(FTransform());
+	//WorldManager->FinishSpawning(FTransform());
 }
 
 void AMCGameMode::SetPrograssPercent(float Percent)

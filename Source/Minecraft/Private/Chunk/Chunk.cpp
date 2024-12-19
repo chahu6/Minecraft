@@ -2,6 +2,10 @@
 #include "Chunk/BlockMeshComponent.h"
 #include "Chunk/PlantMeshComponent.h"
 #include "World/WorldManager.h"
+#include "World/Data/BlockState.h"
+#include "World/Data/ChunkData.h"
+#include "World/Runnable/ChunkLoadWork.h"
+#include "World/Runnable/ChunkUnloadWork.h"
 
 AChunk::AChunk()
 {
@@ -18,9 +22,38 @@ AChunk::AChunk()
 	PlantMeshComponent->bUseAsyncCooking = true;
 }
 
+void AChunk::SetInUse(bool InUse)
+{
+	Super::SetInUse(InUse);
+
+	if (!InUse)
+	{
+		ChunkData = nullptr;
+		ChunkPos = FChunkPos();
+
+		BlockMeshComponent->ClearAllMeshSections();
+		PlantMeshComponent->ClearAllMeshSections();
+	}
+}
+
+void AChunk::BeginPlay()
+{
+	Super::BeginPlay();
+
+	WorldManager = Cast<AWorldManager>(GetOwner());
+}
+
 void AChunk::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+}
+
+void AChunk::Destroyed()
+{
+	Super::Destroyed();
+
+	//AbandonWork();
+	//WorldManager->WorldInfo.Remove(ChunkPos);
 }
 
 void AChunk::StopBuildMesh()
@@ -49,6 +82,11 @@ void AChunk::UpdateChunk()
 	}*/
 //}
 
+void AChunk::RenderTerrainMesh()
+{
+	BlockMeshComponent->Render(WorldManager->WorldInfo.ChunkDataMap[ChunkPos]->MeshDataCache);
+}
+
 void AChunk::RenderTerrainMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
 {
 	BlockMeshComponent->Render(MeshDatas);
@@ -57,6 +95,35 @@ void AChunk::RenderTerrainMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDat
 void AChunk::RenderPlantMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
 {
 	PlantMeshComponent->Render(MeshDatas);
+}
+
+void AChunk::SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockState)
+{
+	//WorldManager->PlaceBlock(BlockWorldVoxelLocation, BlockState);
+	ChunkData->SetBlockState(BlockOffsetLocation, BlockState);
+}
+
+IQueuedWork* AChunk::MakeLoadWork()
+{
+	//AbandonWork();
+	ThreadWork = new FChunkLoadWork(WorldManager->Get(), ChunkPos);
+	return ThreadWork;
+}
+
+IQueuedWork* AChunk::MakeUnLoadWork()
+{
+	//AbandonWork();
+	ThreadWork = new FChunkUnloadWork(WorldManager->Get(), ChunkPos);
+	return ThreadWork;
+}
+
+void AChunk::AbandonWork()
+{
+	if (ThreadWork != nullptr)
+	{
+		ThreadWork->Abandon();
+		ThreadWork = nullptr;
+	}
 }
 
 void AChunk::Dirty()

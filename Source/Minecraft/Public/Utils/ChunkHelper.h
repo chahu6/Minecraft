@@ -1,12 +1,16 @@
 #pragma once
 
-class ChunkHelper
+struct FChunkPos;
+struct FBlockPos;
+
+class FChunkHelper
 {
 public:
 	static int32 GetBlocksIndex(int32 OffsetX, int32 OffsetY, int32 OffsetZ);
 
 	static int32 GetHeightIndex(int32 OffsetX, int32 OffsetY);
 
-	// BlockWorldVoxelLocation (0, 0) - (16, 16)
-	static FIntPoint GetChunkVoxelFromBlockWorldVoxel(const FIntVector& BlockWorldVoxelLocation);
+	static FChunkPos ChunkPosFromBlockPos(const FBlockPos& InBlockPos);
+	static FChunkPos ChunkPosFromWorldLoc(const FVector& WorldLocation);
+	static FChunkPos ChunkPosFromWorldLoc(const FIntVector& WorldLocation);
 };

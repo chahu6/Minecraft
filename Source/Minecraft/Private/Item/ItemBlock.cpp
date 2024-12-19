@@ -7,6 +7,7 @@
 #include "Player/EntityPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "World/Block/Block.h"
+#include "World/WorldGenerator.h"
 
 UBlock* UItemBlock::GetBlock() const
 {
@@ -25,8 +26,8 @@ bool UItemBlock::OnItemUse(AEntityPlayer* Player, AWorldManager* WorldManager, c
 
     WorldManager->PlaceBlock(PlaceBlockVoxelLocation, FBlockState(Block));
 
-    FVector WorldLocation = FVector(PlaceBlockVoxelLocation * WorldSettings::BlockSize);
-    WorldLocation = WorldLocation + (WorldSettings::BlockSize >> 1);
+    FVector WorldLocation = FVector(PlaceBlockVoxelLocation * WorldGenerator::BlockSize);
+    WorldLocation = WorldLocation + (WorldGenerator::BlockSize >> 1);
 
     UGameplayStatics::PlaySoundAtLocation(WorldManager, Block->PlaceSound, WorldLocation);
 

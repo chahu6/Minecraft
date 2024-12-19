@@ -10,7 +10,7 @@ public class Minecraft : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "SlateCore", "ProceduralMeshComponent", "GameplayTags", "Json" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "SimplexNoise", "Eigen" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "SimplexNoise", "Eigen", "ObjectPool" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

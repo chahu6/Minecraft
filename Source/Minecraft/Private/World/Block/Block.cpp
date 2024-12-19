@@ -15,8 +15,6 @@ TMap<int32, const UBlock*> UBlock::REGISTER_ID;
 UBlock::UBlock()
 {
 	ItemType = UMinecraftAssetManager::BlockType;
-	DefaultBlockState.BlockID = BlockID;
-	DefaultBlockState.SetBlock(this);
 }
 
 void UBlock::RandomTick()
@@ -114,6 +112,9 @@ FPrimaryAssetId UBlock::GetPrimaryAssetId() const
 
 FBlockState UBlock::GetDefaultBlockState() const
 {
+	FBlockState DefaultBlockState;
+	DefaultBlockState.BlockID = BlockID;
+	DefaultBlockState.SetBlock(this);
 	return DefaultBlockState;
 }
 

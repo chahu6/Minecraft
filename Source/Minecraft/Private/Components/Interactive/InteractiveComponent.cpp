@@ -3,7 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/MinecraftAssetLibrary.h"
 #include "World/WorldManager.h"
-#include "World/WorldSettings.h"
+#include "World/WorldGenerator.h"
 #include "Init/Blocks.h"
 #include "Item/ItemStack.h"
 #include "Item/Item.h"
@@ -59,10 +59,10 @@ void UInteractiveComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	{
 		FIntVector MarkerLocation;
 		WorldLocToBlockVoxelLoc(BlockHitResult.ImpactPoint, BlockHitResult.ImpactNormal, MarkerLocation);
-		MarkerLocation *= WorldSettings::BlockSize;
-		MarkerLocation.X += WorldSettings::BlockSize >> 1;
-		MarkerLocation.Y += WorldSettings::BlockSize >> 1;
-		MarkerLocation.Z += WorldSettings::BlockSize >> 1;
+		MarkerLocation *= WorldGenerator::BlockSize;
+		MarkerLocation.X += WorldGenerator::BlockSize >> 1;
+		MarkerLocation.Y += WorldGenerator::BlockSize >> 1;
+		MarkerLocation.Z += WorldGenerator::BlockSize >> 1;
 
 		Marker->SetVisibility(true);
 		Marker->SetWorldLocation(FVector(MarkerLocation));
@@ -87,9 +87,9 @@ void UInteractiveComponent::WorldLocToBlockVoxelLoc(const FVector& WorldLocation
 	Location.X = FMath::FloorToInt32(Location.X);
 	Location.Y = FMath::FloorToInt32(Location.Y);
 	Location.Z = FMath::FloorToInt32(Location.Z);
-	BlockVoxelLocation.X = FMath::FloorToInt32(Location.X / WorldSettings::BlockSize);
-	BlockVoxelLocation.Y = FMath::FloorToInt32(Location.Y / WorldSettings::BlockSize);
-	BlockVoxelLocation.Z = FMath::FloorToInt32(Location.Z / WorldSettings::BlockSize);
+	BlockVoxelLocation.X = FMath::FloorToInt32(Location.X / WorldGenerator::BlockSize);
+	BlockVoxelLocation.Y = FMath::FloorToInt32(Location.Y / WorldGenerator::BlockSize);
+	BlockVoxelLocation.Z = FMath::FloorToInt32(Location.Z / WorldGenerator::BlockSize);
 
 	GEngine->AddOnScreenDebugMessage(24, 5.f, FColor::Red, FString::Printf(TEXT("WorldLocation: %s"), *WorldLocation.ToString()));
 	GEngine->AddOnScreenDebugMessage(25, 5.f, FColor::Green, FString::Printf(TEXT("WorldNormal: %s"), *WorldNormal.ToString()));
@@ -173,10 +173,10 @@ bool UInteractiveComponent::OnPlayerDestroyBlock(const FIntVector& BlockVoxelLoc
 		{
 			checkf(DroppedItemClass, TEXT("Uninitialize DroppedItemClass"));
 
-			FVector WorldLocation = FVector(BlockVoxelLocation * WorldSettings::BlockSize);
-			WorldLocation.X += WorldSettings::BlockSize >> 1;
-			WorldLocation.Y += WorldSettings::BlockSize >> 1;
-			WorldLocation.Z += WorldSettings::BlockSize >> 1;
+			FVector WorldLocation = FVector(BlockVoxelLocation * WorldGenerator::BlockSize);
+			WorldLocation.X += WorldGenerator::BlockSize >> 1;
+			WorldLocation.Y += WorldGenerator::BlockSize >> 1;
+			WorldLocation.Z += WorldGenerator::BlockSize >> 1;
 
 			ADroppedItem* DroppedItem = GetWorld()->SpawnActorDeferred<ADroppedItem>(DroppedItemClass, FTransform(FRotator::ZeroRotator, WorldLocation));
 			DroppedItem->SetItemHandle(BlockMeta.ItemHandle);
@@ -297,7 +297,7 @@ bool UInteractiveComponent::RayCast()
 	const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
 	const FRotator CameraRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
 
-	FVector RayEnd = CameraLocation + CameraRotation.Vector() * WorldSettings::MAX_RAY_DIST * WorldSettings::BlockSize;
+	FVector RayEnd = CameraLocation + CameraRotation.Vector() * WorldGenerator::MAX_RAY_DIST * WorldGenerator::BlockSize;
 
 	if (UWorld* World = GetWorld())
 	{

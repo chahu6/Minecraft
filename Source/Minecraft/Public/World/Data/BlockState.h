@@ -19,8 +19,8 @@ struct MINECRAFT_API FBlockState
 {
 public:
 	FBlockState();
-	FBlockState(const UBlock* InBlock);
-	FBlockState(const UBlock* InBlock, const FIntVector& InPosition);
+	explicit FBlockState(const UBlock* InBlock);
+	explicit FBlockState(const UBlock* InBlock, const FIntVector& InPosition);
 
 public:
 	int32 BlockID;

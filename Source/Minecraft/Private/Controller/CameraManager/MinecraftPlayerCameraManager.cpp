@@ -1,5 +1,5 @@
 #include "Controller/CameraManager/MinecraftPlayerCameraManager.h"
-#include "World/WorldSettings.h"
+#include "World/WorldGenerator.h"
 
 AMinecraftPlayerCameraManager::AMinecraftPlayerCameraManager()
 {
