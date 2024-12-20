@@ -42,11 +42,16 @@ void AWorldManager::BeginPlay()
 	//ChunkUpdateThread = new FWorldRunner(TEXT("ChunkUpdateThread"), this);
 	ChunkTickThread = new FChunkTickRunner(TEXT("ChunkTickThread"), this);
 
-	InitialWorldChunkLoad();
-
 	GetWorldTimerManager().SetTimer(RenderQueueHandle, this, &AWorldManager::RenderChunk, RenderRate, true);
 	GetWorldTimerManager().SetTimer(UnloadHandle, this, &AWorldManager::UnloadChunk, UnloadRate, true);
 	GetWorldTimerManager().SetTimer(UpdateHandle, this, &AWorldManager::UpdateChunk, UpdateRate, true);
+
+	InitialWorldChunkLoad();
+}
+
+void AWorldManager::InitialWorldChunkLoad()
+{
+	UpdateWorld();
 }
 
 void AWorldManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -113,15 +118,6 @@ void AWorldManager::SetCenterPos(const FChunkPos& InChunkPos)
 void AWorldManager::UpdateWorld()
 {
 	WorldProvider->UpdateWorld();
-}
-
-void AWorldManager::InitialWorldChunkLoad()
-{
-	//DefaultCharacterPosition = FVector2D(FMath::RandRange(-100.f, 100.f));
-	//FVector2D NewLocation2D = DefaultCharacterPosition;
-
-	//CharacterChunkPosition.X = FMath::FloorToInt32(NewLocation2D.X / WorldGenerator::ChunkSize);
-	//CharacterChunkPosition.Y = FMath::FloorToInt32(NewLocation2D.Y / WorldGenerator::ChunkSize);
 }
 
 bool AWorldManager::DestroyBlock(const FIntVector& BlockWorldVoxelLocation, bool bDropBlock)

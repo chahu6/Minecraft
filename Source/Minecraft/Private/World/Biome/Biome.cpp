@@ -40,7 +40,13 @@ UBiome* UBiome::GetBiome(const FGameplayTag& BiomeTag)
 	{
 		return REGISTER_NAME[BiomeTag.GetTagName()];
 	}
+	check(false);
 	return nullptr;
+}
+
+FString UBiome::GetIdentifierString() const
+{
+	return GetPrimaryAssetId().ToString();
 }
 
 FPrimaryAssetId UBiome::GetPrimaryAssetId() const
@@ -48,4 +54,13 @@ FPrimaryAssetId UBiome::GetPrimaryAssetId() const
 	// This is a DataAsset and not a blueprint so we can just use the raw FName
 	// For blueprints you need to handle stripping the _C suffix
 	return FPrimaryAssetId(BiomeType, GetFName());
+
+	/*UPackage* Package = GetOutermost();
+
+	if (!Package->HasAnyPackageFlags(PKG_PlayInEditor))
+	{
+		return FPrimaryAssetId(BiomeType, Package->GetFName());
+	}
+
+	return FPrimaryAssetId();*/
 }

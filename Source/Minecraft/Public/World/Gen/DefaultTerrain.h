@@ -8,8 +8,8 @@
 
 class USimplexNoiseData;
 class UBiome;
-struct FBlockState;
 struct FGameplayTag;
+class UBlock;
 
 /**
  * 
@@ -27,7 +27,7 @@ public:
 protected:
 	int32 GetRealHeightAndBiomes(float InX, float InY, FGameplayTag& OutBiomeTag);
 
-	FBlockState GetBlockState(int32 X, int32 Y, int32 Height, UBiome* Biome, int32 Z) const;
+	const UBlock* GetBlock(int32 X, int32 Y, int32 Height, UBiome* Biome, int32 Z) const;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Terrain")

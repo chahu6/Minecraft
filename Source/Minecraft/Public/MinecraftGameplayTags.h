@@ -33,6 +33,7 @@ public:
 	FGameplayTag Minecraft_Planks;
 	FGameplayTag Minecraft_Chest;
 	FGameplayTag Minecraft_Crafting_Table;
+	FGameplayTag Minecraft_Ice;
 
 	/*
 	* 生物群系

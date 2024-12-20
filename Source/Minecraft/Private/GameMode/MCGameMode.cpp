@@ -79,7 +79,7 @@ void AMCGameMode::EnterWorld(APlayerController* NewPlayer)
 	//	}
 	//});
 
-	NewPlayer->GetPawn()->SetActorLocation(FVector(0, 0, 35000));
+	//NewPlayer->GetPawn()->SetActorLocation(FVector(0, 0, 35000));
 
 	//WorldManager->FinishSpawning(FTransform());
 }

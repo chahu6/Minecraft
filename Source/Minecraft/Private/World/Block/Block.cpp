@@ -28,6 +28,7 @@ const UBlock* UBlock::GetBlockById(int32 Id)
 	{
 		return REGISTER_ID[Id];
 	}
+	check(false);
 	return nullptr;
 }
 

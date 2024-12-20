@@ -6,6 +6,7 @@
 #include "MinecraftGameplayTags.h"
 #include "World/MinecraftSettings.h"
 #include "Item/Item.h"
+#include "World/Biome/Biome.h"
 
 const FPrimaryAssetType UMinecraftAssetManager::BlockType = TEXT("Block");
 const FPrimaryAssetType UMinecraftAssetManager::ItemType = TEXT("Item");
@@ -23,7 +24,7 @@ void UMinecraftAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
 
-	//ScanPathForPrimaryAssets(ItemType, TEXT("/Game/Datas/Items"), UItem::StaticClass(), false);
+	ScanPathForPrimaryAssets(BiomeType, TEXT("/Game/Datas/Biomes"), UBiome::StaticClass(), false);
 
 	FMinecraftGameplayTags::InitializeNativeGameplayTags();
 

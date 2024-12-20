@@ -16,6 +16,18 @@ class OBJECTPOOL_API UObjectPoolComponent : public UActorComponent
 public:	
 	UObjectPoolComponent();
 
+	UFUNCTION(BlueprintCallable)
+	APooledActor* FindFirstAvaliableActor();
+
+	UFUNCTION(BlueprintCallable)
+	APooledActor* SpawnFromPool(const FTransform& SpawnTransform);
+
+	template<class T>
+	T* SpawnFromPool(const FTransform& SpawnTransform)
+	{
+		return Cast<T>(SpawnFromPool(SpawnTransform));
+	}
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -27,19 +39,6 @@ protected:
 	T* SpawnPooledActor()
 	{
 		return Cast<T>(SpawnPooledActor());
-	}
-
-public:	
-	UFUNCTION(BlueprintCallable)
-	APooledActor* FindFirstAvaliableActor();
-
-	UFUNCTION(BlueprintCallable)
-	APooledActor* SpawnFromPool(const FTransform& SpawnTransform);
-
-	template<class T>
-	T* SpawnFromPool(const FTransform& SpawnTransform)
-	{
-		return Cast<T>(SpawnFromPool(SpawnTransform));
 	}
 
 protected:

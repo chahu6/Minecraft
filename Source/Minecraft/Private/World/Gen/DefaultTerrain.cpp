@@ -42,15 +42,15 @@ void UDefaultTerrain::Generate_Implementation(AWorldManager* InWorldManager, con
 
 			FGameplayTag BiomeTag;
 			int32 RealHeight = GetRealHeightAndBiomes(SampleX, SampleY, BiomeTag);
-			UBiome* Biome = UBiome::GetBiome(BiomeTag);
-			//check(Biome);
+			//UBiome* Biome = UBiome::GetBiome(BiomeTag);
+			UBiome* Biome = nullptr;
 
 			for (int32 Z = 0; Z < CHUNK_HEIGHT; ++Z)
 			{
 				//FVector PointPos = InChunk->GetActorLocation();
 
-				FBlockState BlockState = GetBlockState(X, Y, RealHeight, Biome, Z);
-				ChunkData->SetBlockState(FIntVector(X, Y, Z), BlockState);
+				const UBlock* Block = GetBlock(X, Y, RealHeight, Biome, Z);
+				ChunkData->SetBlockState(FIntVector(X, Y, Z), Block->GetDefaultBlockState());
 			}
 
 			if (RealHeight <= SEA_LEVEL)
@@ -159,18 +159,18 @@ int32 UDefaultTerrain::GetRealHeightAndBiomes(float InX, float InY, FGameplayTag
 	return Height;
 }
 
-FBlockState UDefaultTerrain::GetBlockState(int32 X, int32 Y, int32 Height, UBiome* Biome, int32 Z) const
+const UBlock* UDefaultTerrain::GetBlock(int32 X, int32 Y, int32 Height, UBiome* Biome, int32 Z) const
 {
 	// 放置空方块
 	if (Height <= SEA_LEVEL && Z > SURFACE_HEIGHT && Z == SEA_LEVEL)
 	{
 		//水
-		return UBlocks::Water->GetDefaultBlockState();
+		return UBlocks::Water;
 	}
 	if (Z > Height)
 	{
 		// 空气
-		return UBlocks::Air->GetDefaultBlockState();
+		return UBlocks::Air;
 	}
 
 	// 挖掘洞穴
@@ -180,14 +180,16 @@ FBlockState UDefaultTerrain::GetBlockState(int32 X, int32 Y, int32 Height, UBiom
 	if (Z == Height)
 	{
 		// 生物群落表面方块
-		return UBlocks::Grass->GetDefaultBlockState();
+		//return Biome->TopBlock;
+		return UBlocks::Grass;
 	}
 	if (Z >= Height - 1 - 7 && Z <= Height - 1)
 	{
 		// 生物群落浅表块
-		return UBlocks::Dirt->GetDefaultBlockState();
+		return UBlocks::Dirt;
+		//return Biome->FillerBlock;
 	}
 
 	// 石头
-	return UBlocks::Stone->GetDefaultBlockState();
+	return UBlocks::Stone;
 }

@@ -7,10 +7,12 @@
 #include "GameplayTagContainer.h"
 #include "Biome.generated.h"
 
+class UBlock;
+
 /**
  * 
  */
-UCLASS(Abstract)
+UCLASS(Abstract, BlueprintType)
 class MINECRAFT_API UBiome : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
@@ -27,6 +29,9 @@ public:
 	static UBiome* GetBiome(const FGameplayTag& BiomeTag);
 
 public:
+	UFUNCTION(BlueprintCallable, Category = Biome)
+	FString GetIdentifierString() const;
+
 	/** Overridden to use saved type */
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
@@ -39,4 +44,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	FGameplayTag Tag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	UBlock* TopBlock;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	UBlock* FillerBlock;
 };

@@ -64,6 +64,10 @@ void FMinecraftGameplayTags::InitializeNativeGameplayTags()
 		FName("Minecraft.Crafting_Table")
 	);
 
+	GameplayTags.Minecraft_Ice = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Minecraft.Ice")
+	);
+
 	/*
 	* 生物群系
 	*/
