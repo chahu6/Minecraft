@@ -4,8 +4,6 @@
 #include "World/WorldManager.h"
 #include "World/Data/BlockState.h"
 #include "World/Data/ChunkData.h"
-#include "World/Runnable/ChunkLoadWork.h"
-#include "World/Runnable/ChunkUnloadWork.h"
 
 AChunk::AChunk()
 {
@@ -20,20 +18,38 @@ AChunk::AChunk()
 	PlantMeshComponent = CreateDefaultSubobject<UPlantMeshComponent>(TEXT("PlantMeshComponent"));
 	PlantMeshComponent->SetupAttachment(RootComponent);
 	PlantMeshComponent->bUseAsyncCooking = true;
+
+	ThreadEvent = FPlatformProcess::GetSynchEventFromPool();
 }
 
 void AChunk::SetInUse(bool InUse)
 {
 	Super::SetInUse(InUse);
 
-	if (!InUse)
+	if (InUse)
 	{
-		ChunkData = nullptr;
-		ChunkPos = FChunkPos();
-
-		BlockMeshComponent->ClearAllMeshSections();
-		PlantMeshComponent->ClearAllMeshSections();
+		LoadChunk();
 	}
+	else
+	{
+		UnloadChunk();
+	}
+}
+
+void AChunk::LoadChunk()
+{
+	WorldManager = Cast<AWorldManager>(GetOwner());
+}
+
+void AChunk::UnloadChunk()
+{
+	ChunkData = nullptr;
+	ChunkPos = FChunkPos();
+	ChunkState = EChunkState::None;
+	WorldManager = nullptr;
+
+	BlockMeshComponent->ClearAllMeshSections();
+	PlantMeshComponent->ClearAllMeshSections();
 }
 
 void AChunk::BeginPlay()
@@ -46,6 +62,12 @@ void AChunk::BeginPlay()
 void AChunk::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+
+	if (ThreadEvent)
+	{
+		FPlatformProcess::ReturnSynchEventToPool(ThreadEvent);
+		ThreadEvent = nullptr;
+	}
 }
 
 void AChunk::Destroyed()
@@ -68,7 +90,7 @@ void AChunk::TickUpdate()
 
 void AChunk::UpdateChunk()
 {
-	SetChunkState(EChunkState::Rebuild);
+	//SetChunkState(EChunkState::Rebuild);
 
 	BuildMesh();
 	//AWorldManager::Get()->TaskQueue.Enqueue(this);
@@ -101,29 +123,6 @@ void AChunk::SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockSt
 {
 	//WorldManager->PlaceBlock(BlockWorldVoxelLocation, BlockState);
 	ChunkData->SetBlockState(BlockOffsetLocation, BlockState);
-}
-
-IQueuedWork* AChunk::MakeLoadWork()
-{
-	//AbandonWork();
-	ThreadWork = new FChunkLoadWork(WorldManager->Get(), ChunkPos);
-	return ThreadWork;
-}
-
-IQueuedWork* AChunk::MakeUnLoadWork()
-{
-	//AbandonWork();
-	ThreadWork = new FChunkUnloadWork(WorldManager->Get(), ChunkPos);
-	return ThreadWork;
-}
-
-void AChunk::AbandonWork()
-{
-	if (ThreadWork != nullptr)
-	{
-		ThreadWork->Abandon();
-		ThreadWork = nullptr;
-	}
 }
 
 void AChunk::Dirty()

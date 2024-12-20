@@ -18,6 +18,9 @@ class MINECRAFT_API UMinecraftGameInstance : public UGameInstance
 public:
 	virtual void Init() override;
 
+private:
+	void LoadPrimaryAssets();
+
 protected:
 	TSharedPtr<FStreamableHandle> LoadAssetHandle;
 };

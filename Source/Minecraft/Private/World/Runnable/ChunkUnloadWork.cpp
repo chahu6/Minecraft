@@ -1,5 +1,6 @@
 #include "World/Runnable/ChunkUnloadWork.h"
 #include "World/WorldManager.h"
+#include "Chunk/Chunk.h"
 
 FChunkUnloadWork::FChunkUnloadWork(AWorldManager* InWorldManager, const FChunkPos& InChunkPos)
 	:WorldManager(InWorldManager),
@@ -9,6 +10,8 @@ FChunkUnloadWork::FChunkUnloadWork(AWorldManager* InWorldManager, const FChunkPo
 
 void FChunkUnloadWork::DoThreadedWork()
 {
+	WorldManager->GetChunk(ChunkPos)->ThreadEvent->Wait();
+
 	WorldManager->UnloadChunkQueue.Enqueue(ChunkPos);
 
 	Abandon();

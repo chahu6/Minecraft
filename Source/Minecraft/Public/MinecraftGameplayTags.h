@@ -39,15 +39,15 @@ public:
 	* 生物群系
 	*/
 
-	FGameplayTag Biomes_FlourishIceField;
-	FGameplayTag Biomes_BarrenIceField;
-	FGameplayTag Biomes_InlandForest;
-	FGameplayTag Biomes_InlandPlain;
-	FGameplayTag Biomes_Desert;
-	FGameplayTag Biomes_Forest;
-	FGameplayTag Biomes_RainForest;
-	FGameplayTag Biomes_Savanna;
-	FGameplayTag Biomes_Ocean;
+	FGameplayTag Biome_FlourishIceField;
+	FGameplayTag Biome_BarrenIceField;
+	FGameplayTag Biome_InlandForest;
+	FGameplayTag Biome_InlandPlain;
+	FGameplayTag Biome_Desert;
+	FGameplayTag Biome_Forest;
+	FGameplayTag Biome_RainForest;
+	FGameplayTag Biome_Savanna;
+	FGameplayTag Biome_Ocean;
 
 private:
 	FMinecraftGameplayTags() = default;

@@ -42,13 +42,10 @@ void UDefaultTerrain::Generate_Implementation(AWorldManager* InWorldManager, con
 
 			FGameplayTag BiomeTag;
 			int32 RealHeight = GetRealHeightAndBiomes(SampleX, SampleY, BiomeTag);
-			//UBiome* Biome = UBiome::GetBiome(BiomeTag);
-			UBiome* Biome = nullptr;
+			UBiome* Biome = UBiome::GetBiome(BiomeTag);
 
 			for (int32 Z = 0; Z < CHUNK_HEIGHT; ++Z)
 			{
-				//FVector PointPos = InChunk->GetActorLocation();
-
 				const UBlock* Block = GetBlock(X, Y, RealHeight, Biome, Z);
 				ChunkData->SetBlockState(FIntVector(X, Y, Z), Block->GetDefaultBlockState());
 			}
@@ -97,31 +94,31 @@ int32 UDefaultTerrain::GetRealHeightAndBiomes(float InX, float InY, FGameplayTag
 			if (T < TEMP_COLD)
 			{
 				// 繁荣的冰原
-				OutBiomeTag = GameplayTag.Biomes_FlourishIceField;
+				OutBiomeTag = GameplayTag.Biome_FlourishIceField;
 			}
 			else if (T < TEMP_WARM)
 			{
 				// 热带草原
-				OutBiomeTag = GameplayTag.Biomes_Savanna;
+				OutBiomeTag = GameplayTag.Biome_Savanna;
 			}
 			else if (T < TEMP_HOT)
 			{
 				if (H > HUMIDITY_DRY)
 				{
 					// 雨林
-					OutBiomeTag = GameplayTag.Biomes_RainForest;
+					OutBiomeTag = GameplayTag.Biome_RainForest;
 				}
 				else
 				{
 					// 热带草原
-					OutBiomeTag = GameplayTag.Biomes_Savanna;
+					OutBiomeTag = GameplayTag.Biome_Savanna;
 				}
 			}
 		}
 		else
 		{
 			// 森林
-			OutBiomeTag = GameplayTag.Biomes_Forest;
+			OutBiomeTag = GameplayTag.Biome_Forest;
 		}
 	}
 	else
@@ -133,12 +130,12 @@ int32 UDefaultTerrain::GetRealHeightAndBiomes(float InX, float InY, FGameplayTag
 			if (T < TEMP_COLD)
 			{
 				// 贫瘠的冰原
-				OutBiomeTag = GameplayTag.Biomes_BarrenIceField;
+				OutBiomeTag = GameplayTag.Biome_BarrenIceField;
 			}
 			else
 			{
 				// 内陆森林
-				OutBiomeTag = GameplayTag.Biomes_InlandForest;
+				OutBiomeTag = GameplayTag.Biome_InlandForest;
 			}
 		}
 		else
@@ -146,12 +143,12 @@ int32 UDefaultTerrain::GetRealHeightAndBiomes(float InX, float InY, FGameplayTag
 			if (T > TEMP_WARM)
 			{
 				// 沙漠
-				OutBiomeTag = GameplayTag.Biomes_Desert;
+				OutBiomeTag = GameplayTag.Biome_Desert;
 			}
 			else
 			{
 				// 内陆平原
-				OutBiomeTag = GameplayTag.Biomes_InlandPlain;
+				OutBiomeTag = GameplayTag.Biome_InlandPlain;
 			}
 		}
 	}
@@ -180,14 +177,12 @@ const UBlock* UDefaultTerrain::GetBlock(int32 X, int32 Y, int32 Height, UBiome* 
 	if (Z == Height)
 	{
 		// 生物群落表面方块
-		//return Biome->TopBlock;
-		return UBlocks::Grass;
+		return Biome->TopBlock;
 	}
-	if (Z >= Height - 1 - 7 && Z <= Height - 1)
+	if (Z >= Height - 1 - Biome->ShallowSurfaceDepth && Z <= Height - 1)
 	{
 		// 生物群落浅表块
-		return UBlocks::Dirt;
-		//return Biome->FillerBlock;
+		return Biome->FillerBlock;
 	}
 
 	// 石头

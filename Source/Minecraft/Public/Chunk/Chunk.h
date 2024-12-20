@@ -4,6 +4,8 @@
 #include "PooledActor.h"
 #include "Interfaces/ChunkInterface.h"
 #include "Math/ChunkPos.h"
+#include "World/Runnable/ChunkLoadWork.h"
+#include "World/Runnable/ChunkUnloadWork.h"
 #include "Chunk.generated.h"
 
 //struct FBlockData;
@@ -16,9 +18,8 @@ UENUM()
 enum class EChunkState : uint8
 {
 	None,
-	Loaded,
-	Rebuild,
-	Rendered
+	Load,
+	Unload
 };
 
 UCLASS()
@@ -37,6 +38,7 @@ protected:
 public:
 	AChunk();
 
+	/** ObjectPool Unload Function */
 	virtual void SetInUse(bool InUse) override;
 
 	// 将所有的ChunkSection都设置为脏数据，Chunk是脏数据代表所属的ChunkSection也是脏数据
@@ -63,11 +65,42 @@ public:
 
 	void SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockState);
 
-	IQueuedWork* MakeLoadWork();
-	IQueuedWork* MakeUnLoadWork();
+	template<EChunkState InChunkState>
+	void AddQueuedWork(FQueuedThreadPool* ThreadPool)
+	{
+		switch (InChunkState)
+		{
+			case EChunkState::Load:
+			{
+				ChunkState = InChunkState;
+				LoadWork = new FChunkLoadWork(WorldManager->Get(), ChunkPos);
+				ThreadPool->AddQueuedWork(LoadWork);
+				break;
+			}
+			case EChunkState::Unload:
+			{
+				if (ChunkState == EChunkState::Load)
+				{
+					ChunkState = InChunkState;
+					if (ThreadPool->RetractQueuedWork(LoadWork))
+					{
+						ThreadEvent->Trigger();
+					}
+					ThreadPool->AddQueuedWork(new FChunkUnloadWork(WorldManager->Get(), ChunkPos));
+				}
+				break;
+			}
+		}
+	}
 
 private:
-	void AbandonWork();
+	/** 用于对象池的对象的初始化，相当于Actor的 BeginPlay()函数*/
+	void LoadChunk();
+	/** 用于对象池的对象的卸载，相当于Actor的 EndPlay()函数*/
+	void UnloadChunk();
+
+public:
+	FEvent* ThreadEvent;
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -98,7 +131,7 @@ private:
 
 	FChunkPos ChunkPos;
 
-	IQueuedWork* ThreadWork = nullptr;
+	IQueuedWork* LoadWork;
 
 public:
 	FORCEINLINE void SetChunkData(const TSharedRef<FChunkData> NewChunkDaat) { ChunkData = NewChunkDaat; }

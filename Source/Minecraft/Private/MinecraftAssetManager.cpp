@@ -8,9 +8,9 @@
 #include "Item/Item.h"
 #include "World/Biome/Biome.h"
 
-const FPrimaryAssetType UMinecraftAssetManager::BlockType = TEXT("Block");
-const FPrimaryAssetType UMinecraftAssetManager::ItemType = TEXT("Item");
-const FPrimaryAssetType UMinecraftAssetManager::BiomeType = TEXT("Biome");
+const FPrimaryAssetType UMinecraftAssetManager::BlockType = FName(TEXT("Block"));
+const FPrimaryAssetType UMinecraftAssetManager::ItemType = FName(TEXT("Item"));
+const FPrimaryAssetType UMinecraftAssetManager::BiomeType = FName(TEXT("Biome"));
 
 UMinecraftAssetManager& UMinecraftAssetManager::Get()
 {
@@ -23,8 +23,6 @@ UMinecraftAssetManager& UMinecraftAssetManager::Get()
 void UMinecraftAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
-
-	ScanPathForPrimaryAssets(BiomeType, TEXT("/Game/Datas/Biomes"), UBiome::StaticClass(), false);
 
 	FMinecraftGameplayTags::InitializeNativeGameplayTags();
 

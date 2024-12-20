@@ -29,14 +29,14 @@ public:
 	static UBiome* GetBiome(const FGameplayTag& BiomeTag);
 
 public:
-	UFUNCTION(BlueprintCallable, Category = Biome)
+	UFUNCTION(BlueprintCallable)
 	FString GetIdentifierString() const;
 
 	/** Overridden to use saved type */
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Biome)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FPrimaryAssetType BiomeType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
@@ -44,6 +44,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	FGameplayTag Tag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	int32 ShallowSurfaceDepth = 3;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	UBlock* TopBlock;

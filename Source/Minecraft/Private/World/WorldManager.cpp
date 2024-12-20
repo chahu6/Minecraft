@@ -51,7 +51,7 @@ void AWorldManager::BeginPlay()
 
 void AWorldManager::InitialWorldChunkLoad()
 {
-	UpdateWorld();
+	SetCenterPos(FChunkHelper::ChunkPosFromWorldLoc(UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation()));
 }
 
 void AWorldManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -206,7 +206,7 @@ void AWorldManager::LoadChunk(const FChunkPos& InChunkPos)
 {
 	if (AChunk* Chunk = GetChunk(InChunkPos))
 	{
-		ChunkTaskPool->ChunkTaskPool->AddQueuedWork(Chunk->MakeLoadWork());
+		Chunk->AddQueuedWork<EChunkState::Load>(ChunkTaskPool->ChunkTaskPool);
 	}
 }
 
@@ -222,7 +222,7 @@ void AWorldManager::UnloadChunk(const FChunkPos& InChunkPos)
 {
 	if (AChunk* Chunk = GetChunk(InChunkPos))
 	{
-		ChunkTaskPool->ChunkTaskPool->AddQueuedWork(Chunk->MakeUnLoadWork());
+		Chunk->AddQueuedWork<EChunkState::Unload>(ChunkTaskPool->ChunkTaskPool);
 	}
 }
 
@@ -351,6 +351,7 @@ void AWorldManager::UnloadChunk()
 void AWorldManager::RemoveChunk(const FChunkPos& InChunkPos)
 {
 	WorldProvider->RemoveChunk(InChunkPos);
+	WorldInfo.Remove(InChunkPos);
 }
 
 void AWorldManager::AddChunkToUpdate(const FIntVector& BlockWorldVoxelLocation, bool bTop)

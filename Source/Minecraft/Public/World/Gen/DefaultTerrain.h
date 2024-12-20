@@ -30,23 +30,29 @@ protected:
 	const UBlock* GetBlock(int32 X, int32 Y, int32 Height, UBiome* Biome, int32 Z) const;
 
 protected:
+	/** ´óÂ½°å¿éÔëÉù */
 	UPROPERTY(EditAnywhere, Category = "Terrain")
-	TObjectPtr<USimplexNoiseData> Continent;	// ´óÂ½°å¿éÔëÉù
+	TObjectPtr<USimplexNoiseData> Continent;
 
+	/** ÇÖÊ´ÔëÉù */
 	UPROPERTY(EditAnywhere, Category = "Terrain")
-	TObjectPtr<USimplexNoiseData> Erosion;		// ÇÖÊ´ÔëÉù
+	TObjectPtr<USimplexNoiseData> Erosion;
 
+	/** ²¨¹ÈÆğ·üÔëÉù */
 	UPROPERTY(EditAnywhere, Category = "Terrain")
-	TObjectPtr<USimplexNoiseData> PeaksValleys;	// ²¨¹ÈÆğ·üÔëÉù
+	TObjectPtr<USimplexNoiseData> PeaksValleys;
 
+	/** ÆøÎÂÔëÉù */
 	UPROPERTY(EditAnywhere, Category = "Terrain")
-	TObjectPtr<USimplexNoiseData> Temperature;	// ÆøÎÂÔëÉù
+	TObjectPtr<USimplexNoiseData> Temperature;
 
+	/** Êª¶ÈÔëÉù */
 	UPROPERTY(EditAnywhere, Category = "Terrain")
-	TObjectPtr<USimplexNoiseData> Humidity;		// Êª¶ÈÔëÉù
+	TObjectPtr<USimplexNoiseData> Humidity;
 
+	/** ¶´Ñ¨ÔëÉù */
 	UPROPERTY(EditAnywhere, Category = "Terrain")
-	TObjectPtr<USimplexNoiseData> Caves;		// ¶´Ñ¨ÔëÉù
+	TObjectPtr<USimplexNoiseData> Caves;
 
 	UPROPERTY(EditAnywhere, Category = "Terrain")
 	TObjectPtr<UCurveFloat> ContinentalnessCurve;

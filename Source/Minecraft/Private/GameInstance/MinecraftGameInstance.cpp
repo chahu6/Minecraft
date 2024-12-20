@@ -15,21 +15,7 @@ void UMinecraftGameInstance::Init()
 {
 	Super::Init();
 
-	UMinecraftAssetManager& AssetManager = UMinecraftAssetManager::Get();
-
-	TArray<FPrimaryAssetId> BlockIdList;
-	AssetManager.GetPrimaryAssetIdList(UMinecraftAssetManager::BlockType, BlockIdList);
-
-	TArray<FPrimaryAssetId> ItemIdList;
-	AssetManager.GetPrimaryAssetIdList(UMinecraftAssetManager::ItemType, ItemIdList);
-	
-	ItemIdList.Append(BlockIdList);
-
-	LoadAssetHandle = AssetManager.LoadPrimaryAssets(ItemIdList, TArray<FName>(), FStreamableDelegate());
-
-	EAsyncPackageState::Type Result = LoadAssetHandle->WaitUntilComplete();
-
-	check(Result == EAsyncPackageState::Complete);
+	LoadPrimaryAssets();
 
 	UBlock::RegisterBlocks();
 	UItem::RegisterItems();
@@ -40,4 +26,27 @@ void UMinecraftGameInstance::Init()
 	UBiomes::Initialization();
 
 	CraftingManager::Init();
+}
+
+void UMinecraftGameInstance::LoadPrimaryAssets()
+{
+	UMinecraftAssetManager& AssetManager = UMinecraftAssetManager::Get();
+
+	TArray<FPrimaryAssetId> BlockIdList;
+	AssetManager.GetPrimaryAssetIdList(UMinecraftAssetManager::BlockType, BlockIdList);
+
+	TArray<FPrimaryAssetId> ItemIdList;
+	AssetManager.GetPrimaryAssetIdList(UMinecraftAssetManager::ItemType, ItemIdList);
+
+	TArray<FPrimaryAssetId> BiomeIdList;
+	AssetManager.GetPrimaryAssetIdList(UMinecraftAssetManager::BiomeType, BiomeIdList);
+
+	ItemIdList.Append(BlockIdList);
+	ItemIdList.Append(BiomeIdList);
+
+	LoadAssetHandle = AssetManager.LoadPrimaryAssets(ItemIdList, TArray<FName>(), FStreamableDelegate());
+
+	EAsyncPackageState::Type Result = LoadAssetHandle->WaitUntilComplete();
+
+	check(Result == EAsyncPackageState::Complete);
 }

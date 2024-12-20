@@ -72,31 +72,31 @@ void FMinecraftGameplayTags::InitializeNativeGameplayTags()
 	* 生物群系
 	*/
 
-	GameplayTags.Biomes_FlourishIceField = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Biomes.FlourishIceField")
+	GameplayTags.Biome_FlourishIceField = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biome.FlourishIceField")
 	);
-	GameplayTags.Biomes_BarrenIceField = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Biomes.BarrenIceField")
+	GameplayTags.Biome_BarrenIceField = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biome.BarrenIceField")
 	);
-	GameplayTags.Biomes_InlandForest = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Biomes.InlandForest")
+	GameplayTags.Biome_InlandForest = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biome.InlandForest")
 	);
-	GameplayTags.Biomes_InlandPlain = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Biomes.InlandPlain")
+	GameplayTags.Biome_InlandPlain = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biome.InlandPlain")
 	);
-	GameplayTags.Biomes_Desert = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Biomes.Desert")
+	GameplayTags.Biome_Desert = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biome.Desert")
 	);
-	GameplayTags.Biomes_Forest = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Biomes.Forest")
+	GameplayTags.Biome_Forest = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biome.Forest")
 	);
-	GameplayTags.Biomes_RainForest = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Biomes.RainForest")
+	GameplayTags.Biome_RainForest = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biome.RainForest")
 	); 
-	GameplayTags.Biomes_Savanna = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Biomes.Savanna")
+	GameplayTags.Biome_Savanna = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biome.Savanna")
 	);
-	GameplayTags.Biomes_Ocean = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Biomes.Ocean")
+	GameplayTags.Biome_Ocean = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Biome.Ocean")
 	);
 }
