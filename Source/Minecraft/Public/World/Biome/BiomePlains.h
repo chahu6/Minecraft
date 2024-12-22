@@ -15,6 +15,5 @@ class MINECRAFT_API UBiomePlains : public UBiome
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
-	FGameplayTag TopTag;
+	
 };

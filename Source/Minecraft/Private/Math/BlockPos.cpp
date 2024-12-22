@@ -3,6 +3,7 @@
 
 #include "Math/BlockPos.h"
 #include "Math/ChunkPos.h"
+#include "World/WorldGenerator.h"
 
 FBlockPos::FBlockPos()
 {
@@ -11,6 +12,11 @@ FBlockPos::FBlockPos()
 
 FBlockPos::FBlockPos(int32 InX, int32 InY)
 	:X(InX), Y(InY), Z(0)
+{
+}
+
+FBlockPos::FBlockPos(int32 InX, int32 InY, int32 InZ)
+	:X(InX), Y(InY), Z(InZ)
 {
 }
 
@@ -24,4 +30,24 @@ FBlockPos::FBlockPos(const FVector& InPos)
 FChunkPos FBlockPos::ToChunkPos() const
 {
 	return FChunkPos(*this);
+}
+
+int32 FBlockPos::Index() const
+{
+	return X + Y * WorldGenerator::CHUNK_SIZE + Z * WorldGenerator::CHUNK_AREA;
+}
+
+FBlockPos FBlockPos::Down() const
+{
+	return FBlockPos(X, Y, Z - 1);
+}
+
+FBlockPos FBlockPos::Up() const
+{
+	return Up(1);
+}
+
+FBlockPos FBlockPos::Up(int32 InZ) const
+{
+	return FBlockPos(X, Y, Z + InZ);
 }

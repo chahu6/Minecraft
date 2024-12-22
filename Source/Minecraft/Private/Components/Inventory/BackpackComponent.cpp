@@ -21,7 +21,7 @@ void UBackpackComponent::BeginPlay()
 
 	FItemStack ItemStack;
 	ItemStack.SetCount(1);
-	ItemStack.SetItem(UItem::GetItemFromBlock(UBlocks::Crafting_Table));
+	ItemStack.SetItem(UItem::GetItemFromBlock(UBlocks::CraftingTable));
 	Items[0] = ItemStack;
 
 	FItemStack WoodItemStack;
@@ -31,7 +31,7 @@ void UBackpackComponent::BeginPlay()
 
 	FItemStack ChestItemStack;
 	ChestItemStack.SetCount(1);
-	ChestItemStack.SetItem(UItem::GetItemFromName(FMinecraftGameplayTags::Get().Minecraft_Chest));
+	ChestItemStack.SetItem(UItem::GetItemFromName(FMinecraftGameplayTags::Get().Item_Block_Chest));
 	Items[2] = ChestItemStack;
 }
 

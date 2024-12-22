@@ -40,9 +40,14 @@ void UDefaultTerrain::Generate_Implementation(AWorldManager* InWorldManager, con
 			const float SampleX = (BlockPosX - HalfWidth) / Scale;
 			const float SampleY = (BlockPosY - HalfHeight) / Scale;
 
+			TTuple<float, float, float, float, float> Noises;
 			FGameplayTag BiomeTag;
-			int32 RealHeight = GetRealHeightAndBiomes(SampleX, SampleY, BiomeTag);
+			const int32 RealHeight = GetRealHeightAndBiomes(SampleX, SampleY, BiomeTag, Noises);
+
 			UBiome* Biome = UBiome::GetBiome(BiomeTag);
+			ChunkData->SetBiome(X, Y, Biome->BiomeID);
+			ChunkData->SetHeight(X, Y, RealHeight);
+			ChunkData->SetNoiseValues(X, Y, Noises);
 
 			for (int32 Z = 0; Z < CHUNK_HEIGHT; ++Z)
 			{
@@ -50,18 +55,23 @@ void UDefaultTerrain::Generate_Implementation(AWorldManager* InWorldManager, con
 				ChunkData->SetBlockState(FIntVector(X, Y, Z), Block->GetDefaultBlockState());
 			}
 
-			if (RealHeight <= SEA_LEVEL)
-			{
-				continue;
-			}
+			//if (RealHeight <= SEA_LEVEL)
+			//{
+			//	continue;
+			//}
 
-			//生成生物群落条件
-			//int32 LeafWidth = 
+			////生成生物群落条件
+			////int32 LeafWidth = 
+
 		}
 	}
+
+	EBiomeID BiomeID = ChunkData->GetBiome(BlockPos);
+	UBiome* Biome = UBiome::GetBiome(BiomeID);
+	Biome->Decorate(InWorldManager, BlockPos);
 }
 
-int32 UDefaultTerrain::GetRealHeightAndBiomes(float InX, float InY, FGameplayTag& OutBiomeTag)
+int32 UDefaultTerrain::GetRealHeightAndBiomes(float InX, float InY, FGameplayTag& OutBiomeTag, TTuple<float, float, float, float, float>& InNoises)
 {
 	const FMinecraftGameplayTags& GameplayTag = FMinecraftGameplayTags::Get();
 
@@ -74,16 +84,28 @@ int32 UDefaultTerrain::GetRealHeightAndBiomes(float InX, float InY, FGameplayTag
 	Height += ErosionCurve->GetFloatValue(Ero);
 	Height += PeakValleysCurve->GetFloatValue(Pea);
 
-	if (Height >= WORLD_DEPTH * 0.95f) Height = WORLD_DEPTH * 0.95f;
-	if (Height < 0) Height = 0;
+	if (Height >= WORLD_DEPTH * 0.95f)
+	{
+		Height = WORLD_DEPTH * 0.95f;
+	}
+	if (Height < 0)
+	{
+		Height = 0;
+	}
+
+	// 温度
+	float T = Temperature->FBM(4, InX, InY);
+	T = (T + 1) / 2;
 
 	// 湿度
 	float H = Humidity->FBM(4, InX, InY);
 	H = (H + 1) / 2; // 取值范围[0,1]
 
-	// 温度
-	float T = Temperature->FBM(4, InX, InY);
-	T = (T + 1) / 2;
+	InNoises.Get<0>() = Cont;
+	InNoises.Get<1>() = Ero;
+	InNoises.Get<2>() = Pea;
+	InNoises.Get<3>() = T;
+	InNoises.Get<4>() = H;
 
 	if (Cont < 0.1f)
 	{

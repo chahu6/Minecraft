@@ -25,9 +25,11 @@ public:
 	virtual void Generate_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos) override;
 
 protected:
-	int32 GetRealHeightAndBiomes(float InX, float InY, FGameplayTag& OutBiomeTag);
+	int32 GetRealHeightAndBiomes(float InX, float InY, FGameplayTag& OutBiomeTag, TTuple<float, float, float, float, float>& InNoises);
 
 	const UBlock* GetBlock(int32 X, int32 Y, int32 Height, UBiome* Biome, int32 Z) const;
+
+	//void SetBiome();
 
 protected:
 	/** ´óÂ½°å¿éÔëÉù */

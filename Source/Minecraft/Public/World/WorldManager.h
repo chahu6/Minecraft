@@ -5,6 +5,7 @@
 #include "World/Data/GenerationMethod.h"
 #include "World/Data/GlobalInfo.h"
 #include "Math/ChunkPos.h"
+#include "World/Biome/BiomeID.h"
 #include "WorldManager.generated.h"
 
 class AChunk;
@@ -18,6 +19,7 @@ class FChunkTickRunner;
 class UChunkTaskPoolComponent;
 class UTerrainBase;
 class UWorldProviderComponent;
+struct FBlockPos;
 
 DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
 
@@ -48,8 +50,12 @@ public:
 	void PlaceBlock(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
 
 	FBlockState GetBlockState(const FIntVector& BlockWorldVoxelLocation);
+	FBlockState GetBlockState(const FBlockPos& InBlockPos);
+	FBlockState GetBlockState(int32 X, int32 Y, int32 Z);
 
 	TSharedPtr<FChunkData> GetChunkData(const FChunkPos& InChunkPos) const;
+	TSharedPtr<FChunkData> GetChunkData(const FBlockPos& InBlockPos) const;
+	TSharedPtr<FChunkData> GetChunkData(int32 X, int32 Y) const;
 	AChunk* GetChunk(const FChunkPos& InChunkPos) const;
 
 	FProgressDelegate ProgressDelegate;
@@ -72,9 +78,18 @@ public:
 
 	AChunk* SpawnChunk(const FChunkPos& InChunkPos);
 
-private:
-	void SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
+	FBlockPos GetHeight(const FBlockPos& Pos);
+	int32 GetHeight(int32 X, int32 Y);
 
+	EBiomeID GetBiome(const FBlockPos& Pos);
+
+	void GetNoises(const FBlockPos& InBlockPos, TTuple<float, float, float, float, float>& OutNoises);
+
+	bool SetBlockState(const FBlockPos& InBlockPos, const FBlockState& BlockState);
+	bool SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
+	bool SetBlockState(int32 X, int32 Y, int32 Z, const FBlockState& BlockState);
+
+private:
 	void SetTileEntity(const FIntVector& BlockWorldVoxelLocation, ATileEntity* TileEntity);
 
 	void InitialWorldChunkLoad();

@@ -7,6 +7,7 @@
 #include "GameplayTagContainer.h"
 #include "World/Data/BlockState.h"
 #include "World/Block/Data/BlockRenderType.h"
+//#include "MinecraftGameplayTags.h"
 #include "Block.generated.h"
 
 class AWorldManager;
@@ -64,6 +65,8 @@ public:
 	/** 当玩家右键单击该块时调用 */
 	virtual bool OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player);
 
+	virtual FItemStack GetItem();
+
 public:
 	/** Overridden to use saved type */
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
@@ -104,6 +107,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	int32 LightOpacity;
 
+	// 半透明
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	bool bTranslucent;
 

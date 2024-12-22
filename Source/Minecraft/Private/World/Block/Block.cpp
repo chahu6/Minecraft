@@ -104,6 +104,11 @@ bool UBlock::OnBlockActivated(AWorldManager* WorldManager, const FIntVector& Blo
 	return false;
 }
 
+FItemStack UBlock::GetItem()
+{
+	return FItemStack();
+}
+
 FPrimaryAssetId UBlock::GetPrimaryAssetId() const
 {
 	// This is a DataAsset and not a blueprint so we can just use the raw FName

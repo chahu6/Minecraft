@@ -8,7 +8,6 @@
 #include "World/Runnable/ChunkUnloadWork.h"
 #include "Chunk.generated.h"
 
-//struct FBlockData;
 struct FMeshData;
 struct FChunkData;
 class AWorldManager;
@@ -33,7 +32,6 @@ class MINECRAFT_API AChunk : public APooledActor, public IChunkInterface
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	virtual void Destroyed() override;
 
 public:
 	AChunk();
@@ -45,8 +43,6 @@ public:
 	void Dirty();
 
 	void BuildMesh();
-
-	void StopBuildMesh();
 
 	void TickUpdate();
 
@@ -95,9 +91,9 @@ public:
 
 private:
 	/** 用于对象池的对象的初始化，相当于Actor的 BeginPlay()函数*/
-	void LoadChunk();
+	void OnLoadChunk();
 	/** 用于对象池的对象的卸载，相当于Actor的 EndPlay()函数*/
-	void UnloadChunk();
+	void OnUnloadChunk();
 
 public:
 	FEvent* ThreadEvent;
@@ -120,8 +116,6 @@ private:
 	bool bIsRendering = false;
 
 	bool bIsDirty = false;
-
-	bool bIsStopped = false;
 
 	EChunkState ChunkState = EChunkState::None;
 

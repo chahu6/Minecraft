@@ -17,9 +17,8 @@ struct MINECRAFT_API FBlockPos final
 
 public:
 	FBlockPos();
-
 	FBlockPos(int32 InX, int32 InY);
-
+	FBlockPos(int32 InX, int32 InY, int32 InZ);
 	FBlockPos(const FVector& InPos);
 
 	UPROPERTY()
@@ -32,6 +31,13 @@ public:
 	int32 Z;
 
 	FChunkPos ToChunkPos() const;
+
+	int32 Index() const;
+
+	FBlockPos Down() const;
+
+	FBlockPos Up() const;
+	FBlockPos Up(int32 InZ) const;
 
 	bool operator!=(const FBlockPos& Other) const
 	{
@@ -71,5 +77,5 @@ public:
 		return FBlockPos(*this) *= Scale;
 	}
 
-	FORCEINLINE FString ToString() { return FString::Printf(TEXT("X=%d Y=%d Z=%d"), X, Y, Z); }
+	FORCEINLINE FString ToString() const { return FString::Printf(TEXT("X=%d Y=%d Z=%d"), X, Y, Z); }
 };

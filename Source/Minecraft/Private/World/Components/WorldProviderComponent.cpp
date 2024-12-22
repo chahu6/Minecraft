@@ -6,6 +6,7 @@
 #include "World/WorldGenerator.h"
 #include "Chunk/Chunk.h"
 #include "World/Data/ChunkData.h"
+#include "World/Gen/TerrainBase.h"
 
 UWorldProviderComponent::UWorldProviderComponent()
 {
@@ -184,6 +185,14 @@ void UWorldProviderComponent::HandleLoadChunks()
 		CurrentRadius++;
 	}
 
+	if (GenerateChunksPos.Num() > 0)
+	{
+		ParallelFor(GenerateChunksPos.Num(), [this, &GenerateChunksPos](int32 Index)
+		{
+			WorldManager->GetTerrain()->Generate(WorldManager.Get(), GenerateChunksPos[Index]);
+		});
+	}
+
 	WorldManager->UnloadChunks(LastChunksPos);
 	WorldManager->LoadChunks(GenerateChunksPos);
 }
@@ -194,11 +203,12 @@ bool UWorldProviderComponent::SpawnChunk(const FChunkPos& ChunkPos)
 	{
 		TSharedPtr<FChunkData> ChunkData = MakeShared<FChunkData>();
 		Chunk->SetChunkData(ChunkData.ToSharedRef());
+
 		Chunks.Add(ChunkPos, Chunk);
 		WorldManager->WorldInfo.Add(ChunkPos, ChunkData);
 
 		Chunk->SetChunkPos(ChunkPos);
-		//Chunk->AttachToActor(GetOwner(), FAttachmentTransformRules::KeepWorldTransform);
+		Chunk->AttachToActor(GetOwner(), FAttachmentTransformRules::KeepWorldTransform);
 		return true;
 	}
 

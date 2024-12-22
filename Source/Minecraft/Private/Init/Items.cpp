@@ -21,7 +21,7 @@ void UItems::Initialization()
 
 	const FMinecraftGameplayTags& GameplayTags = FMinecraftGameplayTags::Get();
 
-	Air = GetRegisteredItem(GameplayTags.Minecraft_Air.GetTagName());
+	Air = GetRegisteredItem(GameplayTags.Air.GetTagName());
 }
 
 UItem* UItems::GetRegisteredItem(const FName& Name)

@@ -23,7 +23,8 @@ public:
 	static const UBlock* Rose;
 	static const UBlock* Log;
 	static const UBlock* Planks;
-	static const UBlock* Crafting_Table;
+	static const UBlock* CraftingTable;
+	static const UBlock* Leaves;
 
 public:
 	~UBlocks();

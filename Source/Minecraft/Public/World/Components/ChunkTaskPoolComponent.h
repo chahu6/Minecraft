@@ -23,7 +23,7 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UPROPERTY(EditAnywhere, Category = "Multi-Threading")
-	uint8 Concurrency = 12;
+	uint8 Concurrency = 6;
 		
 private:
 	TWeakObjectPtr<AWorldManager> WorldManager;

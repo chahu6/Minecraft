@@ -14,6 +14,7 @@
 #include "World/Gen/TerrainBase.h"
 #include "World/Data/ChunkData.h"
 #include "World/Components/WorldProviderComponent.h"
+#include "Math/BlockPos.h"
 
 AWorldManager* AWorldManager::Instance = nullptr;
 
@@ -72,6 +73,7 @@ void AWorldManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+#include "MinecraftGameplayTags.h"
 void AWorldManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -90,7 +92,28 @@ void AWorldManager::Tick(float DeltaTime)
 
 	CoordsChanged();
 
-	GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Red, GetCenterChunkPos().ToString());
+	const FVector ActorLocation = UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation();
+	const FChunkPos ChunkPos = FChunkHelper::ChunkPosFromWorldLoc(ActorLocation);
+	const FBlockPos BlockPos = FChunkHelper::BlockPosFromWorldLoc(ActorLocation);
+	GEngine->AddOnScreenDebugMessage(2, 5.f, FColor::Red, FString::Printf(TEXT("ChunkPos: %s"), *ChunkPos.ToString()));
+	GEngine->AddOnScreenDebugMessage(3, 5.f, FColor::Red, FString::Printf(TEXT("BlockPos: %s"), *BlockPos.ToString()));
+	const int32 TerrainHeight = GetHeight(BlockPos.X, BlockPos.Y);
+	EBiomeID BiomeID = GetBiome(BlockPos);
+	const UEnum* EnumObject = FindObject<UEnum>(ANY_PACKAGE, TEXT("EBiomeID"));
+	GEngine->AddOnScreenDebugMessage(4, 5.f, FColor::Red, FString::Printf(TEXT("TerrainHeight: %d"), TerrainHeight));
+	GEngine->AddOnScreenDebugMessage(5, 5.f, FColor::Red, FString::Printf(TEXT("Biome: %s"), *EnumObject->GetMetaData(TEXT("DisplayName"), (int32)BiomeID)));
+
+	TTuple<float, float, float, float, float> Noises;
+	GetNoises(BlockPos, Noises);
+	GEngine->AddOnScreenDebugMessage(6, 5.f, FColor::Red, FString::Printf(TEXT("Continent: %.3f"), Noises.Get<0>()));
+	GEngine->AddOnScreenDebugMessage(7, 5.f, FColor::Red, FString::Printf(TEXT("Erosion: %.3f"), Noises.Get<1>()));
+	GEngine->AddOnScreenDebugMessage(8, 5.f, FColor::Red, FString::Printf(TEXT("Peaks & Valleys: %.3f"), Noises.Get<2>()));
+	GEngine->AddOnScreenDebugMessage(9, 5.f, FColor::Red, FString::Printf(TEXT("Temperature: %.3f"), Noises.Get<3>()));
+	GEngine->AddOnScreenDebugMessage(10, 5.f, FColor::Red, FString::Printf(TEXT("Humidity: %.3f"), Noises.Get<4>()));
+
+	FGameplayTag Tag = FMinecraftGameplayTags::Get().Biome_Desert;
+	FName TagName = FMinecraftGameplayTags::Get().Biome_Desert.GetTagName();
+	GEngine->AddOnScreenDebugMessage(11, 5.f, FColor::Blue, FString::Printf(TEXT("FGameplayTag: %d, %d, %d, %d"), sizeof(FGameplayTag), sizeof(Tag), sizeof(FName), sizeof(TagName)));
 }
 
 bool AWorldManager::CoordsChanged()
@@ -231,14 +254,56 @@ AChunk* AWorldManager::SpawnChunk(const FChunkPos& InChunkPos)
 	return ChunkPool->SpawnChunk(InChunkPos);
 }
 
-void AWorldManager::SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState)
+FBlockPos AWorldManager::GetHeight(const FBlockPos& Pos)
 {
+	return FBlockPos(Pos.X, Pos.Y, GetHeight(Pos.X, Pos.Y) + Pos.Z);
+}
+
+int32 AWorldManager::GetHeight(int32 X, int32 Y)
+{
+	TSharedPtr<FChunkData> ChunkData = GetChunkData(X, Y);
+	if (ChunkData.IsValid())
+	{
+		return ChunkData->GetHeight(X, Y);
+	}
+	return 0;
+}
+
+EBiomeID AWorldManager::GetBiome(const FBlockPos& Pos)
+{
+	TSharedPtr<FChunkData> ChunkData = GetChunkData(Pos);
+	if (ChunkData.IsValid())
+	{
+		return ChunkData->GetBiome(Pos);
+	}
+	return EBiomeID::Ocean;
+}
+
+void AWorldManager::GetNoises(const FBlockPos& InBlockPos, TTuple<float, float, float, float, float>& OutNoises)
+{
+	TSharedPtr<FChunkData> ChunkData = GetChunkData(InBlockPos);
+	if (ChunkData.IsValid())
+	{
+		ChunkData->GetNoises(InBlockPos, OutNoises);
+	}
+}
+
+bool AWorldManager::SetBlockState(const FBlockPos& InBlockPos, const FBlockState& BlockState)
+{
+	return SetBlockState(InBlockPos.X, InBlockPos.Y, InBlockPos.Z, BlockState);
+}
+
+bool AWorldManager::SetBlockState(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState)
+{
+	return SetBlockState(BlockWorldVoxelLocation.X, BlockWorldVoxelLocation.Y, BlockWorldVoxelLocation.Z, BlockState);
+#if 0
 	// static_cast<float>() 转成float考虑到负数
 	const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / WorldGenerator::CHUNK_SIZE);
 	const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / WorldGenerator::CHUNK_SIZE);
 
 	TSharedPtr<FChunkData> ChunkData = GetChunkData(FChunkPos(ChunkVoxelLocationX, ChunkVoxelLocationY));
-	if (ChunkData)
+	GetChunkData(FChunkHelper::ChunkPosFromBlockPos())
+	if (ChunkData.IsValid())
 	{
 		FIntVector OffsetLocation = BlockWorldVoxelLocation - FIntVector(ChunkVoxelLocationX, ChunkVoxelLocationY, 0) * WorldGenerator::CHUNK_SIZE;
 
@@ -262,6 +327,17 @@ void AWorldManager::SetBlockState(const FIntVector& BlockWorldVoxelLocation, con
 
 		//CheckSurroundingChunkNeedUpdate(OffsetLocation, ChunkVoxelLocationX, ChunkVoxelLocationY);
 	}
+#endif
+}
+
+bool AWorldManager::SetBlockState(int32 X, int32 Y, int32 Z, const FBlockState& BlockState)
+{
+	TSharedPtr<FChunkData> ChunkData = GetChunkData(FChunkHelper::ChunkPosFromBlockPos(X, Y));
+	if (ChunkData.IsValid())
+	{
+		return ChunkData->SetBlockState(X, Y, Z, BlockState);
+	}
+	return false;
 }
 
 void AWorldManager::SetTileEntity(const FIntVector& BlockWorldVoxelLocation, ATileEntity* TileEntity)
@@ -283,22 +359,17 @@ void AWorldManager::CheckSurroundingChunkNeedUpdate(const FIntVector& BlockOffse
 
 FBlockState AWorldManager::GetBlockState(const FIntVector& BlockWorldVoxelLocation)
 {
-	// static_cast<float>() 转成float考虑到负数
-	const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / WorldGenerator::CHUNK_SIZE);
-	const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / WorldGenerator::CHUNK_SIZE);
+	return WorldInfo.GetBlockState(BlockWorldVoxelLocation);
+}
 
-	TSharedPtr<FChunkData> ChunkData = GetChunkData(FChunkPos(ChunkVoxelLocationX, ChunkVoxelLocationY));
-	if (ChunkData.IsValid())
-	{
-		FIntVector OffsetLocation = BlockWorldVoxelLocation - FIntVector(ChunkVoxelLocationX, ChunkVoxelLocationY, 0) * WorldGenerator::CHUNK_SIZE;
+FBlockState AWorldManager::GetBlockState(const FBlockPos& InBlockPos)
+{
+	return WorldInfo.GetBlockState(InBlockPos);
+}
 
-		const int32 OffsetX = OffsetLocation.X % WorldGenerator::CHUNK_SIZE;
-		const int32 OffsetY = OffsetLocation.Y % WorldGenerator::CHUNK_SIZE;
-		const int32 WorldZ = OffsetLocation.Z;
-		return ChunkData->GetBlockState(OffsetX, OffsetY, WorldZ);
-	}
-
-	return FBlockState();
+FBlockState AWorldManager::GetBlockState(int32 X, int32 Y, int32 Z)
+{
+	return WorldInfo.GetBlockState(X, Y, Z);
 }
 
 TSharedPtr<FChunkData> AWorldManager::GetChunkData(const FChunkPos& InChunkPos) const
@@ -308,6 +379,17 @@ TSharedPtr<FChunkData> AWorldManager::GetChunkData(const FChunkPos& InChunkPos) 
 		return WorldInfo.ChunkDataMap[InChunkPos];
 	}
 	return nullptr;
+}
+
+TSharedPtr<FChunkData> AWorldManager::GetChunkData(const FBlockPos& InBlockPos) const
+{
+	return GetChunkData(InBlockPos.X, InBlockPos.Y);
+}
+
+TSharedPtr<FChunkData> AWorldManager::GetChunkData(int32 X, int32 Y) const
+{
+	const FChunkPos ChunkPos = FChunkHelper::ChunkPosFromBlockPos(X, Y);
+	return GetChunkData(ChunkPos);
 }
 
 AChunk* AWorldManager::GetChunk(const FChunkPos& InChunkPos) const

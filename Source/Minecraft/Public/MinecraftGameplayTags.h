@@ -20,20 +20,21 @@ public:
 	* 物品
 	*/
 
-	FGameplayTag Minecraft_Air;
-	FGameplayTag Minecraft_Stone;
-	FGameplayTag Minecraft_Grass;
-	FGameplayTag Minecraft_Dirt;
-	FGameplayTag Minecraft_Bedrock;
-	FGameplayTag Minecraft_Water;
-	FGameplayTag Minecraft_Sand;
-	FGameplayTag Minecraft_Tallgrass;
-	FGameplayTag Minecraft_Rose;
-	FGameplayTag Minecraft_Log;
-	FGameplayTag Minecraft_Planks;
-	FGameplayTag Minecraft_Chest;
-	FGameplayTag Minecraft_Crafting_Table;
-	FGameplayTag Minecraft_Ice;
+	FGameplayTag Air;
+	FGameplayTag Item_Block_Stone;
+	FGameplayTag Item_Block_Grass;
+	FGameplayTag Item_Block_Dirt;
+	FGameplayTag Item_Block_Bedrock;
+	FGameplayTag Item_Block_Water;
+	FGameplayTag Item_Block_Sand;
+	FGameplayTag Item_Block_Tallgrass;
+	FGameplayTag Item_Block_Rose;
+	FGameplayTag Item_Block_Log;
+	FGameplayTag Item_Block_Planks;
+	FGameplayTag Item_Block_Chest;
+	FGameplayTag Item_Block_CraftingTable;
+	FGameplayTag Item_Block_Ice;
+	FGameplayTag Item_Block_Leaves;
 
 	/*
 	* 生物群系

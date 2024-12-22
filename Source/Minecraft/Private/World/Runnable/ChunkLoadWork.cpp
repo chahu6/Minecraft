@@ -1,6 +1,5 @@
 #include "World/Runnable/ChunkLoadWork.h"
 #include "World/WorldManager.h"
-#include "World/Gen/TerrainBase.h"
 #include "World/Gen/GreedyMeshGenerator.h"
 #include "Chunk/Chunk.h"
 
@@ -12,8 +11,6 @@ FChunkLoadWork::FChunkLoadWork(AWorldManager* InWorldManager, const FChunkPos& I
 
 void FChunkLoadWork::DoThreadedWork()
 {
-	WorldManager->GetTerrain()->Generate(WorldManager, ChunkPos);
-
 	GreedyMeshGenerator::BuildGreedyChunkMesh(WorldManager->WorldInfo, ChunkPos);
 
 	WorldManager->LoadChunkQueue.Enqueue(ChunkPos);

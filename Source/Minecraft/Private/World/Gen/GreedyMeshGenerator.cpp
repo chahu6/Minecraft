@@ -75,8 +75,8 @@ void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChu
 					const int32 CurrentBlockID = CurrentBlockState.BlockID;
 					const int32 CompareBlockID = CompareBlockState.BlockID;
 
-					const bool bCurrentBlockOpaque = !CurrentBlockState.IsAir() && CurrentBlockID != UBlocks::Tallgrass->BlockID && CurrentBlockID != UBlocks::Rose->BlockID && CurrentBlockState.GetBlock()->IsFullBlock();
-					const bool bCompareBlockOpaque = !CompareBlockState.IsAir() && CompareBlockID != UBlocks::Tallgrass->BlockID && CompareBlockID != UBlocks::Rose->BlockID && CompareBlockState.GetBlock()->IsFullBlock();
+					const bool bCurrentBlockOpaque = !CurrentBlockState.IsAir() && CurrentBlockID != UBlocks::Tallgrass->BlockID && CurrentBlockID != UBlocks::Rose->BlockID && CurrentBlockState.GetBlock()->IsFullBlock() && !CurrentBlockState.GetBlock()->bTranslucent;
+					const bool bCompareBlockOpaque = !CompareBlockState.IsAir() && CompareBlockID != UBlocks::Tallgrass->BlockID && CompareBlockID != UBlocks::Rose->BlockID && CompareBlockState.GetBlock()->IsFullBlock() && !CurrentBlockState.GetBlock()->bTranslucent;
 
 					if (bCurrentBlockOpaque == bCompareBlockOpaque)
 					{

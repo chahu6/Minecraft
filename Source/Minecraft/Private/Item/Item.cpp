@@ -46,7 +46,7 @@ UItem* UItem::GetItemFromBlock(const UBlock* Block)
 		return BLOCK_TO_ITEM[Block];
 	}
 	check(false);
-	return REGISTER[FMinecraftGameplayTags::Get().Minecraft_Air.GetTagName()];
+	return REGISTER[FMinecraftGameplayTags::Get().Air.GetTagName()];
 }
 
 UItem* UItem::GetItemFromName(const FGameplayTag& TagName)
@@ -61,7 +61,7 @@ UItem* UItem::GetItemFromName(const FName& ItemName)
 	{
 		return REGISTER[ItemName];
 	}
-	return REGISTER[FMinecraftGameplayTags::Get().Minecraft_Air.GetTagName()];
+	return REGISTER[FMinecraftGameplayTags::Get().Air.GetTagName()];
 }
 
 FPrimaryAssetId UItem::GetPrimaryAssetId() const

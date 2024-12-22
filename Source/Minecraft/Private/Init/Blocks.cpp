@@ -2,7 +2,7 @@
 #include "MinecraftGameplayTags.h"
 
 #define REGISTER_BLOCKS(BlockName) \
-	BlockName = GetRegisteredBlock(GameplayTags.Minecraft_##BlockName)
+	BlockName = GetRegisteredBlock(GameplayTags.Item_Block_##BlockName)
 
 UBlocks* UBlocks::SingletonManager = nullptr;
 
@@ -17,7 +17,8 @@ const UBlock* UBlocks::Tallgrass;
 const UBlock* UBlocks::Rose;
 const UBlock* UBlocks::Log;
 const UBlock* UBlocks::Planks;
-const UBlock* UBlocks::Crafting_Table;
+const UBlock* UBlocks::CraftingTable;
+const UBlock* UBlocks::Leaves;
 
 UBlocks::~UBlocks()
 {
@@ -31,7 +32,7 @@ void UBlocks::Initialization()
 
 	const FMinecraftGameplayTags& GameplayTags = FMinecraftGameplayTags::Get();
 
-	REGISTER_BLOCKS(Air);
+	Air = GetRegisteredBlock(GameplayTags.Air);
 	REGISTER_BLOCKS(Stone);
 	REGISTER_BLOCKS(Dirt);
 	REGISTER_BLOCKS(Grass);
@@ -42,7 +43,8 @@ void UBlocks::Initialization()
 	REGISTER_BLOCKS(Rose);
 	REGISTER_BLOCKS(Log);
 	REGISTER_BLOCKS(Planks);
-	REGISTER_BLOCKS(Crafting_Table);
+	REGISTER_BLOCKS(CraftingTable);
+	REGISTER_BLOCKS(Leaves);
 }
 
 const UBlock* UBlocks::GetRegisteredBlock(const FName& Name)

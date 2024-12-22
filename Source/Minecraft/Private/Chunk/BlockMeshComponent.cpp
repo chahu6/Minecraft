@@ -21,17 +21,17 @@ void UBlockMeshComponent::BeginPlay()
 
 void UBlockMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMeshDatas)
 {
-	//FBlockMeta BlockMeta;
+	int32 Key = 0;
 	ClearAllMeshSections();
 	for (auto MeshData = NewMeshDatas.CreateConstIterator(); MeshData; ++MeshData)
 	{
 		if (MeshData->Value->Vertices.IsEmpty()) continue;
 
-		CreateMeshSection_LinearColor(MeshData->Key, MeshData->Value->Vertices, MeshData->Value->Triangles, MeshData->Value->Normals, MeshData->Value->UV0, MeshData->Value->VertexColors, MeshData->Value->Tangents, true);
+		CreateMeshSection_LinearColor(Key, MeshData->Value->Vertices, MeshData->Value->Triangles, MeshData->Value->Normals, MeshData->Value->UV0, MeshData->Value->VertexColors, MeshData->Value->Tangents, true);
 
 		if (const UBlock* Block = UBlock::GetBlockById(MeshData->Key))
 		{
-			SetMaterial(MeshData->Key, Block->Material);
+			SetMaterial(Key++, Block->Material);
 		}
 	}
 }

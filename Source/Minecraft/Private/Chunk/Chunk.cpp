@@ -28,20 +28,20 @@ void AChunk::SetInUse(bool InUse)
 
 	if (InUse)
 	{
-		LoadChunk();
+		OnLoadChunk();
 	}
 	else
 	{
-		UnloadChunk();
+		OnUnloadChunk();
 	}
 }
 
-void AChunk::LoadChunk()
+void AChunk::OnLoadChunk()
 {
 	WorldManager = Cast<AWorldManager>(GetOwner());
 }
 
-void AChunk::UnloadChunk()
+void AChunk::OnUnloadChunk()
 {
 	ChunkData = nullptr;
 	ChunkPos = FChunkPos();
@@ -50,6 +50,8 @@ void AChunk::UnloadChunk()
 
 	BlockMeshComponent->ClearAllMeshSections();
 	PlantMeshComponent->ClearAllMeshSections();
+
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 }
 
 void AChunk::BeginPlay()
@@ -68,19 +70,6 @@ void AChunk::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		FPlatformProcess::ReturnSynchEventToPool(ThreadEvent);
 		ThreadEvent = nullptr;
 	}
-}
-
-void AChunk::Destroyed()
-{
-	Super::Destroyed();
-
-	//AbandonWork();
-	//WorldManager->WorldInfo.Remove(ChunkPos);
-}
-
-void AChunk::StopBuildMesh()
-{
-	bIsStopped = true;
 }
 
 void AChunk::TickUpdate()

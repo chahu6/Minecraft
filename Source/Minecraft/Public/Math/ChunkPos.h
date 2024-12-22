@@ -70,5 +70,5 @@ public:
 		return HashCombine(::GetTypeHash(Key.X), ::GetTypeHash(Key.Y));
 	}
 
-	FORCEINLINE FString ToString() { return FString::Printf(TEXT("X=%d Y=%d"), X, Y); }
+	FORCEINLINE FString ToString() const { return FString::Printf(TEXT("X=%d Y=%d"), X, Y); }
 };

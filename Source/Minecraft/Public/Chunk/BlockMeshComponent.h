@@ -31,5 +31,5 @@ private:
 
 private:
 	UPROPERTY()
-	TObjectPtr<AChunk> Chunk;
+	TWeakObjectPtr<AChunk> Chunk;
 };

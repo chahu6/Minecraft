@@ -5,33 +5,42 @@
 
 using namespace WorldGenerator;
 
-int32 FChunkHelper::GetBlocksIndex(int32 OffsetX, int32 OffsetY, int32 OffsetZ)
+int32 FChunkHelper::GetBlockIndex(int32 OffsetX, int32 OffsetY, int32 OffsetZ)
 {
-    return OffsetX + OffsetY * CHUNK_SIZE + OffsetZ * CHUNK_AREA;
+    //return OffsetX + OffsetY * CHUNK_SIZE + OffsetZ * CHUNK_AREA;
+    return OffsetZ << 8 | OffsetY << 4 | OffsetX;
 }
 
-int32 FChunkHelper::GetHeightIndex(int32 OffsetX, int32 OffsetY)
+int32 FChunkHelper::GetBlockIndex(int32 OffsetX, int32 OffsetY)
 {
-    return OffsetX + OffsetY * CHUNK_SIZE;
+    //return OffsetX + OffsetY * CHUNK_SIZE;
+    return OffsetY << 4 | OffsetX;
 }
 
 FChunkPos FChunkHelper::ChunkPosFromBlockPos(const FBlockPos& InBlockPos)
 {
-    FChunkPos ChunkPos;
-    ChunkPos.X = FMath::FloorToInt32(static_cast<float>(InBlockPos.X) / CHUNK_SIZE);
-    ChunkPos.Y = FMath::FloorToInt32(static_cast<float>(InBlockPos.Y) / CHUNK_SIZE);
-    return ChunkPos;
+    return ChunkPosFromBlockPos(InBlockPos.X, InBlockPos.Y);
+}
+
+FChunkPos FChunkHelper::ChunkPosFromBlockPos(int32 X, int32 Y)
+{
+    return FChunkPos(X >> 4, Y >> 4);
+}
+
+FBlockPos FChunkHelper::BlockPosFromWorldLoc(const FVector& WorldLocation)
+{
+    return FBlockPos(FMath::FloorToInt32(WorldLocation.X / BlockSize), FMath::FloorToInt32(WorldLocation.Y / BlockSize), FMath::FloorToInt32(WorldLocation.Z / BlockSize));
 }
 
 FChunkPos FChunkHelper::ChunkPosFromWorldLoc(const FVector& WorldLocation)
 {
-    return ChunkPosFromWorldLoc(FIntVector(WorldLocation));
+    FChunkPos ChunkPos;
+    ChunkPos.X = FMath::FloorToInt32(WorldLocation.X / ChunkSize);
+    ChunkPos.Y = FMath::FloorToInt32(WorldLocation.Y / ChunkSize);
+    return ChunkPos;
 }
 
 FChunkPos FChunkHelper::ChunkPosFromWorldLoc(const FIntVector& WorldLocation)
 {
-    FChunkPos ChunkPos;
-    ChunkPos.X = FMath::FloorToInt32(static_cast<float>(WorldLocation.X) / ChunkSize);
-    ChunkPos.Y = FMath::FloorToInt32(static_cast<float>(WorldLocation.Y) / ChunkSize);
-    return ChunkPos;
+    return ChunkPosFromWorldLoc(FVector(WorldLocation));
 }

@@ -6,11 +6,12 @@ struct FBlockPos;
 class FChunkHelper
 {
 public:
-	static int32 GetBlocksIndex(int32 OffsetX, int32 OffsetY, int32 OffsetZ);
-
-	static int32 GetHeightIndex(int32 OffsetX, int32 OffsetY);
+	static int32 GetBlockIndex(int32 OffsetX, int32 OffsetY, int32 OffsetZ);
+	static int32 GetBlockIndex(int32 OffsetX, int32 OffsetY);
 
 	static FChunkPos ChunkPosFromBlockPos(const FBlockPos& InBlockPos);
+	static FChunkPos ChunkPosFromBlockPos(int32 X, int32 Y);
+	static FBlockPos BlockPosFromWorldLoc(const FVector& WorldLocation);
 	static FChunkPos ChunkPosFromWorldLoc(const FVector& WorldLocation);
 	static FChunkPos ChunkPosFromWorldLoc(const FIntVector& WorldLocation);
 };
