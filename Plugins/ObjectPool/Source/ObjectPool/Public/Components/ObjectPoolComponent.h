@@ -42,13 +42,13 @@ protected:
 	}
 
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Object Pool")
 	TSubclassOf<APooledActor> PooledActorClass;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Meta = (ClampMin = "0"), Category = "Object Pool")
 	int32 PoolSize = 12;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Object Pool")
 	float TimeToLive = 0.f;
 
 	UPROPERTY(BlueprintReadOnly)

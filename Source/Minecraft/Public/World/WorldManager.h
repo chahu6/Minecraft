@@ -163,34 +163,30 @@ protected:
 	EGenerationMethod ChunkGenerationMethod = EGenerationMethod::Greedy;
 
 	UPROPERTY(EditAnywhere, Category = "World Setting")
-	float RenderRate = 0.1f;
+	float RenderRate = 0.05f;
 
 	// 每次渲染Chunk的个数
 	UPROPERTY(EditAnywhere, Category = "World Setting")
-	int32 RenderCount = 2;
+	int32 RenderCount = 5;
 
 	UPROPERTY(EditAnywhere, Category = "World Setting")
-	float UnloadRate = 0.02f;
+	float UnloadRate = 0.05f;
 
 	// 每次卸载Chunk的个数
 	UPROPERTY(EditAnywhere, Category = "World Setting")
-	int32 UnloadCount = 3;
+	int32 UnloadCount = 5;
 
 	UPROPERTY(EditAnywhere, Category = "World Setting")
-	float UpdateRate = 1.f;
+	float UpdateRate = 1.0f;
 
 	FTimerHandle RenderQueueHandle;
-
 	FTimerHandle UpdateHandle;
-
 	FTimerHandle UnloadHandle;
 
 	std::atomic<uint64> m_Tick;
 
 private:
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FIntPoint CharacterChunkPosition = { 1, 1 };
-
 	FChunkPos CenterChunkPos = { 1, 1 };
 
 	/*

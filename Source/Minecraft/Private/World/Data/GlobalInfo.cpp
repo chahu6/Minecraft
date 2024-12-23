@@ -31,22 +31,12 @@ FBlockState GlobalInfo::GetBlockState(const FBlockPos& InBlockPos)
 
 FBlockState GlobalInfo::GetBlockState(int32 X, int32 Y, int32 Z)
 {
-	// static_cast<float>() 转成float考虑到负数
-	//const int32 ChunkVoxelLocationX = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.X) / WorldGenerator::CHUNK_SIZE);
-	//const int32 ChunkVoxelLocationY = FMath::FloorToInt32(static_cast<float>(BlockWorldVoxelLocation.Y) / WorldGenerator::CHUNK_SIZE);
-
 	const FChunkPos ChunkPos = FChunkHelper::ChunkPosFromBlockPos(X, Y);
 
 	FScopeLock ScopeLock(&CriticalSection);
 	if (ChunkDataMap.Contains(ChunkPos))
 	{
 		TSharedPtr<FChunkData> ChunkData = ChunkDataMap[ChunkPos];
-
-		/*FIntVector OffsetLocation = BlockWorldVoxelLocation - FIntVector(ChunkVoxelLocationX, ChunkVoxelLocationY, 0) * WorldGenerator::CHUNK_SIZE;
-		const int32 OffsetX = OffsetLocation.X % WorldGenerator::CHUNK_SIZE;
-		const int32 OffsetY = OffsetLocation.Y % WorldGenerator::CHUNK_SIZE;
-		const int32 WorldZ = OffsetLocation.Z;*/
-
 		const int32 OffsetX = X & 15;
 		const int32 OffsetY = Y & 15;
 		const int32 WorldZ = Z;

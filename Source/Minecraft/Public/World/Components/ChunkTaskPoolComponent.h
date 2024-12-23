@@ -22,7 +22,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	UPROPERTY(EditAnywhere, Category = "Multi-Threading")
+	UPROPERTY(EditAnywhere, Category = "World Setting")
 	uint8 Concurrency = 6;
 		
 private:

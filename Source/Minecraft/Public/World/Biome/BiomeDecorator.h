@@ -19,6 +19,6 @@ class MINECRAFT_API UBiomeDecorator : public UDataAsset
 	GENERATED_BODY()
 	
 public:
-	virtual void Decorate(AWorldManager* InWorldManager, UBiome* Biome, const FBlockPos& Pos);
+	virtual void Decorate(AWorldManager* InWorldManager, UBiome* Biome, const FBlockPos& InChunkPos);
 
 };

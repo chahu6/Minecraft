@@ -16,6 +16,7 @@ struct FBlockPos;
 class UWorldGenAbstractTree;
 class UWorldGenTrees;
 class UWorldGenBigTree;
+class UWorldGenTallGrass;
 
 /**
  * 
@@ -40,6 +41,7 @@ public:
 	virtual void Decorate(AWorldManager* InWorldManager, const FBlockPos& Pos);
 
 	virtual UWorldGenAbstractTree* GetRandomTreeFeature();
+	virtual UWorldGenTallGrass* GetRandomWorldGenForGrass();
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -84,4 +86,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default")
 	UWorldGenBigTree* BIG_TREE_FEATURE;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default")
+	UWorldGenTallGrass* TALLGRASS_FEATURE;
 };

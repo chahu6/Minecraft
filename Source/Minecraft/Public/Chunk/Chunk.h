@@ -27,7 +27,6 @@ class MINECRAFT_API AChunk : public APooledActor, public IChunkInterface
 	GENERATED_BODY()
 
 	friend class UBlockMeshComponent;
-	friend class UPlantMeshComponent;
 
 protected:
 	virtual void BeginPlay() override;
@@ -52,12 +51,8 @@ public:
 	* new
 	*/
 
-	//void AddActiveVoxel(const FBlockData& BlockData);
-
 	void RenderTerrainMesh();
 	void RenderTerrainMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
-
-	void RenderPlantMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
 
 	void SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockState);
 
@@ -102,14 +97,7 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UBlockMeshComponent> BlockMeshComponent;
 
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UPlantMeshComponent> PlantMeshComponent;
-
-	//TArray<FBlockData> ActiveVoxels;
-
 	bool bIsEmpty = false;
-
-	int32 Seed = -1;
 
 	FString SlotName;
 
@@ -120,16 +108,13 @@ private:
 	EChunkState ChunkState = EChunkState::None;
 
 	TSharedPtr<FChunkData> ChunkData;
-
 	TWeakObjectPtr<AWorldManager> WorldManager;
 
 	FChunkPos ChunkPos;
-
 	IQueuedWork* LoadWork;
 
 public:
 	FORCEINLINE void SetChunkData(const TSharedRef<FChunkData> NewChunkDaat) { ChunkData = NewChunkDaat; }
-	FORCEINLINE void SetSeed(int32 NewSeed) { Seed = NewSeed; }
 	FORCEINLINE void SetChunkState(EChunkState NewChunkState) { ChunkState = NewChunkState; }
 	FORCEINLINE EChunkState GetChunkState() const { return ChunkState; }
 	FORCEINLINE void SetChunkPos(const FChunkPos& NewChunkPos) { ChunkPos = NewChunkPos; }

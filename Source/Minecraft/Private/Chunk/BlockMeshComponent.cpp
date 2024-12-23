@@ -9,7 +9,7 @@ UBlockMeshComponent::UBlockMeshComponent(const FObjectInitializer& ObjectInitial
 	PrimaryComponentTick.bCanEverTick = false; // False
 
 	//  «∑ÒÕ∂…‰“ı”∞
-	SetCastShadow(false);
+	SetCastShadow(true);
 }
 
 void UBlockMeshComponent::BeginPlay()
@@ -27,10 +27,16 @@ void UBlockMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMe
 	{
 		if (MeshData->Value->Vertices.IsEmpty()) continue;
 
-		CreateMeshSection_LinearColor(Key, MeshData->Value->Vertices, MeshData->Value->Triangles, MeshData->Value->Normals, MeshData->Value->UV0, MeshData->Value->VertexColors, MeshData->Value->Tangents, true);
-
 		if (const UBlock* Block = UBlock::GetBlockById(MeshData->Key))
 		{
+			if (!Block->IsFullBlock() && Block->bTranslucent)
+			{
+				CreateMeshSection_LinearColor(Key, MeshData->Value->Vertices, MeshData->Value->Triangles, MeshData->Value->Normals, MeshData->Value->UV0, MeshData->Value->VertexColors, MeshData->Value->Tangents, false);
+			}
+			else
+			{
+				CreateMeshSection_LinearColor(Key, MeshData->Value->Vertices, MeshData->Value->Triangles, MeshData->Value->Normals, MeshData->Value->UV0, MeshData->Value->VertexColors, MeshData->Value->Tangents, true);
+			}
 			SetMaterial(Key++, Block->Material);
 		}
 	}

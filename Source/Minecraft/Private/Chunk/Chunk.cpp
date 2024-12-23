@@ -1,6 +1,5 @@
 #include "Chunk/Chunk.h"
 #include "Chunk/BlockMeshComponent.h"
-#include "Chunk/PlantMeshComponent.h"
 #include "World/WorldManager.h"
 #include "World/Data/BlockState.h"
 #include "World/Data/ChunkData.h"
@@ -14,10 +13,6 @@ AChunk::AChunk()
 	BlockMeshComponent = CreateDefaultSubobject<UBlockMeshComponent>(TEXT("BlockMeshComponent"));
 	BlockMeshComponent->SetupAttachment(RootComponent);
 	BlockMeshComponent->bUseAsyncCooking = true;
-
-	PlantMeshComponent = CreateDefaultSubobject<UPlantMeshComponent>(TEXT("PlantMeshComponent"));
-	PlantMeshComponent->SetupAttachment(RootComponent);
-	PlantMeshComponent->bUseAsyncCooking = true;
 
 	ThreadEvent = FPlatformProcess::GetSynchEventFromPool();
 }
@@ -49,7 +44,6 @@ void AChunk::OnUnloadChunk()
 	WorldManager = nullptr;
 
 	BlockMeshComponent->ClearAllMeshSections();
-	PlantMeshComponent->ClearAllMeshSections();
 
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 }
@@ -101,11 +95,6 @@ void AChunk::RenderTerrainMesh()
 void AChunk::RenderTerrainMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
 {
 	BlockMeshComponent->Render(MeshDatas);
-}
-
-void AChunk::RenderPlantMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
-{
-	PlantMeshComponent->Render(MeshDatas);
 }
 
 void AChunk::SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockState)

@@ -30,10 +30,10 @@ private:
 	bool SpawnChunk(const FChunkPos& ChunkPos);
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Terrain", meta = (ClampMin = "0"))
+	UPROPERTY(EditAnywhere, Category = "World Setting", meta = (ClampMin = "0"))
 	int16 LoadChunkDistance = 5;
 
-	UPROPERTY(EditAnywhere, Category = "Terrain", meta = (ClampMin = "0"))
+	UPROPERTY(EditAnywhere, Category = "World Setting", meta = (ClampMin = "0"))
 	int16 UnLoadChunkDistance = 7;
 
 private:

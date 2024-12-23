@@ -77,6 +77,11 @@ UWorldGenAbstractTree* UBiome::GetRandomTreeFeature()
 	}
 }
 
+UWorldGenTallGrass* UBiome::GetRandomWorldGenForGrass()
+{
+	return TALLGRASS_FEATURE;
+}
+
 FString UBiome::GetIdentifierString() const
 {
 	return GetPrimaryAssetId().ToString();

@@ -73,7 +73,6 @@ void AWorldManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-#include "MinecraftGameplayTags.h"
 void AWorldManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -110,10 +109,6 @@ void AWorldManager::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(8, 5.f, FColor::Red, FString::Printf(TEXT("Peaks & Valleys: %.3f"), Noises.Get<2>()));
 	GEngine->AddOnScreenDebugMessage(9, 5.f, FColor::Red, FString::Printf(TEXT("Temperature: %.3f"), Noises.Get<3>()));
 	GEngine->AddOnScreenDebugMessage(10, 5.f, FColor::Red, FString::Printf(TEXT("Humidity: %.3f"), Noises.Get<4>()));
-
-	FGameplayTag Tag = FMinecraftGameplayTags::Get().Biome_Desert;
-	FName TagName = FMinecraftGameplayTags::Get().Biome_Desert.GetTagName();
-	GEngine->AddOnScreenDebugMessage(11, 5.f, FColor::Blue, FString::Printf(TEXT("FGameplayTag: %d, %d, %d, %d"), sizeof(FGameplayTag), sizeof(Tag), sizeof(FName), sizeof(TagName)));
 }
 
 bool AWorldManager::CoordsChanged()
@@ -401,7 +396,7 @@ void AWorldManager::RenderChunk()
 {
 	if (!LoadChunkQueue.IsEmpty())
 	{
-		//for (int32 I = 0; I < RenderCount; ++I) // 每帧最大能加载几个
+		for (int32 I = 0; I < RenderCount; ++I) // 每帧最大能加载几个
 		{
 			FChunkPos ChunkPos;
 			if (LoadChunkQueue.Dequeue(ChunkPos))
@@ -420,7 +415,7 @@ void AWorldManager::UnloadChunk()
 	if (!UnloadChunkQueue.IsEmpty())
 	{
 		FChunkPos ChunkPos;
-		//for (int32 I = 0; I < UnloadCount; ++I) // 每帧最大能卸载几个Chunk
+		for (int32 I = 0; I < UnloadCount; ++I) // 每帧最大能卸载几个Chunk
 		{
 			if (UnloadChunkQueue.Dequeue(ChunkPos))
 			{

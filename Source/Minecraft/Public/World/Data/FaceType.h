@@ -6,10 +6,10 @@
 UENUM(BlueprintType)
 enum class EFaceType : uint8
 {
-	Forward,
-	Background,
-	Left,
-	Right,
 	Up,
-	Down
+	Down,
+	Forward,
+	Backward,
+	Left,
+	Right
 };
