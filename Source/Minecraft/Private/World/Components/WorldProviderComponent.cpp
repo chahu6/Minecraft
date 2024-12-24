@@ -185,6 +185,18 @@ void UWorldProviderComponent::HandleLoadChunks()
 		CurrentRadius++;
 	}
 
+	//for (int32 X = -LoadChunkDistance - 1; X <= LoadChunkDistance + 1; ++X)
+	//{
+	//	for (int32 Y = -LoadChunkDistance - 1; Y <= LoadChunkDistance + 1; ++Y)
+	//	{
+	//		const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(X, Y);
+	//		if (!Chunks.Contains(ChunkPos))
+	//		{
+	//			WorldManager->GetTerrain()->Generate(WorldManager.Get(), ChunkPos);
+	//		}
+	//	}
+	//}
+
 	if (GenerateChunksPos.Num() > 0)
 	{
 		ParallelFor(GenerateChunksPos.Num(), [this, &GenerateChunksPos](int32 Index)

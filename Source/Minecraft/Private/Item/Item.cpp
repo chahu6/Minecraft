@@ -45,7 +45,7 @@ UItem* UItem::GetItemFromBlock(const UBlock* Block)
 	{
 		return BLOCK_TO_ITEM[Block];
 	}
-	check(false);
+	ensure(false);
 	return REGISTER[FMinecraftGameplayTags::Get().Air.GetTagName()];
 }
 

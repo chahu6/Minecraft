@@ -17,6 +17,11 @@ int32 FChunkHelper::GetBlockIndex(int32 OffsetX, int32 OffsetY)
     return OffsetY << 4 | OffsetX;
 }
 
+FChunkPos FChunkHelper::ChunkPosFromBlockPos(const FIntVector& BlockWorldVoxelLocation)
+{
+    return ChunkPosFromBlockPos(BlockWorldVoxelLocation.X, BlockWorldVoxelLocation.Y);
+}
+
 FChunkPos FChunkHelper::ChunkPosFromBlockPos(const FBlockPos& InBlockPos)
 {
     return ChunkPosFromBlockPos(InBlockPos.X, InBlockPos.Y);
@@ -43,4 +48,9 @@ FChunkPos FChunkHelper::ChunkPosFromWorldLoc(const FVector& WorldLocation)
 FChunkPos FChunkHelper::ChunkPosFromWorldLoc(const FIntVector& WorldLocation)
 {
     return ChunkPosFromWorldLoc(FVector(WorldLocation));
+}
+
+FBlockPos FChunkHelper::OffsetBlockPosFromBlockPos(const FIntVector& BlockWorldVoxelLocation)
+{
+    return FBlockPos(BlockWorldVoxelLocation.X & 15, BlockWorldVoxelLocation.Y & 15, BlockWorldVoxelLocation.Z & 15);
 }

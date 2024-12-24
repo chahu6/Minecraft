@@ -32,7 +32,6 @@ public:
 	static TMap<FName, UBiome*> REGISTER_NAME;
 
 	static void RegisterBiomes();
-
 	static void RegisterBiome(UBiome* Biome);
 
 	static UBiome* GetBiome(const FGameplayTag& BiomeTag);

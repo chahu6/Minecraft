@@ -24,15 +24,18 @@ bool UItemBlock::OnItemUse(AEntityPlayer* Player, AWorldManager* WorldManager, c
     FBlockState BlockState = WorldManager->GetBlockState(PlaceBlockVoxelLocation);
     if (!BlockState.IsAir()) return false;
 
-    WorldManager->PlaceBlock(PlaceBlockVoxelLocation, FBlockState(Block));
+    if (WorldManager->PlaceBlock(PlaceBlockVoxelLocation, FBlockState(Block)))
+    {
+        FVector WorldLocation = FVector(PlaceBlockVoxelLocation * WorldGenerator::BlockSize);
+        WorldLocation = WorldLocation + (WorldGenerator::BlockSize >> 1);
 
-    FVector WorldLocation = FVector(PlaceBlockVoxelLocation * WorldGenerator::BlockSize);
-    WorldLocation = WorldLocation + (WorldGenerator::BlockSize >> 1);
+        UGameplayStatics::PlaySoundAtLocation(WorldManager, Block->PlaceSound, WorldLocation);
 
-    UGameplayStatics::PlaySoundAtLocation(WorldManager, Block->PlaceSound, WorldLocation);
+        Player->ConsumeItem();
+        Player->UpdateMainHandItem();
 
-    Player->ConsumeItem();
-    Player->UpdateMainHandItem();
+        return true;
+    }
 
-    return true;
+    return false;
 }

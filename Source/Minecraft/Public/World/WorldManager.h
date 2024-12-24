@@ -46,8 +46,9 @@ protected:
 
 public:	
 	bool DestroyBlock(const FIntVector& BlockWorldVoxelLocation, bool bDropBlock = false);
+	//bool DestroyBlock(const FIntVector& BlockWorldVoxelLocation, bool bDropBlock = false);
 
-	void PlaceBlock(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
+	bool PlaceBlock(const FIntVector& BlockWorldVoxelLocation, const FBlockState& BlockState);
 
 	FBlockState GetBlockState(const FIntVector& BlockWorldVoxelLocation);
 	FBlockState GetBlockState(const FBlockPos& InBlockPos);
@@ -98,9 +99,8 @@ private:
 	* 
 	* ÐÂ°æ
 	*/
-	void AddChunkToUpdate(const FIntVector& BlockWorldVoxelLocation, bool bTop = false);
-
 	void AddChunkToUpdate(const FIntPoint& ChunkVoxelLocation, bool bTop = false);
+	void AddChunkToUpdate(const FChunkPos& InChunkPos, bool bTop = false);
 
 	void ThreadUpdate();
 
@@ -113,6 +113,7 @@ private:
 	void UnloadChunk();
 
 	void CheckSurroundingChunkNeedUpdate(const FIntVector& BlockOffsetLocation, int32 ChunkVoxelLocationX, int32 ChunkVoxelLocationY);
+	void CheckSurroundingChunkNeedUpdate(const FBlockPos& InOffsetBlockPos, const FChunkPos& InChunkPos);
 
 
 

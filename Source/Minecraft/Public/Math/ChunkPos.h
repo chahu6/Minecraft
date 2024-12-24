@@ -29,6 +29,8 @@ public:
 
 	FBlockPos ToBlockPos() const;
 
+	FVector ToVector() const;
+
 	bool operator!=(const FChunkPos& Other) const 
 	{ 
 		return (X != Other.X) || (Y != Other.Y);

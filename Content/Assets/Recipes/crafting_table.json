@@ -6,10 +6,10 @@
   ],
   "key": {
     "#": {
-      "item": "minecraft.planks"
+      "item": "item.block.planks"
     }
   },
   "result": {
-    "item": "minecraft.crafting_table"
+    "item": "item.block.craftingtable"
   }
 }

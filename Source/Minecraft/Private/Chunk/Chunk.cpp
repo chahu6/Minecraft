@@ -97,11 +97,11 @@ void AChunk::RenderTerrainMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDat
 	BlockMeshComponent->Render(MeshDatas);
 }
 
-void AChunk::SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockState)
-{
-	//WorldManager->PlaceBlock(BlockWorldVoxelLocation, BlockState);
-	ChunkData->SetBlockState(BlockOffsetLocation, BlockState);
-}
+//void AChunk::SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockState)
+//{
+//	WorldManager->PlaceBlock(BlockWorldVoxelLocation, BlockState);
+//	ChunkData->SetBlockState(BlockOffsetLocation, BlockState);
+//}
 
 void AChunk::Dirty()
 {

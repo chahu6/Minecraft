@@ -151,9 +151,9 @@ bool UBlock::IsFullBlock() const
 	return bFullBlock;
 }
 
-void UBlock::SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack)
+AEntityItem* UBlock::SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack)
 {
-	WorldManager->SpawnEntity(BlockWorldVoxelLocation, ItemStack);
+	return WorldManager->SpawnEntity(BlockWorldVoxelLocation, ItemStack);
 }
 
 void UBlock::RegisterBlocks()

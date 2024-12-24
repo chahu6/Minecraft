@@ -14,6 +14,7 @@ class AWorldManager;
 class AEntityPlayer;
 class UItem;
 struct FItemStack;
+class AEntityItem;
 
 /**
  * 
@@ -86,7 +87,7 @@ public:
 	bool IsFullBlock() const;
 
 protected:
-	static void SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack);
+	static AEntityItem* SpawnAsEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation, const FItemStack& ItemStack);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)

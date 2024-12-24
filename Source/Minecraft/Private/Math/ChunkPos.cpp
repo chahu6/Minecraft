@@ -25,3 +25,8 @@ FBlockPos FChunkPos::ToBlockPos() const
 {
     return FBlockPos(X * WorldGenerator::CHUNK_SIZE, Y * WorldGenerator::CHUNK_SIZE);
 }
+
+FVector FChunkPos::ToVector() const
+{
+    return FVector(X, Y, 0.f) * WorldGenerator::ChunkSize;
+}

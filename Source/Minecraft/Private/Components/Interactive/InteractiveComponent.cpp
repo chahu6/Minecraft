@@ -164,28 +164,7 @@ bool UInteractiveComponent::OnPlayerDestroyBlock(const FIntVector& BlockVoxelLoc
 	FBlockState BlockState = GetBlockDataFromLocation(BlockVoxelLocation);
 	if (BlockState.IsAir()) return false;
 
-	bool bIsDestroyed = RemoveBlockFromWorld(BlockVoxelLocation);
-	if (bIsDestroyed)
-	{
-		//FBlockMeta BlockMeta;
-		//bool bSuccessed = UMinecraftAssetLibrary::GetBlockMeta(BlockData.BlockID(), BlockMeta);
-		/*if (bSuccessed)
-		{
-			checkf(DroppedItemClass, TEXT("Uninitialize DroppedItemClass"));
-
-			FVector WorldLocation = FVector(BlockVoxelLocation * WorldGenerator::BlockSize);
-			WorldLocation.X += WorldGenerator::BlockSize >> 1;
-			WorldLocation.Y += WorldGenerator::BlockSize >> 1;
-			WorldLocation.Z += WorldGenerator::BlockSize >> 1;
-
-			ADroppedItem* DroppedItem = GetWorld()->SpawnActorDeferred<ADroppedItem>(DroppedItemClass, FTransform(FRotator::ZeroRotator, WorldLocation));
-			DroppedItem->SetItemHandle(BlockMeta.ItemHandle);
-			DroppedItem->FinishSpawning(DroppedItem->GetActorTransform());
-			return true;
-		}*/
-	}
-
-	return false;
+	return RemoveBlockFromWorld(BlockVoxelLocation);
 }
 
 bool UInteractiveComponent::RemoveBlockFromWorld(const FIntVector& BlockVoxelLocation)

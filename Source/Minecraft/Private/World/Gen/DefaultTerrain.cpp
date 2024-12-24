@@ -54,15 +54,6 @@ void UDefaultTerrain::Generate_Implementation(AWorldManager* InWorldManager, con
 				const UBlock* Block = GetBlock(X, Y, RealHeight, Biome, Z);
 				ChunkData->SetBlockState(FIntVector(X, Y, Z), Block->GetDefaultBlockState());
 			}
-
-			//if (RealHeight <= SEA_LEVEL)
-			//{
-			//	continue;
-			//}
-
-			////生成生物群落条件
-			////int32 LeafWidth = 
-
 		}
 	}
 

@@ -4,8 +4,11 @@
 #include "PooledActor.h"
 #include "Interfaces/ChunkInterface.h"
 #include "Math/ChunkPos.h"
+
 #include "World/Runnable/ChunkLoadWork.h"
 #include "World/Runnable/ChunkUnloadWork.h"
+#include "World/Runnable/ChunkUpdateWork.h"
+
 #include "Chunk.generated.h"
 
 struct FMeshData;
@@ -18,7 +21,8 @@ enum class EChunkState : uint8
 {
 	None,
 	Load,
-	Unload
+	Unload,
+	Update
 };
 
 UCLASS()
@@ -54,35 +58,10 @@ public:
 	void RenderTerrainMesh();
 	void RenderTerrainMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
 
-	void SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockState);
+	//void SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockState);
 
 	template<EChunkState InChunkState>
-	void AddQueuedWork(FQueuedThreadPool* ThreadPool)
-	{
-		switch (InChunkState)
-		{
-			case EChunkState::Load:
-			{
-				ChunkState = InChunkState;
-				LoadWork = new FChunkLoadWork(WorldManager->Get(), ChunkPos);
-				ThreadPool->AddQueuedWork(LoadWork);
-				break;
-			}
-			case EChunkState::Unload:
-			{
-				if (ChunkState == EChunkState::Load)
-				{
-					ChunkState = InChunkState;
-					if (ThreadPool->RetractQueuedWork(LoadWork))
-					{
-						ThreadEvent->Trigger();
-					}
-					ThreadPool->AddQueuedWork(new FChunkUnloadWork(WorldManager->Get(), ChunkPos));
-				}
-				break;
-			}
-		}
-	}
+	void AddQueuedWork(FQueuedThreadPool* ThreadPool);
 
 private:
 	/** 用于对象池的对象的初始化，相当于Actor的 BeginPlay()函数*/
@@ -120,3 +99,42 @@ public:
 	FORCEINLINE void SetChunkPos(const FChunkPos& NewChunkPos) { ChunkPos = NewChunkPos; }
 	FORCEINLINE FChunkPos GetChunkPos() const { return ChunkPos; }
 };
+
+template<EChunkState InChunkState>
+void AChunk::AddQueuedWork(FQueuedThreadPool* ThreadPool)
+{
+	switch (InChunkState)
+	{
+		case EChunkState::Load:
+		{
+			ChunkState = InChunkState;
+			LoadWork = new FChunkLoadWork(WorldManager->Get(), ChunkPos);
+			ThreadPool->AddQueuedWork(LoadWork);
+			break;
+		}
+		case EChunkState::Unload:
+		{
+			if (ChunkState == EChunkState::Load)
+			{
+				ChunkState = InChunkState;
+				if (ThreadPool->RetractQueuedWork(LoadWork))
+				{
+					ThreadEvent->Trigger();
+				}
+				ThreadPool->AddQueuedWork(new FChunkUnloadWork(WorldManager->Get(), ChunkPos));
+			}
+			break;
+		}
+		case EChunkState::Update:
+		{
+			ChunkState = InChunkState;
+			ThreadPool->AddQueuedWork(new FChunkUpdateWork(WorldManager->Get(), ChunkPos), EQueuedWorkPriority::Highest);
+			break;
+		}
+		default:
+		{
+			check(false);
+			break;
+		}
+	}
+}
