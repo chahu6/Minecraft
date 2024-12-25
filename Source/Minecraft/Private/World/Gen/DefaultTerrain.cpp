@@ -56,6 +56,12 @@ void UDefaultTerrain::Generate_Implementation(AWorldManager* InWorldManager, con
 			}
 		}
 	}
+}
+
+void UDefaultTerrain::GenerateBiome_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos)
+{
+	FBlockPos BlockPos = InChunkPos.ToBlockPos();
+	TSharedPtr<FChunkData> ChunkData = InWorldManager->WorldInfo.ChunkDataMap[InChunkPos];
 
 	EBiomeID BiomeID = ChunkData->GetBiome(BlockPos);
 	UBiome* Biome = UBiome::GetBiome(BiomeID);

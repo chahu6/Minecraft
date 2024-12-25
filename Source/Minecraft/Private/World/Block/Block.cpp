@@ -14,7 +14,7 @@ TMap<int32, const UBlock*> UBlock::REGISTER_ID;
 
 UBlock::UBlock()
 {
-	ItemType = UMinecraftAssetManager::BlockType;
+	PrimaryAssetType = UMinecraftAssetManager::BlockType;
 }
 
 void UBlock::RandomTick()
@@ -113,7 +113,7 @@ FPrimaryAssetId UBlock::GetPrimaryAssetId() const
 {
 	// This is a DataAsset and not a blueprint so we can just use the raw FName
 	// For blueprints you need to handle stripping the _C suffix
-	return FPrimaryAssetId(ItemType, GetFName());
+	return FPrimaryAssetId(PrimaryAssetType, GetFName());
 }
 
 FBlockState UBlock::GetDefaultBlockState() const

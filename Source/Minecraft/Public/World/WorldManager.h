@@ -59,6 +59,8 @@ public:
 	TSharedPtr<FChunkData> GetChunkData(int32 X, int32 Y) const;
 	AChunk* GetChunk(const FChunkPos& InChunkPos) const;
 
+	bool ContainChunkData(const FChunkPos& InChunkPos) const;
+
 	FProgressDelegate ProgressDelegate;
 
 	AEntityItem* SpawnEntity(const FVector& WorldLocation, const FItemStack& ItemStack);
@@ -110,7 +112,7 @@ private:
 
 	void RenderChunk();
 
-	void UnloadChunk();
+	void RemoveChunk();
 
 	void CheckSurroundingChunkNeedUpdate(const FIntVector& BlockOffsetLocation, int32 ChunkVoxelLocationX, int32 ChunkVoxelLocationY);
 	void CheckSurroundingChunkNeedUpdate(const FBlockPos& InOffsetBlockPos, const FChunkPos& InChunkPos);

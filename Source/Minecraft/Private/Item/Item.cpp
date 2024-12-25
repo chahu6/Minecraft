@@ -11,7 +11,7 @@ TMap<UBlock*, UItem*> UItem::BLOCK_TO_ITEM;
 
 UItem::UItem()
 {
-	ItemType = UMinecraftAssetManager::ItemType;
+	PrimaryAssetType = UMinecraftAssetManager::ItemType;
 }
 
 void UItem::RegisterItems()
@@ -68,7 +68,7 @@ FPrimaryAssetId UItem::GetPrimaryAssetId() const
 {
 	// This is a DataAsset and not a blueprint so we can just use the raw FName
 	// For blueprints you need to handle stripping the _C suffix
-	return FPrimaryAssetId(ItemType, GetFName());
+	return FPrimaryAssetId(PrimaryAssetType, GetFName());
 }
 
 FString UItem::GetIdentifierString() const

@@ -10,7 +10,7 @@
 
 UWorldProviderComponent::UWorldProviderComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = false; 
 
 }
 
@@ -23,36 +23,23 @@ void UWorldProviderComponent::BeginPlay()
 
 void UWorldProviderComponent::UpdateWorld()
 {
-	HandleLoadChunks();
-}
-
-AChunk* UWorldProviderComponent::GetChunk(const FChunkPos& InChunkPos) const
-{
-	if (Chunks.Contains(InChunkPos))
-	{
-		return Chunks[InChunkPos];
-	}
-	return nullptr;
-}
-
-void UWorldProviderComponent::RemoveChunk(const FChunkPos& InChunkPos)
-{
-	if (Chunks.Contains(InChunkPos))
-	{
-		Chunks[InChunkPos]->SetInUse(false);
-		Chunks.Remove(InChunkPos);
-	}
-}
-
-void UWorldProviderComponent::HandleLoadChunks()
-{
 	TArray<FChunkPos> GenerateChunksPos;
 
 	TSet<FChunkPos> LastChunksPos;
 	Chunks.GetKeys(LastChunksPos);
 
-	int32 CurrentRadius = 0;
+	HandleChunks(GenerateChunksPos, LastChunksPos);
+
+	HandleChunkDatas(GenerateChunksPos);
+
+	WorldManager->UnloadChunks(LastChunksPos);
+	WorldManager->LoadChunks(GenerateChunksPos);
+}
+
+void UWorldProviderComponent::HandleChunks(TArray<FChunkPos>& GenerateChunksPos, TSet<FChunkPos>& LastChunksPos)
+{
 	const FChunkPos CenterChunkPos = WorldManager->GetCenterChunkPos();
+	int32 CurrentRadius = 0;
 
 	if (LastChunksPos.Contains(CenterChunkPos))
 	{
@@ -184,40 +171,63 @@ void UWorldProviderComponent::HandleLoadChunks()
 
 		CurrentRadius++;
 	}
+}
 
-	//for (int32 X = -LoadChunkDistance - 1; X <= LoadChunkDistance + 1; ++X)
-	//{
-	//	for (int32 Y = -LoadChunkDistance - 1; Y <= LoadChunkDistance + 1; ++Y)
-	//	{
-	//		const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(X, Y);
-	//		if (!Chunks.Contains(ChunkPos))
-	//		{
-	//			WorldManager->GetTerrain()->Generate(WorldManager.Get(), ChunkPos);
-	//		}
-	//	}
-	//}
+void UWorldProviderComponent::HandleChunkDatas(TArray<FChunkPos>& GenerateChunksPos)
+{
+	const FChunkPos CenterChunkPos = WorldManager->GetCenterChunkPos();
 
-	if (GenerateChunksPos.Num() > 0)
+	TArray<FChunkPos> LoadChunkDatasPos;
+
+	TSet<FChunkPos> LastChunkDatasPos;
+	WorldManager->WorldInfo.ChunkDataMap.GetKeys(LastChunkDatasPos);
+
+	// 生成基础地形，多生成一层范围
+	for (int32 X = -LoadChunkDistance - 1; X <= LoadChunkDistance + 1; ++X)
 	{
-		ParallelFor(GenerateChunksPos.Num(), [this, &GenerateChunksPos](int32 Index)
+		for (int32 Y = -LoadChunkDistance - 1; Y <= LoadChunkDistance + 1; ++Y)
 		{
-			WorldManager->GetTerrain()->Generate(WorldManager.Get(), GenerateChunksPos[Index]);
-		});
+			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(X, Y);
+			if (!WorldManager->ContainChunkData(ChunkPos))
+			{
+				LoadChunkDatasPos.Add(ChunkPos);
+			}
+			if (LastChunkDatasPos.Contains(ChunkPos))
+			{
+				LastChunkDatasPos.Remove(ChunkPos);
+			}
+		}
 	}
 
-	WorldManager->UnloadChunks(LastChunksPos);
-	WorldManager->LoadChunks(GenerateChunksPos);
+	for (const FChunkPos& ChunkPos : LastChunkDatasPos)
+	{
+		WorldManager->WorldInfo.Remove(ChunkPos);
+	}
+
+	if (LoadChunkDatasPos.Num() > 0)
+	{
+		ParallelFor(LoadChunkDatasPos.Num(), [this, &LoadChunkDatasPos](int32 Index)
+			{
+				TSharedPtr<FChunkData> ChunkData = MakeShared<FChunkData>();
+				WorldManager->WorldInfo.Add(LoadChunkDatasPos[Index], ChunkData);
+				WorldManager->GetTerrain()->Generate(WorldManager.Get(), LoadChunkDatasPos[Index]);
+			});
+	}
+
+	// 装饰雕刻
+	for (const FChunkPos& LoadChunkPos : GenerateChunksPos)
+	{
+		WorldManager->GetTerrain()->GenerateBiome(WorldManager.Get(), LoadChunkPos);
+	}
 }
 
 bool UWorldProviderComponent::SpawnChunk(const FChunkPos& ChunkPos)
 {
 	if (AChunk* Chunk = WorldManager->SpawnChunk(ChunkPos))
 	{
-		TSharedPtr<FChunkData> ChunkData = MakeShared<FChunkData>();
-		Chunk->SetChunkData(ChunkData.ToSharedRef());
+		//Chunk->SetChunkData(ChunkData.ToSharedRef());
 
 		Chunks.Add(ChunkPos, Chunk);
-		WorldManager->WorldInfo.Add(ChunkPos, ChunkData);
 
 		Chunk->SetChunkPos(ChunkPos);
 		Chunk->AttachToActor(GetOwner(), FAttachmentTransformRules::KeepWorldTransform);
@@ -225,4 +235,22 @@ bool UWorldProviderComponent::SpawnChunk(const FChunkPos& ChunkPos)
 	}
 
 	return false;
+}
+
+AChunk* UWorldProviderComponent::GetChunk(const FChunkPos& InChunkPos) const
+{
+	if (Chunks.Contains(InChunkPos))
+	{
+		return Chunks[InChunkPos];
+	}
+	return nullptr;
+}
+
+void UWorldProviderComponent::RemoveChunk(const FChunkPos& InChunkPos)
+{
+	if (Chunks.Contains(InChunkPos))
+	{
+		Chunks[InChunkPos]->SetInUse(false);
+		Chunks.Remove(InChunkPos);
+	}
 }

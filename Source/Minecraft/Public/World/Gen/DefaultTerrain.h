@@ -24,6 +24,8 @@ public:
 
 	virtual void Generate_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos) override;
 
+	virtual void GenerateBiome_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos) override;
+
 protected:
 	int32 GetRealHeightAndBiomes(float InX, float InY, FGameplayTag& OutBiomeTag, TTuple<float, float, float, float, float>& InNoises);
 

@@ -91,7 +91,7 @@ protected:
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
-	FPrimaryAssetType ItemType;
+	FPrimaryAssetType PrimaryAssetType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	int32 BlockID;

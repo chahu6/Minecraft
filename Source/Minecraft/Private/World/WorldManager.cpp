@@ -44,7 +44,7 @@ void AWorldManager::BeginPlay()
 	ChunkTickThread = new FChunkTickRunner(TEXT("ChunkTickThread"), this);
 
 	GetWorldTimerManager().SetTimer(RenderQueueHandle, this, &AWorldManager::RenderChunk, RenderRate, true);
-	GetWorldTimerManager().SetTimer(UnloadHandle, this, &AWorldManager::UnloadChunk, UnloadRate, true);
+	GetWorldTimerManager().SetTimer(UnloadHandle, this, &AWorldManager::RemoveChunk, UnloadRate, true);
 	GetWorldTimerManager().SetTimer(UpdateHandle, this, &AWorldManager::UpdateChunk, UpdateRate, true);
 
 	InitialWorldChunkLoad();
@@ -384,6 +384,11 @@ AChunk* AWorldManager::GetChunk(const FChunkPos& InChunkPos) const
 	return WorldProvider->GetChunk(InChunkPos);
 }
 
+bool AWorldManager::ContainChunkData(const FChunkPos& InChunkPos) const
+{
+	return WorldInfo.ChunkDataMap.Contains(InChunkPos);
+}
+
 void AWorldManager::RenderChunk()
 {
 	if (!LoadChunkQueue.IsEmpty())
@@ -402,7 +407,7 @@ void AWorldManager::RenderChunk()
 	}
 }
 
-void AWorldManager::UnloadChunk()
+void AWorldManager::RemoveChunk()
 {
 	if (!UnloadChunkQueue.IsEmpty())
 	{
@@ -420,7 +425,7 @@ void AWorldManager::UnloadChunk()
 void AWorldManager::RemoveChunk(const FChunkPos& InChunkPos)
 {
 	WorldProvider->RemoveChunk(InChunkPos);
-	WorldInfo.Remove(InChunkPos);
+	//WorldInfo.Remove(InChunkPos);
 }
 
 void AWorldManager::AddChunkToUpdate(const FIntPoint& ChunkVoxelLocation, bool bTop)

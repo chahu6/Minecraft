@@ -25,7 +25,8 @@ public:
 	void RemoveChunk(const FChunkPos& InChunkPos);
 
 private:
-	void HandleLoadChunks();
+	void HandleChunks(TArray<FChunkPos>& GenerateChunksPos, TSet<FChunkPos>& LastChunksPos);
+	void HandleChunkDatas(TArray<FChunkPos>& GenerateChunksPos);
 
 	bool SpawnChunk(const FChunkPos& ChunkPos);
 

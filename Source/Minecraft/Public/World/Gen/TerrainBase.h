@@ -24,6 +24,10 @@ public:
 	void Generate(AWorldManager* InWorldManager, const FChunkPos& InChunkPos);
 	virtual void Generate_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos) {};
 
+	UFUNCTION(BlueprintNativeEvent, Category = "Terrain Generator")
+	void GenerateBiome(AWorldManager* InWorldManager, const FChunkPos& InChunkPos);
+	virtual void GenerateBiome_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos) {};
+
 	void SetSeed(int32 NewSeed);
 
 protected:
