@@ -1,7 +1,7 @@
 #pragma once
 
-//#include "World/Block/Data/BlockID.h"
 #include "World/Data/FaceType.h"
+#include "GameplayTagContainer.h"
 
 class GlobalInfo;
 struct FMeshData;
@@ -9,14 +9,14 @@ struct FChunkPos;
 
 struct FMask
 {
-	int32 BlockID = 0;
+	FGameplayTag BlockID;
 	int8 Normal = 0;
 };
 
 struct FQuadInfo
 {
 	FVector Pos = FVector::ZeroVector;
-	int32 BlockID = 0;
+	FGameplayTag BlockID;
 };
 
 class GreedyMeshGenerator
@@ -27,11 +27,11 @@ public:
 private:
 	static bool CompareMask(const FMask& M1, const FMask& M2);
 
-	static void CreateQuad(const FMask& Mask, const FIntVector& AxisMask, const int32 Width, const int32 Height, const FIntVector& V1, const FIntVector& V2, const FIntVector& V3, const FIntVector& V4, TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
+	static void CreateQuad(const FMask& Mask, const FIntVector& AxisMask, const int32 Width, const int32 Height, const FIntVector& V1, const FIntVector& V2, const FIntVector& V3, const FIntVector& V4, TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDatas);
 
-	static void CreateBlock(const TArray<FQuadInfo>& TranslucentBlocks, TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
+	static void CreateBlock(const TArray<FQuadInfo>& TranslucentBlocks, TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDatas);
 
-	static void CreatePlant(const TArray<FQuadInfo>& PlantBlocks, TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
+	static void CreatePlant(const TArray<FQuadInfo>& PlantBlocks, TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDatas);
 
 	static void BuildFace(EFaceType FaceType, const FVector& InBlockPos, const TSharedRef<FMeshData> MeshData);
 

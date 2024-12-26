@@ -7,6 +7,8 @@
 #include "Items.generated.h"
 
 class UItem;
+struct FGameplayTag;
+
 /**
  * 
  */
@@ -32,7 +34,7 @@ public:
 	static void Initialization();
 
 private:
-	static UItem* GetRegisteredItem(const FName& Name);
+	static UItem* GetRegisteredItem(const FGameplayTag& InItemID);
 
 private:
 	static UItems* Instance;

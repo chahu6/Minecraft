@@ -4,6 +4,7 @@
 #include "World/Data/BlockState.h"
 #include "Chunk/MeshData.h"
 #include "World/Biome/BiomeID.h"
+#include "GameplayTagContainer.h"
 
 struct FBlockPos;
 
@@ -14,16 +15,17 @@ private:
 
 	TArray<FBlockState> BlockStateMap;
 
-	TArray<EBiomeID> Biomes;
+	//TArray<EBiomeID> Biomes;
+	TArray<FGameplayTag> Biomes;
 
 	TArray<TTuple<float, float, float, float, float>> Noises;
 
 public:
 	// 所有可见Chunk的MeshData
-	TMap<int32, TSharedPtr<FMeshData>> MeshDataCache;
+	TMap<FGameplayTag, TSharedPtr<FMeshData>> MeshDataCache;
 
 	// 所有植物Mesh
-	TMap<int32, TSharedPtr<FMeshData>> PlantMeshDataCache;
+	//TMap<int32, TSharedPtr<FMeshData>> PlantMeshDataCache;
 
 public:
 	explicit FChunkData();
@@ -33,10 +35,10 @@ public:
 	bool SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockSate);
 	bool SetBlockState(int32 X, int32 Y, int32 Z, const FBlockState& BlockSate);
 
-	bool SetBiome(const FBlockPos& Pos, EBiomeID BiomeID);
-	bool SetBiome(int32 X, int32 Y, EBiomeID BiomeID);
-	EBiomeID GetBiome(const FBlockPos& Pos);
-	EBiomeID GetBiome(int32 X, int32 Y);
+	bool SetBiome(const FBlockPos& Pos, FGameplayTag BiomeID);
+	bool SetBiome(int32 X, int32 Y, FGameplayTag BiomeID);
+	FGameplayTag GetBiome(const FBlockPos& Pos);
+	FGameplayTag GetBiome(int32 X, int32 Y);
 
 	void SetHeight(int32 X, int32 Y, int32 Height);
 	void SetHeight(int32 Index, int32 Height);

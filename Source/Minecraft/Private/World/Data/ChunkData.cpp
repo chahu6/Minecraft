@@ -3,12 +3,13 @@
 #include "World/Block/Block.h"
 #include "World/WorldGenerator.h"
 #include "Math/BlockPos.h"
+#include "MinecraftGameplayTags.h"
 
 FChunkData::FChunkData()
 {
 	BlockStateMap.Init({}, WorldGenerator::CHUNK_VOLUME);
 	HeightMap.Init(0, WorldGenerator::CHUNK_AREA);
-	Biomes.Init(EBiomeID::Ocean, WorldGenerator::CHUNK_AREA);
+	Biomes.Init(FMinecraftGameplayTags::Get().Biome_Ocean, WorldGenerator::CHUNK_AREA);
 	Noises.Init({}, WorldGenerator::CHUNK_AREA);
 }
 
@@ -39,12 +40,12 @@ bool FChunkData::SetBlockState(int32 X, int32 Y, int32 Z, const FBlockState& Blo
 	return false;
 }
 
-bool FChunkData::SetBiome(const FBlockPos& Pos, EBiomeID BiomeID)
+bool FChunkData::SetBiome(const FBlockPos& Pos, FGameplayTag BiomeID)
 {
 	return SetBiome(Pos.X, Pos.Y, BiomeID);
 }
 
-bool FChunkData::SetBiome(int32 X, int32 Y, EBiomeID BiomeID)
+bool FChunkData::SetBiome(int32 X, int32 Y, FGameplayTag BiomeID)
 {
 	const int32 Index = FChunkHelper::GetBlockIndex(X & 15, Y & 15);
 	if (Biomes.IsValidIndex(Index))
@@ -54,12 +55,12 @@ bool FChunkData::SetBiome(int32 X, int32 Y, EBiomeID BiomeID)
 	return false;
 }
 
-EBiomeID FChunkData::GetBiome(const FBlockPos& Pos)
+FGameplayTag FChunkData::GetBiome(const FBlockPos& Pos)
 {
 	return GetBiome(Pos.X, Pos.Y);
 }
 
-EBiomeID FChunkData::GetBiome(int32 X, int32 Y)
+FGameplayTag FChunkData::GetBiome(int32 X, int32 Y)
 {
 	const int32 Index = FChunkHelper::GetBlockIndex(X & 15, Y & 15);
 	if (Biomes.IsValidIndex(Index))
@@ -67,7 +68,7 @@ EBiomeID FChunkData::GetBiome(int32 X, int32 Y)
 		return Biomes[Index];
 	}
 	check(false);
-	return EBiomeID::Ocean;
+	return FMinecraftGameplayTags::Get().Biome_Ocean;
 }
 
 void FChunkData::SetHeight(int32 X, int32 Y, int32 Height)

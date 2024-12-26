@@ -92,7 +92,7 @@ void AChunk::RenderTerrainMesh()
 	BlockMeshComponent->Render(WorldManager->WorldInfo.ChunkDataMap[ChunkPos]->MeshDataCache);
 }
 
-void AChunk::RenderTerrainMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
+void AChunk::RenderTerrainMesh(const TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDatas)
 {
 	BlockMeshComponent->Render(MeshDatas);
 }

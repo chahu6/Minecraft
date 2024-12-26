@@ -26,12 +26,12 @@ class MINECRAFT_API UBlock : public UPrimaryDataAsset
 public:
 	UBlock();
 
-	static TMap<FName, const UBlock*> REGISTER_NAME;
-	static TMap<int32, const UBlock*> REGISTER_ID;
+	static TMap<FGameplayTag, const UBlock*> REGISTER_NAME;
+	//static TMap<int32, const UBlock*> REGISTER_ID;
 
 	static void RegisterBlocks();
 
-	static const UBlock* GetBlockById(int32 Id);
+	static const UBlock* GetBlockByID(const FGameplayTag& InBlockID);
 
 	virtual void RandomTick();
 
@@ -93,11 +93,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
 	FPrimaryAssetType PrimaryAssetType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
-	int32 BlockID;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
+	//int32 BlockID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
-	FGameplayTag Tag;
+	FGameplayTag BlockID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	bool bIsActive;

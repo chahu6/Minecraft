@@ -97,10 +97,9 @@ void AWorldManager::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(2, 5.f, FColor::Red, FString::Printf(TEXT("ChunkPos: %s"), *ChunkPos.ToString()));
 	GEngine->AddOnScreenDebugMessage(3, 5.f, FColor::Red, FString::Printf(TEXT("BlockPos: %s"), *BlockPos.ToString()));
 	const int32 TerrainHeight = GetHeight(BlockPos.X, BlockPos.Y);
-	EBiomeID BiomeID = GetBiome(BlockPos);
-	const UEnum* EnumObject = FindObject<UEnum>(ANY_PACKAGE, TEXT("EBiomeID"));
+	FGameplayTag BiomeID = GetBiome(BlockPos);
 	GEngine->AddOnScreenDebugMessage(4, 5.f, FColor::Red, FString::Printf(TEXT("TerrainHeight: %d"), TerrainHeight));
-	GEngine->AddOnScreenDebugMessage(5, 5.f, FColor::Red, FString::Printf(TEXT("Biome: %s"), *EnumObject->GetMetaData(TEXT("DisplayName"), (int32)BiomeID)));
+	GEngine->AddOnScreenDebugMessage(5, 5.f, FColor::Red, FString::Printf(TEXT("Biome: %s"), *BiomeID.ToString()));
 
 	TTuple<float, float, float, float, float> Noises;
 	GetNoises(BlockPos, Noises);
@@ -276,14 +275,15 @@ int32 AWorldManager::GetHeight(int32 X, int32 Y)
 	return 0;
 }
 
-EBiomeID AWorldManager::GetBiome(const FBlockPos& Pos)
+FGameplayTag AWorldManager::GetBiome(const FBlockPos& Pos)
 {
 	TSharedPtr<FChunkData> ChunkData = GetChunkData(Pos);
 	if (ChunkData.IsValid())
 	{
 		return ChunkData->GetBiome(Pos);
 	}
-	return EBiomeID::Ocean;
+	check(false);
+	return FGameplayTag();
 }
 
 void AWorldManager::GetNoises(const FBlockPos& InBlockPos, TTuple<float, float, float, float, float>& OutNoises)

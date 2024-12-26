@@ -9,8 +9,8 @@
 #include "World/WorldManager.h"
 #include "Item/ItemStack.h"
 
-TMap<FName, const UBlock*> UBlock::REGISTER_NAME;
-TMap<int32, const UBlock*> UBlock::REGISTER_ID;
+TMap<FGameplayTag, const UBlock*> UBlock::REGISTER_NAME;
+//TMap<int32, const UBlock*> UBlock::REGISTER_ID;
 
 UBlock::UBlock()
 {
@@ -22,11 +22,11 @@ void UBlock::RandomTick()
 	this->UpdateTick();
 }
 
-const UBlock* UBlock::GetBlockById(int32 Id)
+const UBlock* UBlock::GetBlockByID(const FGameplayTag& InBlockID)
 {
-	if (REGISTER_ID.Contains(Id))
+	if (REGISTER_NAME.Contains(InBlockID))
 	{
-		return REGISTER_ID[Id];
+		return REGISTER_NAME[InBlockID];
 	}
 	check(false);
 	return nullptr;
@@ -119,7 +119,6 @@ FPrimaryAssetId UBlock::GetPrimaryAssetId() const
 FBlockState UBlock::GetDefaultBlockState() const
 {
 	FBlockState DefaultBlockState;
-	DefaultBlockState.BlockID = BlockID;
 	DefaultBlockState.SetBlock(this);
 	return DefaultBlockState;
 }
@@ -174,10 +173,10 @@ void UBlock::RegisterBlocks()
 
 void UBlock::RegisterBlock(UBlock* Block)
 {
-	//if (!Registry.Contains(Name))
+	//if (!REGISTER_NAME.Contains(Block->BlockID))
 	{
-		REGISTER_NAME.Add(Block->Tag.GetTagName(), Block);
+		REGISTER_NAME.Add(Block->BlockID, Block);
 	}
 
-	REGISTER_ID.Add(Block->BlockID, Block);
+	//REGISTER_ID.Add(Block->BlockID, Block);
 }

@@ -47,20 +47,15 @@ void UBlocks::Initialization()
 	REGISTER_BLOCKS(Leaves);
 }
 
-const UBlock* UBlocks::GetRegisteredBlock(const FName& Name)
+const UBlock* UBlocks::GetRegisteredBlock(const FGameplayTag& InBlockID)
 {
-	if (UBlock::REGISTER_NAME.Contains(Name))
+	if (UBlock::REGISTER_NAME.Contains(InBlockID))
 	{
-		return UBlock::REGISTER_NAME[Name];
+		return UBlock::REGISTER_NAME[InBlockID];
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT(" Invalid Block Requested: %s"), *Name.ToString());
+		UE_LOG(LogTemp, Error, TEXT(" Invalid Block Requested: %s"), *InBlockID.ToString());
 	}
 	return nullptr;
-}
-
-const UBlock* UBlocks::GetRegisteredBlock(const FGameplayTag& Tag)
-{
-	return GetRegisteredBlock(Tag.GetTagName());
 }

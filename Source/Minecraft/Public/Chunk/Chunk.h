@@ -15,6 +15,7 @@ struct FMeshData;
 struct FChunkData;
 class AWorldManager;
 struct FBlockState;
+struct FGameplayTag;
 
 UENUM()
 enum class EChunkState : uint8
@@ -56,7 +57,7 @@ public:
 	*/
 
 	void RenderTerrainMesh();
-	void RenderTerrainMesh(const TMap<int32, TSharedPtr<FMeshData>>& MeshDatas);
+	void RenderTerrainMesh(const TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDatas);
 
 	//void SetBlockState(const FIntVector& BlockOffsetLocation, const FBlockState& BlockState);
 

@@ -41,9 +41,7 @@ public:
 	static void Initialization();
 
 private:
-	static const UBlock* GetRegisteredBlock(const FName& Name);
-
-	static const UBlock* GetRegisteredBlock(const FGameplayTag& Tag);
+	static const UBlock* GetRegisteredBlock(const FGameplayTag& InBlockID);
 
 private:
 	static UBlocks* SingletonManager;

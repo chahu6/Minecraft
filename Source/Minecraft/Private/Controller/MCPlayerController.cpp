@@ -32,6 +32,11 @@ void AMCPlayerController::SetupInputComponent()
 	InputComponent->BindAction("ShowDebugInfo", IE_Pressed, this, &AMCPlayerController::ShowDebugInfo);
 }
 
+bool AMCPlayerController::InputTouch(uint32 Handle, ETouchType::Type Type, const FVector2D& TouchLocation, float Force, FDateTime DeviceTimestamp, uint32 TouchpadIndex)
+{
+	return Super::InputTouch(Handle, Type, TouchLocation, Force, DeviceTimestamp, TouchpadIndex);
+}
+
 void AMCPlayerController::InitMainUI_Implementation()
 {
 	MinecraftHUD = MinecraftHUD == nullptr ? GetHUD<AMinecraftHUD>() : MinecraftHUD;

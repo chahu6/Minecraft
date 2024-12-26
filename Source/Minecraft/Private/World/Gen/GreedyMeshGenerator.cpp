@@ -6,10 +6,11 @@
 #include "World/Data/ChunkData.h"
 #include "Math/ChunkPos.h"
 #include "Math/BlockPos.h"
+#include "MinecraftGameplayTags.h"
 
 void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChunkPos& InChunkPos)
 {
-	TMap<int32, TSharedPtr<FMeshData>>& MeshDataCache = WorldInfo.ChunkDataMap[InChunkPos]->MeshDataCache;
+	TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDataCache = WorldInfo.ChunkDataMap[InChunkPos]->MeshDataCache;
 	MeshDataCache.Empty();
 	const FBlockPos ChunkBlockPos = InChunkPos.ToBlockPos();
 
@@ -95,8 +96,8 @@ void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChu
 					const FBlockState CurrentBlockState = WorldInfo.GetBlockState(ChunkItr + FIntVector(ChunkBlockPos.X, ChunkBlockPos.Y, 0));
 					const FBlockState CompareBlockState = WorldInfo.GetBlockState((ChunkItr + AxisMask) + FIntVector(ChunkBlockPos.X, ChunkBlockPos.Y, 0));
 
-					const int32 CurrentBlockID = CurrentBlockState.BlockID;
-					const int32 CompareBlockID = CompareBlockState.BlockID;
+					const FGameplayTag CurrentBlockID = CurrentBlockState.GetBlock()->BlockID;
+					const FGameplayTag CompareBlockID = CompareBlockState.GetBlock()->BlockID;
 					const UBlock* CurrentBlock = CurrentBlockState.GetBlock();
 					const UBlock* CompareBlock = CompareBlockState.GetBlock();
 
@@ -104,13 +105,13 @@ void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChu
 					const bool bCompareBlockOpaque = !CompareBlockState.IsAir() && CompareBlock->IsFullBlock() && !CompareBlock->bTranslucent;
 					if (bCurrentBlockOpaque == bCompareBlockOpaque)
 					{
-						Mask[N++] = FMask{ 0, 0 };
+						Mask[N++] = FMask{ AIR, 0 };
 					}
 					else if (bCurrentBlockOpaque)
 					{
 						if (ChunkItr[Axis] == -1)
 						{
-							Mask[N++] = FMask{ 0, 0 };
+							Mask[N++] = FMask{ AIR, 0 };
 						}
 						else
 						{
@@ -121,7 +122,7 @@ void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChu
 					{
 						if (ChunkItr[Axis] == MainAxisLimit - 1)
 						{
-							Mask[N++] = FMask{ 0, 0 };
+							Mask[N++] = FMask{ AIR, 0 };
 						}
 						else
 						{
@@ -186,7 +187,7 @@ void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChu
 						{
 							for (int32 k = 0; k < Width; ++k)
 							{
-								Mask[N + k + l * Axis1Limit] = FMask{ 0, 0 };
+								Mask[N + k + l * Axis1Limit] = FMask{ AIR, 0 };
 							}
 						}
 
@@ -215,9 +216,9 @@ bool GreedyMeshGenerator::CompareMask(const FMask& M1, const FMask& M2)
 	return M1.BlockID == M2.BlockID && M1.Normal == M2.Normal;
 }
 
-void GreedyMeshGenerator::CreateQuad(const FMask& Mask, const FIntVector& AxisMask, const int32 Width, const int32 Height, const FIntVector& V1, const FIntVector& V2, const FIntVector& V3, const FIntVector& V4, TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
+void GreedyMeshGenerator::CreateQuad(const FMask& Mask, const FIntVector& AxisMask, const int32 Width, const int32 Height, const FIntVector& V1, const FIntVector& V2, const FIntVector& V3, const FIntVector& V4, TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDatas)
 {
-	if (Mask.BlockID == 0) return;
+	if (Mask.BlockID == AIR) return;
 
 	const FVector Normal = FVector(AxisMask * Mask.Normal);
 	float Direction = 0.f;
@@ -297,7 +298,7 @@ void GreedyMeshGenerator::CreateQuad(const FMask& Mask, const FIntVector& AxisMa
 	}
 }
 
-void GreedyMeshGenerator::CreateBlock(const TArray<FQuadInfo>& TranslucentBlocks, TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
+void GreedyMeshGenerator::CreateBlock(const TArray<FQuadInfo>& TranslucentBlocks, TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDatas)
 {
 	for (const FQuadInfo& BlockInfo : TranslucentBlocks)
 	{
@@ -320,7 +321,7 @@ void GreedyMeshGenerator::CreateBlock(const TArray<FQuadInfo>& TranslucentBlocks
 	}
 }
 
-void GreedyMeshGenerator::CreatePlant(const TArray<FQuadInfo>& PlantBlocks, TMap<int32, TSharedPtr<FMeshData>>& MeshDatas)
+void GreedyMeshGenerator::CreatePlant(const TArray<FQuadInfo>& PlantBlocks, TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDatas)
 {
 	for (const FQuadInfo& PlantInfo : PlantBlocks)
 	{

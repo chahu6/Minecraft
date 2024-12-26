@@ -31,7 +31,7 @@ void UBackpackComponent::BeginPlay()
 
 	FItemStack ChestItemStack;
 	ChestItemStack.SetCount(1);
-	ChestItemStack.SetItem(UItem::GetItemFromName(FMinecraftGameplayTags::Get().Item_Block_Chest));
+	ChestItemStack.SetItem(UItem::GetItemFromID(FMinecraftGameplayTags::Get().Item_Block_Chest));
 	Items[2] = ChestItemStack;
 }
 

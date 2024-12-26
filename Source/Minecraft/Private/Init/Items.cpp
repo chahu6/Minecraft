@@ -21,18 +21,18 @@ void UItems::Initialization()
 
 	const FMinecraftGameplayTags& GameplayTags = FMinecraftGameplayTags::Get();
 
-	Air = GetRegisteredItem(GameplayTags.Air.GetTagName());
+	Air = GetRegisteredItem(GameplayTags.Air);
 }
 
-UItem* UItems::GetRegisteredItem(const FName& Name)
+UItem* UItems::GetRegisteredItem(const FGameplayTag& InItemID)
 {
-	if (UItem::REGISTER.Contains(Name))
+	if (UItem::REGISTER.Contains(InItemID))
 	{
-		return UItem::REGISTER[Name];
+		return UItem::REGISTER[InItemID];
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT(" Invalid Item Requested: %s"), *Name.ToString());
+		UE_LOG(LogTemp, Error, TEXT(" Invalid Item Requested: %s"), *InItemID.ToString());
 	}
 	return nullptr;
 }

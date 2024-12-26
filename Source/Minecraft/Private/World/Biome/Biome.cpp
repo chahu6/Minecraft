@@ -8,8 +8,7 @@
 #include "World/Gen/WorldGenTrees.h"
 #include "World/Gen/WorldGenBigTree.h"
 
-TMap<EBiomeID, UBiome*> UBiome::REGISTER_ID;
-TMap<FName, UBiome*> UBiome::REGISTER_NAME;
+TMap<FGameplayTag, UBiome*> UBiome::REGISTER_NAME;
 
 UBiome::UBiome()
 {
@@ -34,25 +33,14 @@ void UBiome::RegisterBiomes()
 
 void UBiome::RegisterBiome(UBiome* Biome)
 {
-	REGISTER_ID.Add(Biome->BiomeID, Biome);
-	REGISTER_NAME.Add(Biome->Tag.GetTagName(), Biome);
+	REGISTER_NAME.Add(Biome->BiomeID, Biome);
 }
 
-UBiome* UBiome::GetBiome(const FGameplayTag& BiomeTag)
+UBiome* UBiome::GetBiome(const FGameplayTag& InBiomeID)
 {
-	if (REGISTER_NAME.Contains(BiomeTag.GetTagName()))
+	if (REGISTER_NAME.Contains(InBiomeID))
 	{
-		return REGISTER_NAME[BiomeTag.GetTagName()];
-	}
-	check(false);
-	return nullptr;
-}
-
-UBiome* UBiome::GetBiome(EBiomeID BiomeID)
-{
-	if (REGISTER_ID.Contains(BiomeID))
-	{
-		return REGISTER_ID[BiomeID];
+		return REGISTER_NAME[InBiomeID];
 	}
 	check(false);
 	return nullptr;

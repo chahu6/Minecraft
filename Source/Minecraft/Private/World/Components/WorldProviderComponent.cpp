@@ -207,11 +207,11 @@ void UWorldProviderComponent::HandleChunkDatas(TArray<FChunkPos>& GenerateChunks
 	if (LoadChunkDatasPos.Num() > 0)
 	{
 		ParallelFor(LoadChunkDatasPos.Num(), [this, &LoadChunkDatasPos](int32 Index)
-			{
-				TSharedPtr<FChunkData> ChunkData = MakeShared<FChunkData>();
-				WorldManager->WorldInfo.Add(LoadChunkDatasPos[Index], ChunkData);
-				WorldManager->GetTerrain()->Generate(WorldManager.Get(), LoadChunkDatasPos[Index]);
-			});
+		{
+			TSharedPtr<FChunkData> ChunkData = MakeShared<FChunkData>();
+			WorldManager->WorldInfo.Add(LoadChunkDatasPos[Index], ChunkData);
+			WorldManager->GetTerrain()->Generate(WorldManager.Get(), LoadChunkDatasPos[Index]);
+		});
 	}
 
 	// в╟йн╣Я©л

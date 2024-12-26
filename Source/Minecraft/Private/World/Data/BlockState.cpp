@@ -4,24 +4,22 @@
 #include "World/Data/BlockState.h"
 #include "World/Block/Block.h"
 #include "Init/Blocks.h"
+#include "MinecraftGameplayTags.h"
 
 FBlockState::FBlockState()
-	:BlockID(0),
-	FaceType(EFaceType::Forward),
+	:FaceType(EFaceType::Forward),
 	Position{ 0, 0, 0 }
 {
 	SetBlock(UBlocks::Air);
 }
 
 FBlockState::FBlockState(const UBlock * InBlock)
-	:BlockID(InBlock->BlockID)
 {
 	SetBlock(InBlock);
 }
 
 FBlockState::FBlockState(const UBlock* InBlock, const FIntVector& InPosition)
-	:BlockID(InBlock->BlockID),
-	Position(InPosition)
+	:Position(InPosition)
 {
 	SetBlock(InBlock);
 }
@@ -38,7 +36,7 @@ void FBlockState::SetBlock(const UBlock* InBlock)
 
 bool FBlockState::IsAir() const
 {
-	return BlockID == 0;
+	return Block->BlockID == AIR;
 }
 
 float FBlockState::GetPlayerRelativeBlockHardness()

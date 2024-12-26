@@ -19,7 +19,7 @@ void UBlockMeshComponent::BeginPlay()
 	Chunk = Chunk == nullptr ? Cast<AChunk>(GetOwner()) : Chunk;
 }
 
-void UBlockMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMeshDatas)
+void UBlockMeshComponent::Render(const TMap<FGameplayTag, TSharedPtr<FMeshData>>& NewMeshDatas)
 {
 	int32 Key = 0;
 	ClearAllMeshSections();
@@ -27,7 +27,7 @@ void UBlockMeshComponent::Render(const TMap<int32, TSharedPtr<FMeshData>>& NewMe
 	{
 		if (MeshData->Value->Vertices.IsEmpty()) continue;
 
-		if (const UBlock* Block = UBlock::GetBlockById(MeshData->Key))
+		if (const UBlock* Block = UBlock::GetBlockByID(MeshData->Key))
 		{
 			if (!Block->IsFullBlock() && Block->bTranslucent)
 			{

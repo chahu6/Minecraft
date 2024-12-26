@@ -56,3 +56,5 @@ private:
 
 	static FMinecraftGameplayTags GameplayTags;
 };
+
+#define AIR FMinecraftGameplayTags::Get().Air

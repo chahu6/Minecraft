@@ -63,7 +63,7 @@ void UDefaultTerrain::GenerateBiome_Implementation(AWorldManager* InWorldManager
 	FBlockPos BlockPos = InChunkPos.ToBlockPos();
 	TSharedPtr<FChunkData> ChunkData = InWorldManager->WorldInfo.ChunkDataMap[InChunkPos];
 
-	EBiomeID BiomeID = ChunkData->GetBiome(BlockPos);
+	FGameplayTag BiomeID = ChunkData->GetBiome(BlockPos);
 	UBiome* Biome = UBiome::GetBiome(BiomeID);
 	Biome->Decorate(InWorldManager, BlockPos);
 }
@@ -171,7 +171,6 @@ int32 UDefaultTerrain::GetRealHeightAndBiomes(float InX, float InY, FGameplayTag
 			}
 		}
 	}
-
 	return Height;
 }
 
@@ -196,12 +195,12 @@ const UBlock* UDefaultTerrain::GetBlock(int32 X, int32 Y, int32 Height, UBiome* 
 	if (Z == Height)
 	{
 		// 生物群落表面方块
-		return Biome->TopBlock;
+		return UBlock::GetBlockByID(Biome->TopBlock);
 	}
 	if (Z >= Height - 1 - Biome->ShallowSurfaceDepth && Z <= Height - 1)
 	{
 		// 生物群落浅表块
-		return Biome->FillerBlock;
+		return UBlock::GetBlockByID(Biome->FillerBlock);
 	}
 
 	// 石头

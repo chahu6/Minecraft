@@ -28,14 +28,12 @@ class MINECRAFT_API UBiome : public UPrimaryDataAsset
 public:
 	UBiome();
 
-	static TMap<EBiomeID, UBiome*> REGISTER_ID;
-	static TMap<FName, UBiome*> REGISTER_NAME;
+	static TMap<FGameplayTag, UBiome*> REGISTER_NAME;
 
 	static void RegisterBiomes();
 	static void RegisterBiome(UBiome* Biome);
 
-	static UBiome* GetBiome(const FGameplayTag& BiomeTag);
-	static UBiome* GetBiome(EBiomeID BiomeID);
+	static UBiome* GetBiome(const FGameplayTag& InBiomeID);
 
 	virtual void Decorate(AWorldManager* InWorldManager, const FBlockPos& Pos);
 
@@ -54,19 +52,16 @@ public:
 	FPrimaryAssetType PrimaryAssetType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default")
-	EBiomeID BiomeID;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default")
-	FGameplayTag Tag;
+	FGameplayTag BiomeID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default")
 	int32 ShallowSurfaceDepth = 3;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default")
-	UBlock* TopBlock;
+	FGameplayTag TopBlock;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default")
-	UBlock* FillerBlock;
+	FGameplayTag FillerBlock;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default")
 	UBiomeDecorator* Decorator;

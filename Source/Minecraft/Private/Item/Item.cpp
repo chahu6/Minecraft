@@ -6,7 +6,7 @@
 #include "Item/ItemBlock.h"
 #include "MinecraftGameplayTags.h"
 
-TMap<FName, UItem*> UItem::REGISTER;
+TMap<FGameplayTag, UItem*> UItem::REGISTER;
 TMap<UBlock*, UItem*> UItem::BLOCK_TO_ITEM;
 
 UItem::UItem()
@@ -33,7 +33,7 @@ void UItem::RegisterItems()
 			}
 			else
 			{
-				RegisterItem(Item->Tag.GetTagName(), Item);
+				RegisterItem(Item->ItemID, Item);
 			}
 		}
 	}
@@ -46,22 +46,22 @@ UItem* UItem::GetItemFromBlock(const UBlock* Block)
 		return BLOCK_TO_ITEM[Block];
 	}
 	ensure(false);
-	return REGISTER[FMinecraftGameplayTags::Get().Air.GetTagName()];
+	return REGISTER[FMinecraftGameplayTags::Get().Air];
 }
 
-UItem* UItem::GetItemFromName(const FGameplayTag& TagName)
+UItem* UItem::GetItemFromID(const FString& Name)
 {
-	return GetItemFromName(TagName.GetTagName());
+	return GetItemFromID(FGameplayTag::RequestGameplayTag(FName(Name)));
 }
 
-UItem* UItem::GetItemFromName(const FName& ItemName)
+UItem* UItem::GetItemFromID(const FGameplayTag& InItemID)
 {
 	//check(REGISTER.Contains(ItemName));
-	if (REGISTER.Contains(ItemName))
+	if (REGISTER.Contains(InItemID))
 	{
-		return REGISTER[ItemName];
+		return REGISTER[InItemID];
 	}
-	return REGISTER[FMinecraftGameplayTags::Get().Air.GetTagName()];
+	return REGISTER[FMinecraftGameplayTags::Get().Air];
 }
 
 FPrimaryAssetId UItem::GetPrimaryAssetId() const
@@ -83,11 +83,11 @@ bool UItem::OnItemUse(AEntityPlayer* Player, AWorldManager* WorldManager, const 
 
 void UItem::RegisterItemBlock(UBlock* Block, UItem* Item)
 {
-	RegisterItem(Item->Tag.GetTagName(), Item);
+	RegisterItem(Item->ItemID, Item);
 	BLOCK_TO_ITEM.Add(Block, Item);
 }
 
-void UItem::RegisterItem(const FName& Name, UItem* Item)
+void UItem::RegisterItem(const FGameplayTag& InItemID, UItem* Item)
 {
-	REGISTER.Add(Name, Item);
+	REGISTER.Add(InItemID, Item);
 }

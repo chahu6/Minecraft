@@ -21,16 +21,15 @@ class MINECRAFT_API UItem : public UPrimaryDataAsset
 public:
 	UItem();
 
-	static TMap<FName, UItem*> REGISTER;
+	static TMap<FGameplayTag, UItem*> REGISTER;
 	static TMap<UBlock*, UItem*> BLOCK_TO_ITEM;
 
 	static void RegisterItems();
 
 	static UItem* GetItemFromBlock(const UBlock* Block);
 
-	static UItem* GetItemFromName(const FGameplayTag& TagName);
-
-	static UItem* GetItemFromName(const FName& ItemName);
+	static UItem* GetItemFromID(const FString& Name);
+	static UItem* GetItemFromID(const FGameplayTag& InItemID);
 
 	/** Overridden to use saved type */
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
@@ -44,17 +43,14 @@ public:
 
 private:
 	static void RegisterItemBlock(UBlock* Block, UItem* Item);
-	static void RegisterItem(const FName& Name, UItem* Item);
+	static void RegisterItem(const FGameplayTag& InItemID, UItem* Item);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
 	FPrimaryAssetType PrimaryAssetType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
-	int32 ItemID;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
-	FGameplayTag Tag;
+	FGameplayTag ItemID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
 	bool bIsStack = true;

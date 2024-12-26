@@ -5,6 +5,7 @@ Intermediate/
 # 忽略编辑器自动生成的文件
 Binaries/
 DerivedDataCache/
+Build/
 
 # Visual Studio files and folder
 .vs/

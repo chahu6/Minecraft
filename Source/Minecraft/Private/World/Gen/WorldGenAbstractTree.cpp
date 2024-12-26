@@ -12,5 +12,5 @@ bool UWorldGenAbstractTree::CanGrowInto(const UBlock* InBlock) const
     Tags.Add(FMinecraftGameplayTags::Get().Item_Block_Grass);
     Tags.Add(FMinecraftGameplayTags::Get().Item_Block_Dirt);
     Tags.Add(FMinecraftGameplayTags::Get().Item_Block_Log);
-    return InBlock->Tag.MatchesAnyExact(FGameplayTagContainer::CreateFromArray(Tags));
+    return InBlock->BlockID.MatchesAnyExact(FGameplayTagContainer::CreateFromArray(Tags));
 }

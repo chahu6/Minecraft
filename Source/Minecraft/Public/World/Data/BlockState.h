@@ -23,7 +23,9 @@ public:
 	explicit FBlockState(const UBlock* InBlock, const FIntVector& InPosition);
 
 public:
-	int32 BlockID;
+	//int32 BlockID;
+
+	//FGameplayTag BlockID;
 
 	EFaceType FaceType;
 

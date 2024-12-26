@@ -20,6 +20,7 @@ class UChunkTaskPoolComponent;
 class UTerrainBase;
 class UWorldProviderComponent;
 struct FBlockPos;
+struct FGameplayTag;
 
 DECLARE_DELEGATE_OneParam(FProgressDelegate, float);
 
@@ -84,7 +85,7 @@ public:
 	FBlockPos GetHeight(const FBlockPos& Pos);
 	int32 GetHeight(int32 X, int32 Y);
 
-	EBiomeID GetBiome(const FBlockPos& Pos);
+	FGameplayTag GetBiome(const FBlockPos& Pos);
 
 	void GetNoises(const FBlockPos& InBlockPos, TTuple<float, float, float, float, float>& OutNoises);
 
