@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "World/Data/BlockState.h"
 #include "Chunk/MeshData.h"
-#include "World/Biome/BiomeID.h"
 #include "GameplayTagContainer.h"
 
 struct FBlockPos;
@@ -12,12 +11,8 @@ struct MINECRAFT_API FChunkData
 {
 private:
 	TArray<int32> HeightMap;
-
-	TArray<FBlockState> BlockStateMap;
-
-	//TArray<EBiomeID> Biomes;
 	TArray<FGameplayTag> Biomes;
-
+	TArray<FBlockState> BlockStateMap;
 	TArray<TTuple<float, float, float, float, float>> Noises;
 
 public:

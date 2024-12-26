@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "GameplayTagContainer.h"
-#include "World/Biome/BiomeID.h"
 #include "Biome.generated.h"
 
 class UBlock;

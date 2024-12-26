@@ -5,7 +5,6 @@
 #include "World/Data/GenerationMethod.h"
 #include "World/Data/GlobalInfo.h"
 #include "Math/ChunkPos.h"
-#include "World/Biome/BiomeID.h"
 #include "WorldManager.generated.h"
 
 class AChunk;

@@ -45,7 +45,7 @@ void AWorldManager::BeginPlay()
 
 	GetWorldTimerManager().SetTimer(RenderQueueHandle, this, &AWorldManager::RenderChunk, RenderRate, true);
 	GetWorldTimerManager().SetTimer(UnloadHandle, this, &AWorldManager::RemoveChunk, UnloadRate, true);
-	GetWorldTimerManager().SetTimer(UpdateHandle, this, &AWorldManager::UpdateChunk, UpdateRate, true);
+	//GetWorldTimerManager().SetTimer(UpdateHandle, this, &AWorldManager::UpdateChunk, UpdateRate, true);
 
 	InitialWorldChunkLoad();
 }

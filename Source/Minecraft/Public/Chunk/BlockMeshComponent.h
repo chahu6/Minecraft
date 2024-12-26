@@ -17,19 +17,10 @@ class MINECRAFT_API UBlockMeshComponent : public UProceduralMeshComponent
 public:	
 	UBlockMeshComponent(const FObjectInitializer& ObjectInitializer);
 
-protected:
-	virtual void BeginPlay() override;
-
-public:
 	void Render(const TMap<FGameplayTag, TSharedPtr<FMeshData>>& NewMeshDatas);
 
-private:
-	/**
-	* ÆÕÍ¨Íø¸ñ»¯
-	*/
-	//void BuildChunkMesh();
-
-	//bool IsVoid(const FIntVector& BlockWorldVoxelLocation, AWorldManager* WorldManager);
+protected:
+	virtual void BeginPlay() override;
 
 private:
 	UPROPERTY()
