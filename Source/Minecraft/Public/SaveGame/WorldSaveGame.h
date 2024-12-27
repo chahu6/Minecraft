@@ -4,17 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
-#include "ChunkSaveGame.generated.h"
+#include "WorldSaveGame.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MINECRAFT_API UChunkSaveGame : public USaveGame
+class MINECRAFT_API UWorldSaveGame : public USaveGame
 {
 	GENERATED_BODY()
-	
-public:
-	UPROPERTY()
-	TArray<int32> Blocks;
+
 };

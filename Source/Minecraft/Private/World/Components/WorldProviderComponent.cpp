@@ -7,6 +7,7 @@
 #include "Chunk/Chunk.h"
 #include "World/Data/ChunkData.h"
 #include "World/Gen/TerrainBase.h"
+#include "Kismet/GameplayStatics.h"
 
 UWorldProviderComponent::UWorldProviderComponent()
 {
@@ -209,6 +210,10 @@ void UWorldProviderComponent::HandleChunkDatas(TArray<FChunkPos>& GenerateChunks
 		ParallelFor(LoadChunkDatasPos.Num(), [this, &LoadChunkDatasPos](int32 Index)
 		{
 			TSharedPtr<FChunkData> ChunkData = MakeShared<FChunkData>();
+			if (AChunk* Chunk = GetChunk(LoadChunkDatasPos[Index]))
+			{
+				Chunk->SetChunkData(ChunkData.ToSharedRef());
+			}
 			WorldManager->WorldInfo.Add(LoadChunkDatasPos[Index], ChunkData);
 			WorldManager->GetTerrain()->Generate(WorldManager.Get(), LoadChunkDatasPos[Index]);
 		});
@@ -225,8 +230,6 @@ bool UWorldProviderComponent::SpawnChunk(const FChunkPos& ChunkPos)
 {
 	if (AChunk* Chunk = WorldManager->SpawnChunk(ChunkPos))
 	{
-		//Chunk->SetChunkData(ChunkData.ToSharedRef());
-
 		Chunks.Add(ChunkPos, Chunk);
 
 		Chunk->SetChunkPos(ChunkPos);

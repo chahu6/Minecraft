@@ -169,6 +169,8 @@ void UBlock::RegisterBlocks()
 			RegisterBlock(Block);
 		}
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Block REGISTER_NAME Num: %d"), REGISTER_NAME.Num());
 }
 
 void UBlock::RegisterBlock(UBlock* Block)

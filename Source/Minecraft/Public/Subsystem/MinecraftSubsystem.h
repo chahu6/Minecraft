@@ -13,5 +13,9 @@ UCLASS()
 class MINECRAFT_API UMinecraftSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
-	
+public:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+private:
+	void LoadPrimaryAssets() const;
 };

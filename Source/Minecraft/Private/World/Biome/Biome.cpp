@@ -29,6 +29,8 @@ void UBiome::RegisterBiomes()
 			RegisterBiome(Biome);
 		}
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Biome REGISTER_NAME Num: %d"), REGISTER_NAME.Num());
 }
 
 void UBiome::RegisterBiome(UBiome* Biome)

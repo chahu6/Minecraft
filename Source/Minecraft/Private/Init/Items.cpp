@@ -32,7 +32,7 @@ UItem* UItems::GetRegisteredItem(const FGameplayTag& InItemID)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT(" Invalid Item Requested: %s"), *InItemID.ToString());
+		UE_LOG(LogTemp, Error, TEXT("Invalid Item Requested: %s"), *InItemID.ToString());
 	}
 	return nullptr;
 }

@@ -425,7 +425,6 @@ void AWorldManager::RemoveChunk()
 void AWorldManager::RemoveChunk(const FChunkPos& InChunkPos)
 {
 	WorldProvider->RemoveChunk(InChunkPos);
-	//WorldInfo.Remove(InChunkPos);
 }
 
 void AWorldManager::AddChunkToUpdate(const FIntPoint& ChunkVoxelLocation, bool bTop)

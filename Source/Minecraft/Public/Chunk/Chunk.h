@@ -95,6 +95,7 @@ private:
 
 public:
 	FORCEINLINE void SetChunkData(const TSharedRef<FChunkData> NewChunkDaat) { ChunkData = NewChunkDaat; }
+	FORCEINLINE TSharedPtr<FChunkData> GetChunkData() const { return ChunkData; }
 	FORCEINLINE void SetChunkState(EChunkState NewChunkState) { ChunkState = NewChunkState; }
 	FORCEINLINE EChunkState GetChunkState() const { return ChunkState; }
 	FORCEINLINE void SetChunkPos(const FChunkPos& NewChunkPos) { ChunkPos = NewChunkPos; }

@@ -55,7 +55,7 @@ const UBlock* UBlocks::GetRegisteredBlock(const FGameplayTag& InBlockID)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT(" Invalid Block Requested: %s"), *InBlockID.ToString());
+		UE_LOG(LogTemp, Error, TEXT("Invalid Block Requested: %s"), *InBlockID.ToString());
 	}
 	return nullptr;
 }

@@ -37,6 +37,8 @@ void UItem::RegisterItems()
 			}
 		}
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Item REGISTER_NAME Num: %d"), REGISTER.Num());
 }
 
 UItem* UItem::GetItemFromBlock(const UBlock* Block)
