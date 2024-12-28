@@ -16,6 +16,7 @@ struct FChunkData;
 class AWorldManager;
 struct FBlockState;
 struct FGameplayTag;
+class UTerrainBase;
 
 UENUM()
 enum class EChunkState : uint8
@@ -24,6 +25,14 @@ enum class EChunkState : uint8
 	Load,
 	Unload,
 	Update
+};
+
+UENUM()
+enum class EChunkLoadType : uint8
+{
+	NotLoad,
+	WeakLoaded,
+	StrongLoaded
 };
 
 UCLASS()
@@ -64,6 +73,9 @@ public:
 	template<EChunkState InChunkState>
 	void AddQueuedWork(FQueuedThreadPool* ThreadPool);
 
+	void GenerateTerrain(UTerrainBase* InTerrainBase);
+	void GenerateBiome(UTerrainBase* InTerrainBase);
+
 private:
 	/** 用于对象池的对象的初始化，相当于Actor的 BeginPlay()函数*/
 	void OnLoadChunk();
@@ -86,6 +98,7 @@ private:
 	bool bIsDirty = false;
 
 	EChunkState ChunkState = EChunkState::None;
+	EChunkLoadType LoadType = EChunkLoadType::NotLoad;
 
 	TSharedPtr<FChunkData> ChunkData;
 	TWeakObjectPtr<AWorldManager> WorldManager;
@@ -100,6 +113,8 @@ public:
 	FORCEINLINE EChunkState GetChunkState() const { return ChunkState; }
 	FORCEINLINE void SetChunkPos(const FChunkPos& NewChunkPos) { ChunkPos = NewChunkPos; }
 	FORCEINLINE FChunkPos GetChunkPos() const { return ChunkPos; }
+	FORCEINLINE void SetLoadType(EChunkLoadType NewLoadType) { LoadType = NewLoadType; }
+	FORCEINLINE EChunkLoadType GetLoadType() const { return LoadType; }
 };
 
 template<EChunkState InChunkState>
@@ -109,9 +124,12 @@ void AChunk::AddQueuedWork(FQueuedThreadPool* ThreadPool)
 	{
 		case EChunkState::Load:
 		{
-			ChunkState = InChunkState;
-			LoadWork = new FChunkLoadWork(WorldManager->Get(), ChunkPos);
-			ThreadPool->AddQueuedWork(LoadWork);
+			if (ChunkState == EChunkState::None)
+			{
+				ChunkState = InChunkState;
+				LoadWork = new FChunkLoadWork(WorldManager->Get(), ChunkPos);
+				ThreadPool->AddQueuedWork(LoadWork);
+			}
 			break;
 		}
 		case EChunkState::Unload:

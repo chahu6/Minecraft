@@ -20,7 +20,7 @@ void UDefaultTerrain::BeginPlay()
 {
 }
 
-void UDefaultTerrain::Generate_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos)
+void UDefaultTerrain::GenerateTerrain_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos)
 {
 	FBlockPos BlockPos = InChunkPos.ToBlockPos();
 	TSharedPtr<FChunkData> ChunkData = InWorldManager->WorldInfo.ChunkDataMap[InChunkPos];

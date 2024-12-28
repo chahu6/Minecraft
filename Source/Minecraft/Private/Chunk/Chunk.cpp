@@ -3,6 +3,7 @@
 #include "World/WorldManager.h"
 #include "World/Data/BlockState.h"
 #include "World/Data/ChunkData.h"
+#include "World/Gen/TerrainBase.h"
 
 AChunk::AChunk()
 {
@@ -31,6 +32,16 @@ void AChunk::SetInUse(bool InUse)
 	}
 }
 
+void AChunk::GenerateTerrain(UTerrainBase* InTerrainBase)
+{
+	InTerrainBase->GenerateTerrain(WorldManager.Get(), ChunkPos);
+}
+
+void AChunk::GenerateBiome(UTerrainBase* InTerrainBase)
+{
+	InTerrainBase->GenerateBiome(WorldManager.Get(), ChunkPos);
+}
+
 void AChunk::OnLoadChunk()
 {
 	WorldManager = Cast<AWorldManager>(GetOwner());
@@ -41,6 +52,7 @@ void AChunk::OnUnloadChunk()
 	ChunkData = nullptr;
 	ChunkPos = FChunkPos();
 	ChunkState = EChunkState::None;
+	LoadType = EChunkLoadType::NotLoad;
 	WorldManager = nullptr;
 
 	BlockMeshComponent->ClearAllMeshSections();

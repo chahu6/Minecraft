@@ -26,9 +26,8 @@ public:
 
 private:
 	void HandleChunks(TArray<FChunkPos>& GenerateChunksPos, TSet<FChunkPos>& LastChunksPos);
-	void HandleChunkDatas(TArray<FChunkPos>& GenerateChunksPos);
 
-	bool SpawnChunk(const FChunkPos& ChunkPos);
+	AChunk* SpawnChunk(const FChunkPos& ChunkPos);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "World Setting", meta = (ClampMin = "0"))

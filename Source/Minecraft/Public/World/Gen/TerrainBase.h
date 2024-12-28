@@ -21,8 +21,8 @@ public:
 	virtual void BeginPlay() {};
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Terrain Generator")
-	void Generate(AWorldManager* InWorldManager, const FChunkPos& InChunkPos);
-	virtual void Generate_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos) {};
+	void GenerateTerrain(AWorldManager* InWorldManager, const FChunkPos& InChunkPos);
+	virtual void GenerateTerrain_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos) {};
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Terrain Generator")
 	void GenerateBiome(AWorldManager* InWorldManager, const FChunkPos& InChunkPos);

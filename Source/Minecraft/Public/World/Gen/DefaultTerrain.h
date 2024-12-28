@@ -22,8 +22,7 @@ class MINECRAFT_API UDefaultTerrain : public UTerrainBase
 public:
 	virtual void BeginPlay() override;
 
-	virtual void Generate_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos) override;
-
+	virtual void GenerateTerrain_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos) override;
 	virtual void GenerateBiome_Implementation(AWorldManager* InWorldManager, const FChunkPos& InChunkPos) override;
 
 protected:

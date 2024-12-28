@@ -31,8 +31,6 @@ void UWorldProviderComponent::UpdateWorld()
 
 	HandleChunks(GenerateChunksPos, LastChunksPos);
 
-	HandleChunkDatas(GenerateChunksPos);
-
 	WorldManager->UnloadChunks(LastChunksPos);
 	WorldManager->LoadChunks(GenerateChunksPos);
 }
@@ -40,19 +38,55 @@ void UWorldProviderComponent::UpdateWorld()
 void UWorldProviderComponent::HandleChunks(TArray<FChunkPos>& GenerateChunksPos, TSet<FChunkPos>& LastChunksPos)
 {
 	const FChunkPos CenterChunkPos = WorldManager->GetCenterChunkPos();
-	int32 CurrentRadius = 0;
 
-	if (LastChunksPos.Contains(CenterChunkPos))
+	TArray<AChunk*> ChunksList;
+	for (int32 X = -LoadChunkDistance - 1; X <= LoadChunkDistance + 1; ++X)
 	{
-		LastChunksPos.Remove(CenterChunkPos);
+		for (int32 Y = -LoadChunkDistance - 1; Y <= LoadChunkDistance + 1; ++Y)
+		{
+			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(X, Y);
+			if (!Chunks.Contains(ChunkPos))
+			{
+				if (AChunk* Chunk = SpawnChunk(ChunkPos))
+				{
+					Chunks.Add(ChunkPos, Chunk);
+					ChunksList.Add(Chunk);
+					TSharedPtr<FChunkData> ChunkData = MakeShared<FChunkData>();
+					Chunk->SetChunkData(ChunkData.ToSharedRef());
+					WorldManager->WorldInfo.Add(ChunkPos, ChunkData);
+				}
+			}
+		}
 	}
 
-	if (!Chunks.Contains(CenterChunkPos))
+	for (int32 X = -UnLoadChunkDistance; X <= UnLoadChunkDistance; ++X)
 	{
-		if (SpawnChunk(CenterChunkPos))
+		for (int32 Y = -UnLoadChunkDistance; Y <= UnLoadChunkDistance; ++Y)
 		{
-			GenerateChunksPos.Add(CenterChunkPos);
+			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(X, Y);
+			if (LastChunksPos.Contains(ChunkPos))
+			{
+				LastChunksPos.Remove(ChunkPos);
+			}
 		}
+	}
+
+	if (ChunksList.Num() > 0)
+	{
+		ParallelFor(ChunksList.Num(), [this, &ChunksList](int32 Index) {
+			AChunk* Chunk = ChunksList[Index];
+			if (Chunk->GetLoadType() == EChunkLoadType::NotLoad)
+			{
+				Chunk->SetLoadType(EChunkLoadType::WeakLoaded);
+				Chunk->GenerateTerrain(WorldManager->GetTerrain());
+			}
+		});
+	}
+
+	int32 CurrentRadius = 0;
+	if (Chunks.Contains(CenterChunkPos) && Chunks[CenterChunkPos]->GetLoadType() == EChunkLoadType::WeakLoaded)
+	{
+		GenerateChunksPos.Add(CenterChunkPos);
 	}
 	while (CurrentRadius <= LoadChunkDistance)
 	{
@@ -60,16 +94,9 @@ void UWorldProviderComponent::HandleChunks(TArray<FChunkPos>& GenerateChunksPos,
 		for (int32 i = -CurrentRadius; i <= CurrentRadius - 1; ++i)
 		{
 			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(i, CurrentRadius);
-			if (!Chunks.Contains(ChunkPos))
+			if (Chunks.Contains(ChunkPos) && Chunks[ChunkPos]->GetLoadType() == EChunkLoadType::WeakLoaded)
 			{
-				if (SpawnChunk(ChunkPos))
-				{
-					GenerateChunksPos.Add(ChunkPos);
-				}
-			}
-			if (LastChunksPos.Contains(ChunkPos))
-			{
-				LastChunksPos.Remove(ChunkPos);
+				GenerateChunksPos.Add(ChunkPos);
 			}
 		}
 
@@ -77,16 +104,9 @@ void UWorldProviderComponent::HandleChunks(TArray<FChunkPos>& GenerateChunksPos,
 		for (int32 i = -CurrentRadius + 1; i <= CurrentRadius; ++i)
 		{
 			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(CurrentRadius, i);
-			if (!Chunks.Contains(ChunkPos))
+			if (Chunks.Contains(ChunkPos) && Chunks[ChunkPos]->GetLoadType() == EChunkLoadType::WeakLoaded)
 			{
-				if (SpawnChunk(ChunkPos))
-				{
-					GenerateChunksPos.Add(ChunkPos);
-				}
-			}
-			if (LastChunksPos.Contains(ChunkPos))
-			{
-				LastChunksPos.Remove(ChunkPos);
+				GenerateChunksPos.Add(ChunkPos);
 			}
 		}
 
@@ -94,16 +114,9 @@ void UWorldProviderComponent::HandleChunks(TArray<FChunkPos>& GenerateChunksPos,
 		for (int32 i = -CurrentRadius + 1; i <= CurrentRadius; ++i)
 		{
 			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(i, -CurrentRadius);
-			if (!Chunks.Contains(ChunkPos))
+			if (Chunks.Contains(ChunkPos) && Chunks[ChunkPos]->GetLoadType() == EChunkLoadType::WeakLoaded)
 			{
-				if (SpawnChunk(ChunkPos))
-				{
-					GenerateChunksPos.Add(ChunkPos);
-				}
-			}
-			if (LastChunksPos.Contains(ChunkPos))
-			{
-				LastChunksPos.Remove(ChunkPos);
+				GenerateChunksPos.Add(ChunkPos);
 			}
 		}
 
@@ -111,133 +124,35 @@ void UWorldProviderComponent::HandleChunks(TArray<FChunkPos>& GenerateChunksPos,
 		for (int32 i = -CurrentRadius; i <= CurrentRadius - 1; ++i)
 		{
 			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(-CurrentRadius, i);
-			if (!Chunks.Contains(ChunkPos))
+			if (Chunks.Contains(ChunkPos) && Chunks[ChunkPos]->GetLoadType() == EChunkLoadType::WeakLoaded)
 			{
-				if (SpawnChunk(ChunkPos))
-				{
-					GenerateChunksPos.Add(ChunkPos);
-				}
-			}
-			if (LastChunksPos.Contains(ChunkPos))
-			{
-				LastChunksPos.Remove(ChunkPos);
+				GenerateChunksPos.Add(ChunkPos);
 			}
 		}
 
 		CurrentRadius++;
 	}
 
-	CurrentRadius = 0;
-	while (CurrentRadius <= UnLoadChunkDistance)
+	for (const FChunkPos& ChunkPos : GenerateChunksPos)
 	{
-		// Forward
-		for (int32 i = -CurrentRadius; i <= CurrentRadius - 1; ++i)
+		if (Chunks.Contains(ChunkPos))
 		{
-			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(i, CurrentRadius);
-			if (LastChunksPos.Contains(ChunkPos))
-			{
-				LastChunksPos.Remove(ChunkPos);
-			}
+			Chunks[ChunkPos]->SetLoadType(EChunkLoadType::StrongLoaded);
+			Chunks[ChunkPos]->GenerateBiome(WorldManager->GetTerrain());
 		}
-
-		// Right
-		for (int32 i = -CurrentRadius + 1; i <= CurrentRadius; ++i)
-		{
-			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(CurrentRadius, i);
-			if (LastChunksPos.Contains(ChunkPos))
-			{
-				LastChunksPos.Remove(ChunkPos);
-			}
-		}
-
-		// Backward
-		for (int32 i = -CurrentRadius + 1; i <= CurrentRadius; ++i)
-		{
-			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(i, -CurrentRadius);
-			if (LastChunksPos.Contains(ChunkPos))
-			{
-				LastChunksPos.Remove(ChunkPos);
-			}
-		}
-
-		// Left
-		for (int32 i = -CurrentRadius; i <= CurrentRadius - 1; ++i)
-		{
-			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(-CurrentRadius, i);
-			if (LastChunksPos.Contains(ChunkPos))
-			{
-				LastChunksPos.Remove(ChunkPos);
-			}
-		}
-
-		CurrentRadius++;
 	}
 }
 
-void UWorldProviderComponent::HandleChunkDatas(TArray<FChunkPos>& GenerateChunksPos)
-{
-	const FChunkPos CenterChunkPos = WorldManager->GetCenterChunkPos();
-
-	TArray<FChunkPos> LoadChunkDatasPos;
-
-	TSet<FChunkPos> LastChunkDatasPos;
-	WorldManager->WorldInfo.ChunkDataMap.GetKeys(LastChunkDatasPos);
-
-	// 生成基础地形，多生成一层范围
-	for (int32 X = -LoadChunkDistance - 1; X <= LoadChunkDistance + 1; ++X)
-	{
-		for (int32 Y = -LoadChunkDistance - 1; Y <= LoadChunkDistance + 1; ++Y)
-		{
-			const FChunkPos ChunkPos = CenterChunkPos + FChunkPos(X, Y);
-			if (!WorldManager->ContainChunkData(ChunkPos))
-			{
-				LoadChunkDatasPos.Add(ChunkPos);
-			}
-			if (LastChunkDatasPos.Contains(ChunkPos))
-			{
-				LastChunkDatasPos.Remove(ChunkPos);
-			}
-		}
-	}
-
-	for (const FChunkPos& ChunkPos : LastChunkDatasPos)
-	{
-		WorldManager->WorldInfo.Remove(ChunkPos);
-	}
-
-	if (LoadChunkDatasPos.Num() > 0)
-	{
-		ParallelFor(LoadChunkDatasPos.Num(), [this, &LoadChunkDatasPos](int32 Index)
-		{
-			TSharedPtr<FChunkData> ChunkData = MakeShared<FChunkData>();
-			if (AChunk* Chunk = GetChunk(LoadChunkDatasPos[Index]))
-			{
-				Chunk->SetChunkData(ChunkData.ToSharedRef());
-			}
-			WorldManager->WorldInfo.Add(LoadChunkDatasPos[Index], ChunkData);
-			WorldManager->GetTerrain()->Generate(WorldManager.Get(), LoadChunkDatasPos[Index]);
-		});
-	}
-
-	// 装饰雕刻
-	for (const FChunkPos& LoadChunkPos : GenerateChunksPos)
-	{
-		WorldManager->GetTerrain()->GenerateBiome(WorldManager.Get(), LoadChunkPos);
-	}
-}
-
-bool UWorldProviderComponent::SpawnChunk(const FChunkPos& ChunkPos)
+AChunk* UWorldProviderComponent::SpawnChunk(const FChunkPos& ChunkPos)
 {
 	if (AChunk* Chunk = WorldManager->SpawnChunk(ChunkPos))
 	{
-		Chunks.Add(ChunkPos, Chunk);
-
 		Chunk->SetChunkPos(ChunkPos);
 		Chunk->AttachToActor(GetOwner(), FAttachmentTransformRules::KeepWorldTransform);
-		return true;
+		return Chunk;
 	}
 
-	return false;
+	return nullptr;
 }
 
 AChunk* UWorldProviderComponent::GetChunk(const FChunkPos& InChunkPos) const
