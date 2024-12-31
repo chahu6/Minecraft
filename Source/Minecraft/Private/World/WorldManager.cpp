@@ -85,6 +85,7 @@ void AWorldManager::Tick(float DeltaTime)
 			if (AChunk* Chunk = GetChunk(ChunkPos))
 			{
 				Chunk->RenderTerrainMesh();
+				Chunk->SetChunkState(EChunkState::Load);
 			}
 		}
 	}

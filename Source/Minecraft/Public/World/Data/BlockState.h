@@ -31,6 +31,8 @@ public:
 
 	FIntVector Position;
 
+	uint8 State;
+
 private:
 	UBlock* Block = nullptr;
 

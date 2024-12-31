@@ -54,7 +54,7 @@ APooledActor* UObjectPoolComponent::SpawnFromPool(const FTransform& SpawnTransfo
 	if (IsValid(PooledActor))
 	{
 		PooledActor->SetActorTransform(SpawnTransform);
-		PooledActor->SetInUse(true);
+		//PooledActor->SetInUse(true);
 		return PooledActor;
 	}
 	else

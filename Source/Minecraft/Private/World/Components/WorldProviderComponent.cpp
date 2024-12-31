@@ -7,7 +7,6 @@
 #include "Chunk/Chunk.h"
 #include "World/Data/ChunkData.h"
 #include "World/Gen/TerrainBase.h"
-#include "Kismet/GameplayStatics.h"
 
 UWorldProviderComponent::UWorldProviderComponent()
 {
@@ -149,6 +148,7 @@ AChunk* UWorldProviderComponent::SpawnChunk(const FChunkPos& ChunkPos)
 	{
 		Chunk->SetChunkPos(ChunkPos);
 		Chunk->AttachToActor(GetOwner(), FAttachmentTransformRules::KeepWorldTransform);
+		Chunk->SetInUse(true);
 		return Chunk;
 	}
 

@@ -9,8 +9,7 @@ struct FBlockPos;
 
 struct MINECRAFT_API FChunkData
 {
-private:
-	TArray<int32> HeightMap;
+	TArray<int16> HeightMap;
 	TArray<FGameplayTag> Biomes;
 	TArray<FBlockState> BlockStateMap;
 	TArray<TTuple<float, float, float, float, float>> Noises;

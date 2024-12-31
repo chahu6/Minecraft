@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 
+using item_t = uint16;
+using biome_t = uint8;
+
 /**
  * FMinecraftGameplayTags
  *
@@ -36,10 +39,14 @@ public:
 	FGameplayTag Item_Block_Ice;
 	FGameplayTag Item_Block_Leaves;
 
+	TMap<FGameplayTag, item_t> ItemLookupTable;
+	TMap<item_t, FGameplayTag> ReverseItemLookupTable;
+
 	/*
 	* 生物群系
 	*/
 
+	FGameplayTag Biome_Ocean;
 	FGameplayTag Biome_FlourishIceField;
 	FGameplayTag Biome_BarrenIceField;
 	FGameplayTag Biome_InlandForest;
@@ -48,7 +55,9 @@ public:
 	FGameplayTag Biome_Forest;
 	FGameplayTag Biome_RainForest;
 	FGameplayTag Biome_Savanna;
-	FGameplayTag Biome_Ocean;
+
+	TMap<FGameplayTag, biome_t> BiomeLookupTable;
+	TMap<biome_t, FGameplayTag> ReverseBiomeLookupTable;
 
 private:
 	FMinecraftGameplayTags() = default;

@@ -17,6 +17,8 @@ class AWorldManager;
 struct FBlockState;
 struct FGameplayTag;
 class UTerrainBase;
+class UChunkSaveGame;
+class KNBTTagCompound;
 
 UENUM()
 enum class EChunkState : uint8
@@ -76,11 +78,16 @@ public:
 	void GenerateTerrain(UTerrainBase* InTerrainBase);
 	void GenerateBiome(UTerrainBase* InTerrainBase);
 
+	bool SaveKNBT();
+	bool LoadChunkWithKNBTData();
+
 private:
 	/** 用于对象池的对象的初始化，相当于Actor的 BeginPlay()函数*/
 	void OnLoadChunk();
 	/** 用于对象池的对象的卸载，相当于Actor的 EndPlay()函数*/
 	void OnUnloadChunk();
+
+	bool SetChunkWithKNBTData(KNBTTagCompound* Data);
 
 public:
 	FEvent* ThreadEvent;
@@ -92,6 +99,9 @@ private:
 	bool bIsEmpty = false;
 
 	FString SlotName;
+
+	UPROPERTY()
+	TObjectPtr<UChunkSaveGame> ChunkSaveGame;
 
 	bool bIsRendering = false;
 

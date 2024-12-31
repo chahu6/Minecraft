@@ -10,7 +10,6 @@
 #include "Item/ItemStack.h"
 
 TMap<FGameplayTag, const UBlock*> UBlock::REGISTER_NAME;
-//TMap<int32, const UBlock*> UBlock::REGISTER_ID;
 
 UBlock::UBlock()
 {

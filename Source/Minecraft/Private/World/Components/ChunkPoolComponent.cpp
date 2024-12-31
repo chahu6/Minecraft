@@ -23,7 +23,7 @@ AChunk* UChunkPoolComponent::SpawnChunk(const FChunkPos& ChunkPos)
 	{
 		Chunk = SpawnPooledActor<AChunk>();
 		Chunk->SetActorTransform(FTransform(FVector(ChunkPos.X * WorldGenerator::ChunkSize, ChunkPos.Y * WorldGenerator::ChunkSize, 0)));
-		Chunk->SetInUse(true);
+		//Chunk->SetInUse(true);
 	}
 	return Chunk;
 }

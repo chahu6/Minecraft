@@ -8,7 +8,8 @@
 
 FBlockState::FBlockState()
 	:FaceType(EFaceType::Forward),
-	Position{ 0, 0, 0 }
+	Position{ 0, 0, 0 },
+	State(0)
 {
 	SetBlock(UBlocks::Air);
 }
