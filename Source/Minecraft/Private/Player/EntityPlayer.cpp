@@ -95,9 +95,12 @@ void AEntityPlayer::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	if (IPlayerControllerInterface* PlayerControllerInterface = GetController<IPlayerControllerInterface>())
+	if (AMCPlayerController* MCPlayerController = GetController<AMCPlayerController>())
 	{
-		IPlayerControllerInterface::Execute_InitMainUI(NewController);
+		if (AMinecraftHUD* MinecraftHUD = MCPlayerController->GetHUD<AMinecraftHUD>())
+		{
+			MinecraftHUD->InitMainUI(MCPlayerController, GetPlayerState(), this);
+		}
 	}
 }
 
@@ -105,10 +108,10 @@ void AEntityPlayer::OnRep_Controller()
 {
 	Super::OnRep_Controller();
 
-	if (IPlayerControllerInterface* PlayerControllerInterface = GetController<IPlayerControllerInterface>())
-	{
-		IPlayerControllerInterface::Execute_InitMainUI(GetController());
-	}
+	//if (IPlayerControllerInterface* PlayerControllerInterface = GetController<IPlayerControllerInterface>())
+	//{
+	//	IPlayerControllerInterface::Execute_InitMainUI(GetController());
+	//}
 }
 
 void AEntityPlayer::PostInitializeComponents()

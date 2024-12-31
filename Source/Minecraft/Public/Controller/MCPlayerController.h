@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Interfaces/PlayerControllerInterface.h"
 #include "MCPlayerController.generated.h"
 
 class AMinecraftHUD;
@@ -11,7 +10,7 @@ class UProgressBarWidget;
  * 
  */
 UCLASS()
-class MINECRAFT_API AMCPlayerController : public APlayerController, public IPlayerControllerInterface
+class MINECRAFT_API AMCPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
@@ -22,10 +21,6 @@ public:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void SetupInputComponent() override;
 	virtual bool InputTouch(uint32 Handle, ETouchType::Type Type, const FVector2D& TouchLocation, float Force, FDateTime DeviceTimestamp, uint32 TouchpadIndex) override;
-
-	/** Player Controller Interface */
-	virtual void InitMainUI_Implementation() override;
-	/** end Player Controller Interface */
 
 	void AddPrograssWidget();
 	void RemovePrograssWidget();

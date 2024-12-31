@@ -51,3 +51,8 @@ FBlockPos FBlockPos::Up(int32 InZ) const
 {
 	return FBlockPos(X, Y, Z + InZ);
 }
+
+FVector FBlockPos::ToVector() const
+{
+	return FVector(X, Y, Z) * WorldGenerator::BlockSize;
+}

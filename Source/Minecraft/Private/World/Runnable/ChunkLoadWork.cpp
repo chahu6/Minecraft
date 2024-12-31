@@ -11,7 +11,14 @@ FChunkLoadWork::FChunkLoadWork(AWorldManager* InWorldManager, const FChunkPos& I
 
 void FChunkLoadWork::DoThreadedWork()
 {
-	GreedyMeshGenerator::BuildGreedyChunkMesh(WorldManager->WorldInfo, ChunkPos);
+	if (WorldManager->GetRenderMethod() == EGenerationMethod::Normal)
+	{
+		GreedyMeshGenerator::BuildChunkMesh(WorldManager->WorldInfo, ChunkPos);
+	}
+	else
+	{
+		GreedyMeshGenerator::BuildGreedyChunkMesh(WorldManager->WorldInfo, ChunkPos);
+	}
 
 	WorldManager->LoadChunkQueue.Enqueue(ChunkPos);
 

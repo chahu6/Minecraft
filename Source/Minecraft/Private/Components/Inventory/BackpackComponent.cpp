@@ -33,6 +33,8 @@ void UBackpackComponent::BeginPlay()
 	ChestItemStack.SetCount(1);
 	ChestItemStack.SetItem(UItem::GetItemFromID(FMinecraftGameplayTags::Get().Item_Block_Chest));
 	Items[2] = ChestItemStack;
+
+	OnHotbarUpdate.Broadcast();
 }
 
 int32 UBackpackComponent::GetSizeInventory_Implementation() const

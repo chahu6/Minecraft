@@ -6,6 +6,7 @@
 class GlobalInfo;
 struct FMeshData;
 struct FChunkPos;
+struct FBlockPos;
 
 struct FMask
 {
@@ -23,6 +24,7 @@ class GreedyMeshGenerator
 {
 public:
 	static void BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChunkPos& InChunkPos);
+	static void BuildChunkMesh(GlobalInfo& WorldInfo, const FChunkPos& InChunkPos);
 
 private:
 	static bool CompareMask(const FMask& M1, const FMask& M2);
@@ -33,7 +35,11 @@ private:
 
 	static void CreatePlant(const TArray<FQuadInfo>& PlantBlocks, TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDatas);
 
+	static void BuildQuad(const FVector& Pos, const TSharedRef<FMeshData> MeshData);
+
 	static void BuildFace(EFaceType FaceType, const FVector& InBlockPos, const TSharedRef<FMeshData> MeshData);
+
+	static bool IsRender(EFaceType FaceType, GlobalInfo& WorldInfo, const FBlockPos& InBlockPos);
 
 private:
 	GreedyMeshGenerator() = delete;

@@ -4,11 +4,9 @@
 #include "World/Data/BlockState.h"
 #include "World/Data/ChunkData.h"
 #include "World/Gen/TerrainBase.h"
-#include "Kismet/GameplayStatics.h"
 #include "SaveGame/ChunkSaveGame.h"
 #include "SaveGame/NBT/KNBTTagCompound.h"
 #include "World/WorldGenerator.h"
-
 #include "Serialization/BufferArchive.h"
 #include "Serialization/ArchiveSaveCompressedProxy.h"
 #include "Serialization/ArchiveLoadCompressedProxy.h"
@@ -49,10 +47,10 @@ void AChunk::OnLoadChunk()
 
 void AChunk::OnUnloadChunk()
 {
-	if (LoadType == EChunkLoadType::StrongLoaded)
+	/*if (LoadType == EChunkLoadType::StrongLoaded)
 	{
 		SaveKNBT();
-	}
+	}*/
 
 	ChunkData = nullptr;
 	ChunkPos = FChunkPos();
@@ -101,7 +99,7 @@ void AChunk::GenerateBiome(UTerrainBase* InTerrainBase)
 	if (!IFileManager::Get().FileExists(*SlotName) && LoadType == EChunkLoadType::StrongLoaded)
 	{
 		InTerrainBase->GenerateBiome(WorldManager.Get(), ChunkPos);
-		SaveKNBT();
+		//SaveKNBT();
 	}
 }
 

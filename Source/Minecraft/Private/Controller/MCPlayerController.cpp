@@ -37,15 +37,6 @@ bool AMCPlayerController::InputTouch(uint32 Handle, ETouchType::Type Type, const
 	return Super::InputTouch(Handle, Type, TouchLocation, Force, DeviceTimestamp, TouchpadIndex);
 }
 
-void AMCPlayerController::InitMainUI_Implementation()
-{
-	MinecraftHUD = MinecraftHUD == nullptr ? GetHUD<AMinecraftHUD>() : MinecraftHUD;
-	if (MinecraftHUD)
-	{
-		MinecraftHUD->InitMainUI(this, GetPawn()->GetPlayerState(), GetPawn());
-	}
-}
-
 void AMCPlayerController::AddPrograssWidget()
 {
 	if (ProgressBarWidgetClass)

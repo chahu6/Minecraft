@@ -208,4 +208,5 @@ private:
 
 public:
 	FORCEINLINE UTerrainBase* GetTerrain() const { return TerrainBase; }
+	FORCEINLINE EGenerationMethod GetRenderMethod() const { return ChunkGenerationMethod; }
 };

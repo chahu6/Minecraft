@@ -10,11 +10,9 @@ void UOverlayWidgetController::BroadcastInitialValue()
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
 {
-	if (AEntityPlayer* Player = PlayerController->GetPawn<AEntityPlayer>())
+	if (AEntityPlayer* Player = Cast<AEntityPlayer>(Pawn))
 	{
-		Player->OnSwitchMainHand.AddLambda(
-			[this](int32 HotbarIndex)
-			{
+		Player->OnSwitchMainHand.AddLambda([this](int32 HotbarIndex) {
 				OnSwitchMainHand.Broadcast(HotbarIndex);
 			}
 		);

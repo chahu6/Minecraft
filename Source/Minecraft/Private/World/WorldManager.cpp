@@ -237,6 +237,7 @@ void AWorldManager::LoadChunk(const FChunkPos& InChunkPos)
 	if (AChunk* Chunk = GetChunk(InChunkPos))
 	{
 		Chunk->AddQueuedWork<EChunkState::Load>(ChunkTaskPool->ChunkTaskPool);
+		//Chunk->AddQueuedWork<EChunkState::Load>(GThreadPool);
 	}
 }
 

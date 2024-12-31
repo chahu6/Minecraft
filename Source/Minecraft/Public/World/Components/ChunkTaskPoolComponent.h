@@ -16,7 +16,7 @@ class MINECRAFT_API UChunkTaskPoolComponent : public UActorComponent
 public:	
 	UChunkTaskPoolComponent();
 
-	FQueuedThreadPool* ChunkTaskPool;
+	FQueuedThreadPool* ChunkTaskPool = nullptr;
 
 protected:
 	virtual void BeginPlay() override;

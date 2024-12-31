@@ -77,5 +77,7 @@ public:
 		return FBlockPos(*this) *= Scale;
 	}
 
+	FORCEINLINE FVector ToVector() const;
+
 	FORCEINLINE FString ToString() const { return FString::Printf(TEXT("X=%d Y=%d Z=%d"), X, Y, Z); }
 };

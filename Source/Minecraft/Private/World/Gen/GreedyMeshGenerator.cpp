@@ -17,14 +17,17 @@ void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChu
 	TArray<FQuadInfo> TranslucentBlocks;
 	TArray<FQuadInfo> PlantBlocks;
 
-	for (int32 Z = 0; Z < WorldGenerator::CHUNK_HEIGHT; ++Z)
+	for (int32 X = 0; X < WorldGenerator::CHUNK_SIZE; ++X)
 	{
-		for (int32 X = 0; X < WorldGenerator::CHUNK_SIZE; ++X)
+		for (int32 Y = 0; Y < WorldGenerator::CHUNK_SIZE; ++Y)
 		{
-			for (int32 Y = 0; Y < WorldGenerator::CHUNK_SIZE; ++Y)
+			for (int32 Z = 0; Z < WorldGenerator::CHUNK_HEIGHT; ++Z)
 			{
 				const FBlockPos BlockPos = ChunkBlockPos + FBlockPos(X, Y, Z);
 				const UBlock* Block = WorldInfo.GetBlockState(BlockPos).GetBlock();
+				if (Block->BlockID == AIR) 
+					continue;
+
 				if (Block->bTranslucent && Block->IsFullBlock())
 				{
 					TranslucentBlocks.Add({ FVector(X, Y, Z), Block->BlockID });
@@ -78,8 +81,6 @@ void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChu
 				Axis2Limit = WorldGenerator::CHUNK_SIZE;
 				break;
 			}
-			default:
-				break;
 		}
 
 		TArray<FMask> Mask;
@@ -312,12 +313,7 @@ void GreedyMeshGenerator::CreateBlock(const TArray<FQuadInfo>& TranslucentBlocks
 			MeshData = MeshDatas.Add(BlockInfo.BlockID, MakeShared<FMeshData>());
 		}
 
-		BuildFace(EFaceType::Forward, BlockInfo.Pos, MeshData.ToSharedRef());
-		BuildFace(EFaceType::Backward, BlockInfo.Pos, MeshData.ToSharedRef());
-		BuildFace(EFaceType::Left, BlockInfo.Pos, MeshData.ToSharedRef());
-		BuildFace(EFaceType::Right, BlockInfo.Pos, MeshData.ToSharedRef());
-		BuildFace(EFaceType::Up, BlockInfo.Pos, MeshData.ToSharedRef());
-		BuildFace(EFaceType::Down, BlockInfo.Pos, MeshData.ToSharedRef());
+		BuildQuad(BlockInfo.Pos, MeshData.ToSharedRef());
 	}
 }
 
@@ -381,6 +377,46 @@ void GreedyMeshGenerator::CreatePlant(const TArray<FQuadInfo>& PlantBlocks, TMap
 	}
 }
 
+void GreedyMeshGenerator::BuildQuad(const FVector& Pos, const TSharedRef<FMeshData> MeshData)
+{
+	BuildFace(EFaceType::Forward, Pos, MeshData);
+	BuildFace(EFaceType::Backward, Pos, MeshData);
+	BuildFace(EFaceType::Left, Pos, MeshData);
+	BuildFace(EFaceType::Right, Pos, MeshData);
+	BuildFace(EFaceType::Up, Pos, MeshData);
+	BuildFace(EFaceType::Down, Pos, MeshData);
+}
+
+bool GreedyMeshGenerator::IsRender(EFaceType FaceType, GlobalInfo& WorldInfo, const FBlockPos& InBlockPos)
+{
+	FBlockPos Direction;
+	switch (FaceType)
+	{
+		case EFaceType::Up:
+			Direction = FBlockPos(0, 0, 1);
+			break;
+		case EFaceType::Down:
+			Direction = FBlockPos(0, 0, -1);
+			break;
+		case EFaceType::Forward:
+			Direction = FBlockPos(1, 0, 0);
+			break;
+		case EFaceType::Backward:
+			Direction = FBlockPos(-1, 0, 0);
+			break;
+		case EFaceType::Left:
+			Direction = FBlockPos(0, -1, 0);
+			break;
+		case EFaceType::Right:
+			Direction = FBlockPos(0, 1, 0);
+			break;
+	}
+
+	UBlock* Block = WorldInfo.GetBlockState(InBlockPos + Direction).GetBlock();
+
+	return (Block->BlockID == AIR) || Block->bTranslucent;
+}
+
 void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPos, const TSharedRef<FMeshData> MeshData)
 {
 	const int32 Index = MeshData->Vertices.Num();
@@ -388,6 +424,7 @@ void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPo
 	FVector FaceCenter;
 	FVector Up;
 	FVector Right;
+	FVector Normal;
 	switch (FaceType)
 	{
 		case EFaceType::Up:
@@ -395,6 +432,7 @@ void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPo
 			FaceCenter = InBlockPos + FVector(0.5f, 0.5f, 1.0f);
 			Up = FVector::ForwardVector;
 			Right = FVector::RightVector;
+			Normal = FVector::UpVector;
 			break;
 		}
 		case EFaceType::Down:
@@ -402,6 +440,7 @@ void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPo
 			FaceCenter = InBlockPos + FVector(0.5f, 0.5f, 0.0f);
 			Up = FVector::BackwardVector;
 			Right = FVector::RightVector;
+			Normal = FVector::DownVector;
 			break;
 		}
 		case EFaceType::Right:
@@ -409,6 +448,7 @@ void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPo
 			FaceCenter = InBlockPos + FVector(0.5f, 1.0f, 0.5f);
 			Up = FVector::UpVector;
 			Right = FVector::ForwardVector;
+			Normal = FVector::RightVector;
 			break;
 		}
 		case EFaceType::Left:
@@ -416,6 +456,7 @@ void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPo
 			FaceCenter = InBlockPos + FVector(0.5f, 0.0f, 0.5f);
 			Up = FVector::UpVector;
 			Right = FVector::BackwardVector;
+			Normal = FVector::LeftVector;
 			break;
 		}
 		case EFaceType::Forward:
@@ -423,6 +464,7 @@ void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPo
 			FaceCenter = InBlockPos + FVector(1.0f, 0.5f, 0.5f);
 			Up = FVector::UpVector;
 			Right = FVector::LeftVector;
+			Normal = FVector::ForwardVector;
 			break;
 		}
 		case EFaceType::Backward:
@@ -430,6 +472,7 @@ void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPo
 			FaceCenter = InBlockPos + FVector(0.0f, 0.5f, 0.5f);
 			Up = FVector::UpVector;
 			Right = FVector::RightVector;
+			Normal = FVector::BackwardVector;
 			break;
 		}
 	}
@@ -449,7 +492,14 @@ void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPo
 		Index + 2,
 		Index + 2,
 		Index + 3,
-		Index + 1,
+		Index + 0,
+	});
+
+	MeshData->Normals.Append({
+		Normal,
+		Normal,
+		Normal,
+		Normal
 	});
 
 	MeshData->UV0.Append({
@@ -458,4 +508,61 @@ void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPo
 		{ 1.f, 0.f },
 		{ 0.f, 0.f }
 	});
+}
+
+void GreedyMeshGenerator::BuildChunkMesh(GlobalInfo& WorldInfo, const FChunkPos& InChunkPos)
+{
+	TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDataCache = WorldInfo.ChunkDataMap[InChunkPos]->MeshDataCache;
+
+	const FBlockPos ChunkBlockPos = InChunkPos.ToBlockPos();
+
+	for (int32 X = 0; X < WorldGenerator::CHUNK_SIZE; ++X)
+	{
+		for (int32 Y = 0; Y < WorldGenerator::CHUNK_SIZE; ++Y)
+		{
+			for (int32 Z = 0; Z < WorldGenerator::CHUNK_HEIGHT; ++Z)
+			{
+				const FBlockPos BlockPos = ChunkBlockPos + FBlockPos(X, Y, Z);
+
+				const FBlockState BlockState = WorldInfo.GetBlockState(BlockPos);
+				if (BlockState.IsAir())
+					continue;
+
+				TSharedPtr<FMeshData> MeshData = nullptr;
+				if (MeshDataCache.Contains(BlockState.GetBlock()->BlockID))
+				{
+					MeshData = MeshDataCache[BlockState.GetBlock()->BlockID];
+				}
+				else
+				{
+					MeshData = MeshDataCache.Add(BlockState.GetBlock()->BlockID, MakeShared<FMeshData>());
+				}
+
+				if (IsRender(EFaceType::Up, WorldInfo, BlockPos))
+				{
+					BuildFace(EFaceType::Up, FVector(X, Y, Z), MeshData.ToSharedRef());
+				}
+				if (IsRender(EFaceType::Down, WorldInfo, BlockPos))
+				{
+					BuildFace(EFaceType::Down, FVector(X, Y, Z), MeshData.ToSharedRef());
+				}
+				if (IsRender(EFaceType::Forward, WorldInfo, BlockPos))
+				{
+					BuildFace(EFaceType::Forward, FVector(X, Y, Z), MeshData.ToSharedRef());
+				}
+				if (IsRender(EFaceType::Backward, WorldInfo, BlockPos))
+				{
+					BuildFace(EFaceType::Backward, FVector(X, Y, Z), MeshData.ToSharedRef());
+				}
+				if (IsRender(EFaceType::Left, WorldInfo, BlockPos))
+				{
+					BuildFace(EFaceType::Left, FVector(X, Y, Z), MeshData.ToSharedRef());
+				}
+				if (IsRender(EFaceType::Right, WorldInfo, BlockPos))
+				{
+					BuildFace(EFaceType::Right, FVector(X, Y, Z), MeshData.ToSharedRef());
+				}
+			}
+		}
+	}
 }
