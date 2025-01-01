@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "BlockRenderType.generated.h"
 
-UENUM()
+UENUM(BlueprintType)
 enum class EBlockRenderType : uint8
 {
 	Surface,

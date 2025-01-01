@@ -20,13 +20,13 @@ void ATileEntityChest::BeginPlay()
 
 }
 
-bool ATileEntityChest::OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player)
+void ATileEntityChest::OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player)
 {
+	Super::OnBlockActivated(WorldManager, BlockVoxelLoc, Player);
+
 	if (UChest* Chest = CreateWidget<UChest>(Player->GetController<APlayerController>(), ChestClass))
 	{
 		Chest->ChestInventory = InventoryComponent;
-		return Player->DisplayGui(Chest);
+		Player->DisplayGui(Chest);
 	}
-
-	return false;
 }

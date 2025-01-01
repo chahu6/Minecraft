@@ -21,10 +21,13 @@ public:
 	ATileEntity();
 
 	/** 当玩家右键单击该块时调用 */
-	virtual bool OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player);
+	virtual void OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player);
 
 protected:
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnBlockActivated"))
+	void ReceiveOnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player);
 
 protected:
 	UPROPERTY()

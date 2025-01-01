@@ -3,25 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "World/Block/Block.h"
-#include "Interfaces/Block/TileEntityProvider.h"
+#include "World/Block/BlockTileEntity.h"
 #include "BlockContainer.generated.h"
-
-class ATileEntity;
 
 /**
  * 
  */
 UCLASS(Abstract)
-class MINECRAFT_API UBlockContainer : public UBlock, public ITileEntityProvider
+class MINECRAFT_API UBlockContainer : public UBlockTileEntity
 {
 	GENERATED_BODY()
 public:
-	/** Tile Entity Provider*/
-	virtual ATileEntity* CreateNewTileEntity(AWorldManager* WorldManager, const FIntVector& BlockWorldVoxelLocation) override;
-	/** end Tile Entity Provider*/
 
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Property)
-	TSubclassOf<ATileEntity> TileEntityClass;
 };

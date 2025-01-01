@@ -21,7 +21,7 @@ public:
 	ATileEntityChest();
 
 	/** 当玩家右键单击该块时调用 */
-	virtual bool OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player) override;
+	virtual void OnBlockActivated(AWorldManager* WorldManager, const FIntVector& BlockVoxelLoc, AEntityPlayer* Player) override;
 
 protected:
 	virtual void BeginPlay() override;

@@ -25,7 +25,7 @@ void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChu
 			{
 				const FBlockPos BlockPos = ChunkBlockPos + FBlockPos(X, Y, Z);
 				const UBlock* Block = WorldInfo.GetBlockState(BlockPos).GetBlock();
-				if (Block->BlockID == AIR) 
+				if (Block->BlockID == AIR || Block->GetRenderType() != EBlockRenderType::Surface)
 					continue;
 
 				if (Block->bTranslucent && Block->IsFullBlock())
@@ -102,8 +102,8 @@ void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChu
 					const UBlock* CurrentBlock = CurrentBlockState.GetBlock();
 					const UBlock* CompareBlock = CompareBlockState.GetBlock();
 
-					const bool bCurrentBlockOpaque = !CurrentBlockState.IsAir() && CurrentBlock->IsFullBlock() && !CurrentBlock->bTranslucent;
-					const bool bCompareBlockOpaque = !CompareBlockState.IsAir() && CompareBlock->IsFullBlock() && !CompareBlock->bTranslucent;
+					const bool bCurrentBlockOpaque = !CurrentBlockState.IsAir() && CurrentBlock->GetRenderType() == EBlockRenderType::Surface && CurrentBlock->IsFullBlock() && !CurrentBlock->bTranslucent;
+					const bool bCompareBlockOpaque = !CompareBlockState.IsAir() && CompareBlock->GetRenderType() == EBlockRenderType::Surface && CompareBlock->IsFullBlock() && !CompareBlock->bTranslucent;
 					if (bCurrentBlockOpaque == bCompareBlockOpaque)
 					{
 						Mask[N++] = FMask{ AIR, 0 };
@@ -414,7 +414,7 @@ bool GreedyMeshGenerator::IsRender(EFaceType FaceType, GlobalInfo& WorldInfo, co
 
 	UBlock* Block = WorldInfo.GetBlockState(InBlockPos + Direction).GetBlock();
 
-	return (Block->BlockID == AIR) || Block->bTranslucent;
+	return (Block->BlockID == AIR) || Block->bTranslucent || !Block->IsFullBlock();
 }
 
 void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPos, const TSharedRef<FMeshData> MeshData)
@@ -525,7 +525,7 @@ void GreedyMeshGenerator::BuildChunkMesh(GlobalInfo& WorldInfo, const FChunkPos&
 				const FBlockPos BlockPos = ChunkBlockPos + FBlockPos(X, Y, Z);
 
 				const FBlockState BlockState = WorldInfo.GetBlockState(BlockPos);
-				if (BlockState.IsAir())
+				if (BlockState.IsAir() || BlockState.GetBlock()->GetRenderType() != EBlockRenderType::Surface)
 					continue;
 
 				TSharedPtr<FMeshData> MeshData = nullptr;

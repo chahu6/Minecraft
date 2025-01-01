@@ -21,6 +21,10 @@ void UBlock::RandomTick()
 	this->UpdateTick();
 }
 
+void UBlock::UpdateTick()
+{
+}
+
 const UBlock* UBlock::GetBlockByID(const FGameplayTag& InBlockID)
 {
 	if (REGISTER_NAME.Contains(InBlockID))
@@ -29,10 +33,6 @@ const UBlock* UBlock::GetBlockByID(const FGameplayTag& InBlockID)
 	}
 	check(false);
 	return nullptr;
-}
-
-void UBlock::UpdateTick()
-{
 }
 
 void UBlock::OnBlockDestroyedByPlayer(AWorldManager* WorldManager, const FVector& WorldLocation)

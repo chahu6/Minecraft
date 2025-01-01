@@ -15,6 +15,7 @@
 #include "World/Data/ChunkData.h"
 #include "World/Components/WorldProviderComponent.h"
 #include "Math/BlockPos.h"
+#include "Interfaces/Block/TileEntityProvider.h"
 
 AWorldManager* AWorldManager::Instance = nullptr;
 
@@ -170,9 +171,21 @@ bool AWorldManager::PlaceBlock(const FIntVector& BlockWorldVoxelLocation, const 
 {
 	if (SetBlockState(BlockWorldVoxelLocation, BlockState))
 	{
-		AddChunkToUpdate(FChunkHelper::ChunkPosFromBlockPos(BlockWorldVoxelLocation));
+		if (BlockState.GetBlock()->Implements<UTileEntityProvider>())
+		{
+			ITileEntityProvider::Execute_CreateNewTileEntity(BlockState.GetBlock(), this, BlockWorldVoxelLocation);
+		}
+		else
+		{
+			AddChunkToUpdate(FChunkHelper::ChunkPosFromBlockPos(BlockWorldVoxelLocation));
 
-		CheckSurroundingChunkNeedUpdate(FChunkHelper::OffsetBlockPosFromBlockPos(BlockWorldVoxelLocation), FChunkHelper::ChunkPosFromBlockPos(BlockWorldVoxelLocation));
+			CheckSurroundingChunkNeedUpdate(FChunkHelper::OffsetBlockPosFromBlockPos(BlockWorldVoxelLocation), FChunkHelper::ChunkPosFromBlockPos(BlockWorldVoxelLocation));
+		}
+
+		FVector WorldLocation = FVector(BlockWorldVoxelLocation * WorldGenerator::BlockSize);
+		WorldLocation = WorldLocation + (WorldGenerator::BlockSize >> 1);
+
+		UGameplayStatics::PlaySoundAtLocation(this, BlockState.GetBlock()->PlaceSound, WorldLocation);
 		return true;
 	}
 	return false;
