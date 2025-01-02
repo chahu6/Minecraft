@@ -33,6 +33,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Properties")
 	TObjectPtr<UInventoryComponent> InventoryComponent;
 
-	UPROPERTY(EditAnywhere, Category = "Properties")
-	TSubclassOf<UChest> ChestClass;
+	//UPROPERTY(EditAnywhere, Category = "Properties")
+	//TSubclassOf<UChest> ChestClass;
 };

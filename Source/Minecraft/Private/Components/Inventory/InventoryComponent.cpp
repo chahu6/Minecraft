@@ -50,11 +50,6 @@ void UInventoryComponent::SetInventorySlotContents_Implementation(int32 Index, c
 {
 }
 
-bool UInventoryComponent::AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack)
-{
-	return false;
-}
-
 void UInventoryComponent::Clear_Implementation()
 {
 	for (FItemStack& ItemStack : Items)

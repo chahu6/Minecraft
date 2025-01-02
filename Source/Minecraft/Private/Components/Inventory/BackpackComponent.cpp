@@ -2,10 +2,7 @@
 
 
 #include "Components/Inventory/BackpackComponent.h"
-#include "Item/Item.h"
-#include "Init/Blocks.h"
 #include "Utils/ItemStackHelper.h"
-
 #include "MinecraftGameplayTags.h"
 
 UBackpackComponent::UBackpackComponent()
@@ -21,20 +18,18 @@ void UBackpackComponent::BeginPlay()
 
 	FItemStack ItemStack;
 	ItemStack.SetCount(1);
-	ItemStack.SetItem(UItem::GetItemFromBlock(UBlocks::CraftingTable));
+	ItemStack.SetItemID(FMinecraftGameplayTags::Get().CraftingTable);
 	Items[0] = ItemStack;
 
 	FItemStack WoodItemStack;
 	WoodItemStack.SetCount(1);
-	WoodItemStack.SetItem(UItem::GetItemFromBlock(UBlocks::Log));
+	WoodItemStack.SetItemID(FMinecraftGameplayTags::Get().Log);
 	Items[1] = WoodItemStack;
 
 	FItemStack ChestItemStack;
 	ChestItemStack.SetCount(1);
-	ChestItemStack.SetItem(UItem::GetItemFromID(FMinecraftGameplayTags::Get().Item_Block_Chest));
+	ChestItemStack.SetItemID(FMinecraftGameplayTags::Get().Chest);
 	Items[2] = ChestItemStack;
-
-	OnHotbarUpdate.Broadcast();
 }
 
 int32 UBackpackComponent::GetSizeInventory_Implementation() const
@@ -76,19 +71,12 @@ FItemStack UBackpackComponent::DecrStackSize_Implementation(int32 Index, int32 C
 {
 	FItemStack ItemStack = ItemStackHelper::GetAndSplit(Items, Index, Count);
 
-	if (!ItemStack.IsEmpty())
-	{
-		NotifyAndUpdateUI(Index);
-	}
-
 	return ItemStack;
 }
 
 FItemStack UBackpackComponent::RemoveStackFromSlot_Implementation(int32 Index)
 {
 	FItemStack ItemStack = ItemStackHelper::GetAndRemove(Items, Index);
-
-	NotifyAndUpdateUI(Index);
 
 	return ItemStack;
 }
@@ -98,7 +86,6 @@ void UBackpackComponent::SetInventorySlotContents_Implementation(int32 Index, co
 	if (IsValidIndex(Index))
 	{
 		Items[Index] = Stack;
-		NotifyAndUpdateUI(Index);
 	}
 }
 
@@ -108,6 +95,44 @@ void UBackpackComponent::Clear_Implementation()
 	{
 		ItemStack.Empty();
 	}
+}
+
+int32 UBackpackComponent::GetInventorySize() const
+{
+	return Items.Num();
+}
+
+FItemStack UBackpackComponent::GetItemStack(int32 Index)
+{
+	if (Items.IsValidIndex(Index))
+	{
+		return Items[Index];
+	}
+	return FItemStack();
+}
+
+bool UBackpackComponent::IsEmpty(int32 Index) const
+{
+	if (IsValidIndex(Index))
+	{
+		return Items[Index].IsEmpty();
+	}
+	return false;
+}
+
+bool UBackpackComponent::SetItemStack(int32 Index, const FItemStack& NewItemStack)
+{
+	if (IsValidIndex(Index))
+	{
+		Items[Index] = NewItemStack;
+		return true;
+	}
+	return false;
+}
+
+void UBackpackComponent::SetHangItemStack(const FItemStack& NewItemStack)
+{
+	HangItemStack = NewItemStack;
 }
 
 FItemStack UBackpackComponent::GetHotbarItemStack(int32 SelectedIndex)
@@ -130,209 +155,6 @@ void UBackpackComponent::ConsumeItem(int32 SelectedIndex)
 		ItemStack.Shrink(1);
 	}
 
-	NotifyAndUpdateUI(SelectedIndex);
-}
-
-bool UBackpackComponent::AddItemToInventory(FItemStack& ItemStack)
-{
-	bool bHotbar = AddItemToHotbar(ItemStack);
-	bool bBackpack = AddItemToBackpack(ItemStack);
-	return bHotbar || bBackpack;
-}
-
-void UBackpackComponent::PlaceItemBackInInventory(const FItemStack& ItemStack)
-{
-
-}
-
-bool UBackpackComponent::AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack)
-{
-	if (InItemStack.IsEmpty() || !IsValidIndex(Index)) return false;
-
-	FItemStack& ItemStack = Items[Index];
-
-	if (ItemStack.IsEmpty())
-	{
-		ItemStack = InItemStack;
-		InItemStack.Empty();
-	}
-	else
-	{
-		if (InItemStack.IsStack())
-		{
-			if (ItemStack.GetItem() == InItemStack.GetItem())
-			{
-				if (!ItemStack.IsFull())
-				{
-					int32 Sum = ItemStack.GetCount() + InItemStack.GetCount();
-					if (Sum <= ItemStack.GetMaxStackSize())
-					{
-						ItemStack.SetCount(Sum);
-						InItemStack.Empty();
-					}
-					else
-					{
-						ItemStack.SetCount(ItemStack.GetMaxStackSize());
-						InItemStack.SetCount(Sum - ItemStack.GetCount());
-					}
-				}
-			}
-			else
-			{
-				FItemStack TempItemStack = ItemStack;
-				ItemStack = InItemStack;
-				InItemStack = TempItemStack;
-			}
-		}
-		else
-		{
-			FItemStack TempItemStack = ItemStack;
-			ItemStack = InItemStack;
-			InItemStack = TempItemStack;
-		}
-	}
-
-	NotifyAndUpdateUI(Index);
-
-	return InItemStack.IsEmpty();
-}
-
-bool UBackpackComponent::AddItemToBackpack(FItemStack& ItemStack)
-{
-	if (ItemStack.IsEmpty()) return false;
-
-	bool bSameFlag = AddSameItemToBackpack(ItemStack);
-
-	bool bAddFlag = AddItemStackBackpack(ItemStack);
-
-	if (bSameFlag || bAddFlag)
-	{
-		OnInventoryUpdate.Broadcast();
-	}
-
-	return ItemStack.IsEmpty();
-}
-
-bool UBackpackComponent::AddSameItemToBackpack(FItemStack& InItemStack)
-{
-	bool bFlag = false;
-
-	if (InItemStack.IsEmpty()) return bFlag;
-
-	if (!InItemStack.IsStack()) return bFlag;	// 不可堆叠
-
-	for (int Index = 9; Index < Items.Num(); ++Index)
-	{
-		FItemStack& ItemStack = Items[Index];
-		if (ItemStack.IsEmpty() || ItemStack.IsFull()) continue;
-
-		if (InItemStack.GetItem() == ItemStack.GetItem())
-		{
-			int32 Sum = InItemStack.GetCount() + ItemStack.GetCount();
-			if (Sum <= ItemStack.GetMaxStackSize())
-			{
-				ItemStack.SetCount(Sum);
-				InItemStack.Empty();
-			}
-			else
-			{
-				ItemStack.SetCount(ItemStack.GetMaxStackSize());
-				InItemStack.SetCount(Sum - ItemStack.GetCount());
-			}
-			bFlag = true;
-		}
-	}
-
-	return bFlag;
-}
-
-bool UBackpackComponent::AddItemStackBackpack(FItemStack& InItemStack)
-{
-	bool bFlag = false;
-
-	if (InItemStack.IsEmpty()) return bFlag;
-
-	for (int Index = 9; Index < Items.Num(); ++Index)
-	{
-		FItemStack& ItemStack = Items[Index];
-		if (ItemStack.IsEmpty())
-		{
-			ItemStack = InItemStack;
-			InItemStack.Empty();
-			bFlag = true;
-			break;
-		}
-	}
-	return bFlag;
-}
-
-bool UBackpackComponent::AddItemToHotbar(FItemStack& ItemStack)
-{
-	if (ItemStack.IsEmpty()) return false;
-
-	bool bSameFlag = AddSameItemToHotbar(ItemStack);
-
-	bool bAddFlag = AddItemStackHotbar(ItemStack);
-
-	if (bSameFlag || bAddFlag)
-	{
-		OnHotbarUpdate.Broadcast();
-	}
-
-	return ItemStack.IsEmpty();
-}
-
-bool UBackpackComponent::AddSameItemToHotbar(FItemStack& InItemStack)
-{
-	bool bFlag = false;
-
-	if (InItemStack.IsEmpty()) return bFlag;
-
-	if (!InItemStack.IsStack()) return bFlag;		// 不可堆叠
-
-	for (int Index = 0; Index < 8; ++Index)
-	{
-		FItemStack& ItemStack = Items[Index];
-		if (ItemStack.IsEmpty() || ItemStack.IsFull()) continue;
-
-		if (InItemStack.GetItem() == ItemStack.GetItem())
-		{
-			int32 Sum = InItemStack.GetCount() + ItemStack.GetCount();
-			if (Sum <= ItemStack.GetMaxStackSize())
-			{
-				ItemStack.SetCount(Sum);
-				InItemStack.Empty();
-			}
-			else
-			{
-				ItemStack.SetCount(ItemStack.GetMaxStackSize());
-				InItemStack.SetCount(Sum - ItemStack.GetCount());
-			}
-			bFlag = true;
-		}
-	}
-	return bFlag;
-}
-
-bool UBackpackComponent::AddItemStackHotbar(FItemStack& InItemStack)
-{
-	bool bFlag = false;
-
-	if (InItemStack.IsEmpty()) return bFlag;
-
-	for (int Index = 0; Index < 8; ++Index)
-	{
-		FItemStack& ItemStack = Items[Index];
-		if (ItemStack.IsEmpty())
-		{
-			ItemStack = InItemStack;
-			InItemStack.Empty();
-			bFlag = true;
-			break;
-		}
-	}
-
-	return bFlag;
 }
 
 bool UBackpackComponent::IsHotbarIndex(int32 Index)
@@ -340,24 +162,8 @@ bool UBackpackComponent::IsHotbarIndex(int32 Index)
 	return Index >= 0 && Index < 9;
 }
 
-void UBackpackComponent::NotifyAndUpdateUI(int32 Index)
-{
-	if (!IsValidIndex(Index)) return;
-
-	if (IsHotbarIndex(Index))
-	{
-		OnHotbarUpdate.Broadcast();
-	}
-	else
-	{
-		OnInventoryUpdate.Broadcast();
-	}
-}
-
 FItemStack UBackpackComponent::DecreStackSize(int32 Index, int32 Count)
 {
-	bool bFlag = false;
-
 	FItemStack ReturnValue;
 
 	if (IsValidIndex(Index))
@@ -366,13 +172,7 @@ FItemStack UBackpackComponent::DecreStackSize(int32 Index, int32 Count)
 		if (!ItemStack.IsEmpty())
 		{
 			ReturnValue = ItemStack.SplitStack(Count);
-			bFlag = true;
 		}
-	}
-
-	if (bFlag)
-	{
-		NotifyAndUpdateUI(Index);
 	}
 
 	return ReturnValue;

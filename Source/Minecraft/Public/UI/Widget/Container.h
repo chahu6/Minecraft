@@ -3,41 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UI/Widget/View.h"
 #include "Container.generated.h"
 
-class AEntityPlayer;
-class IInventoryInterface;
-class UInventoryItem;
+class UInventoryInterface;
 
 /**
  * 
  */
 UCLASS()
-class MINECRAFT_API UContainer : public UUserWidget
+class MINECRAFT_API UContainer : public UView
 {
 	GENERATED_BODY()
 public:
-	virtual void OnContainerClosed(AEntityPlayer* PlayerIn);
+	void SetInventoryInterface(TScriptInterface<UInventoryInterface> InInventoryInterface);
 
 protected:
-	virtual void NativePreConstruct() override;
-
-	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
-
-	virtual void NativeDestruct() override;
-
-	void ClearContainer(AEntityPlayer* PlayerIn, IInventoryInterface* InventoryIn);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Container")
-	void HandleLMB(UInventoryItem* InventoryItem);
-	virtual void HandleLMB_Implementation(UInventoryItem* InventoryItem);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Container")
-	void HandleRMB(UInventoryItem* InventoryItem);
-	virtual void HandleRMB_Implementation(UInventoryItem* InventoryItem);
-
-protected:
-	UPROPERTY(BlueprintReadOnly, Category = "Player")
-	TObjectPtr<AEntityPlayer> Player;
+	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (ExposeOnSpawn = "true"))
+	TScriptInterface<UInventoryInterface> InventoryInterface;
 };

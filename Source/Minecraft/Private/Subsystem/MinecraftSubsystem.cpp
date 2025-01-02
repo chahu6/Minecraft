@@ -13,7 +13,7 @@
 
 void UMinecraftSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
-	LoadPrimaryAssets();
+	LoadMinecraftAssets();
 
 	UBlock::RegisterBlocks();
 	UItem::RegisterItems();
@@ -26,7 +26,7 @@ void UMinecraftSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	CraftingManager::Init();
 }
 
-void UMinecraftSubsystem::LoadPrimaryAssets() const
+void UMinecraftSubsystem::LoadMinecraftAssets() const
 {
 	UMinecraftAssetManager& AssetManager = UMinecraftAssetManager::Get();
 

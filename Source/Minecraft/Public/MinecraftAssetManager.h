@@ -32,4 +32,7 @@ public:
 
 protected:
 	virtual void StartInitialLoading() override;
+	virtual void FinishInitialLoading() override;
+
+	virtual void PostInitialAssetScan() override;
 };

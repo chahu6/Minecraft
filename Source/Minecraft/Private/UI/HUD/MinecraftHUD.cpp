@@ -1,6 +1,9 @@
 #include "UI/HUD/MinecraftHUD.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "UI/Widget/MainUI.h"
+#include "UI/WidgetController/BagWidgetController.h"
+#include "UI/Widget/Container.h"
+#include "Kismet/MinecraftSystemLibrary.h"
 
 void AMinecraftHUD::BeginPlay()
 {
@@ -52,6 +55,30 @@ UOverlayWidgetController* AMinecraftHUD::GetOverlayWidgetController(const FWidge
 		OverlayWidgetController->BindCallbacksToDependencies();
 	}
 	return OverlayWidgetController;
+}
+
+UBagWidgetController* AMinecraftHUD::GetBagWidgetController(const FWidgetControllerParams& WCParams)
+{
+	ensure(BagWidgetControllerClass);
+	if (BagWidgetController == nullptr)
+	{
+		BagWidgetController = NewObject<UBagWidgetController>(this, BagWidgetControllerClass);
+		BagWidgetController->SetWidgetControllerParams(WCParams);
+		BagWidgetController->BindCallbacksToDependencies();
+	}
+	return BagWidgetController;
+}
+
+void AMinecraftHUD::DisplayBag(TScriptInterface<UInventoryInterface> InventoryInterface)
+{
+	ensure(BagWidgetClass);
+	if (!BagWidgetClass) return;
+
+	APlayerController* PlayerController = GetOwningPlayerController();
+	BagWidget = CreateWidget<UContainer>(PlayerController, BagWidgetClass);
+	BagWidget->SetInventoryInterface(InventoryInterface);
+	BagWidget->SetWidgetController(UMinecraftSystemLibrary::GetBagWidgetController(this));
+	BagWidget->AddToViewport();
 }
 
 void AMinecraftHUD::AddDebugInfo()

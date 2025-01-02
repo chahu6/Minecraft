@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "ItemStack.generated.h"
 
 class UItem;
@@ -21,13 +22,13 @@ public:
 
 	bool IsEmpty() const;
 
-	bool IsFull() const;
+	//bool IsFull() const;
 
 	int32 GetCount() const;
 	void SetCount(int32 Size);
 
 	UItem* GetItem() const;
-	void SetItem(UItem* NewItem);
+	void SetItemID(const FGameplayTag& InItemID);
 
 	bool IsStack() const;
 	int32 GetMaxStackSize() const;
@@ -38,14 +39,14 @@ public:
 
 	void Grow(int32 Quantity);
 
-	bool operator==(const FItemStack& ItemStack) const;
+	bool operator==(const FItemStack& Other) const;
 
-	bool operator!=(const FItemStack& ItemStack) const;
+	bool operator!=(const FItemStack& Other) const;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Properties)
-	int32 StackSize;
-	
+	int32 StackSize = 0;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Properties)
-	UItem* Item;
+	FGameplayTag ItemID;
 };

@@ -2,7 +2,7 @@
 #include "MinecraftGameplayTags.h"
 
 #define REGISTER_BLOCKS(BlockName) \
-	BlockName = GetRegisteredBlock(GameplayTags.Item_Block_##BlockName)
+	BlockName = GetRegisteredBlock(GameplayTags.BlockName)
 
 UBlocks* UBlocks::SingletonManager = nullptr;
 

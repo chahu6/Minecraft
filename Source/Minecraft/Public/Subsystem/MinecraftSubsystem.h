@@ -17,5 +17,5 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 private:
-	void LoadPrimaryAssets() const;
+	void LoadMinecraftAssets() const;
 };

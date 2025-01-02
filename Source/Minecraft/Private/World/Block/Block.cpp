@@ -70,7 +70,7 @@ void UBlock::DropBlockAsItemWithChance(AWorldManager* WorldManager, const FIntVe
 			if (Item != UItems::Air)
 			{
 				FItemStack ItemStack;
-				ItemStack.SetItem(Item);
+				ItemStack.SetItemID(Item->ItemID);
 				ItemStack.SetCount(1);
 				SpawnAsEntity(WorldManager, BlockWorldVoxelLocation, ItemStack);
 			}

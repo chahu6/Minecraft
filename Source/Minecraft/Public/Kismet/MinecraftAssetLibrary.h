@@ -25,4 +25,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	static void ClearItemStack(UPARAM(ref) FItemStack& ItemStack);
+
+	UFUNCTION(BlueprintPure, Category = "Item")
+	static UItem* GetItemFromID(const FGameplayTag& InItemID);
 };

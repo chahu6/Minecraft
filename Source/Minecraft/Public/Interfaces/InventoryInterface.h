@@ -43,12 +43,5 @@ public:
 	void SetInventorySlotContents(int32 Index, const FItemStack& Stack);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
-	bool AddItemToInventoryFromIndex(int32 Index, UPARAM(ref) FItemStack& InItemStack);
-
-	//void OpenInventory(AEntityPlayer* Player);
-
-	//void CloseInventory(AEntityPlayer* Player);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Inventory")
 	void Clear();
 };

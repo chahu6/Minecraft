@@ -39,9 +39,9 @@ void AEntityItem::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	const UItem* Item = ItemStack.GetItem();
-	if (Item)
+	if (!ItemStack.IsEmpty())
 	{
+		const UItem* Item = ItemStack.GetItem();
 		if (Item->StaticMesh)
 		{
 			StaticMesh->SetStaticMesh(Item->StaticMesh);

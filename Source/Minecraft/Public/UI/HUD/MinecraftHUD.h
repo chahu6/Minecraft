@@ -6,8 +6,12 @@
 
 class UOverlayWidgetController;
 struct FWidgetControllerParams;
-class UMinecraftUserWidget;
 class UMainUI;
+class UBagWidgetController;
+
+class UContainer;
+class UInventoryInterface;
+
 /**
  * 
  */
@@ -16,7 +20,6 @@ class MINECRAFT_API AMinecraftHUD : public AHUD
 {
 	GENERATED_BODY()
 
-private:
 	friend class AMCPlayerController;
 
 public:
@@ -24,6 +27,9 @@ public:
 	virtual void DrawHUD() override;
 
 	UOverlayWidgetController* GetOverlayWidgetController(const FWidgetControllerParams& WCParams);
+	UBagWidgetController* GetBagWidgetController(const FWidgetControllerParams& WCParams);
+
+	void DisplayBag(TScriptInterface<UInventoryInterface> InventoryInterface);
 
 public:
 	void AddDebugInfo();
@@ -48,10 +54,22 @@ private:
 	TObjectPtr<UOverlayWidgetController> OverlayWidgetController;
 
 	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UBagWidgetController> BagWidgetControllerClass;
+
+	UPROPERTY()
+	TObjectPtr<UBagWidgetController> BagWidgetController;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UMainUI> MainUIClass;
 
 	UPROPERTY()
 	TObjectPtr<UMainUI> MainUI;
+
+	UPROPERTY(EditAnywhere, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UContainer> BagWidgetClass;
+
+	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UContainer> BagWidget;
 
 	// Ê®×Ö×¼ÐÇ
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")

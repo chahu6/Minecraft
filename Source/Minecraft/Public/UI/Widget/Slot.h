@@ -4,26 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "DroppableInventoryCellWidget.generated.h"
+#include "Slot.generated.h"
 
-class UImage;
-class UTextBlock;
+class UInventoryInterface;
 struct FItemStack;
 
 /**
  * 
  */
 UCLASS()
-class MINECRAFT_API UDroppableInventoryCellWidget : public UUserWidget
+class MINECRAFT_API USlot : public UUserWidget
 {
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void FlushItemData(const FItemStack& ItemStack);
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UImage> ItemIcon;
+	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+	int32 Index;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UTextBlock> Quantity;
+	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+	TScriptInterface<UInventoryInterface> InventoryInterface;
 };

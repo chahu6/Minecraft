@@ -6,8 +6,6 @@
 #include "Interfaces/InventoryInterface.h"
 #include "BackpackComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBackpackUpdate);
-
 /**
  * 
  */
@@ -29,7 +27,6 @@ public:
 	virtual FItemStack DecrStackSize_Implementation(int32 Index, int32 Count) override;
 	virtual FItemStack RemoveStackFromSlot_Implementation(int32 Index) override;
 	virtual void SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack) override;
-	virtual bool AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack) override;
 	virtual void Clear_Implementation() override;
 	/** end Inventory Interface */
 
@@ -37,33 +34,27 @@ public:
 
 	virtual void ConsumeItem(int32 SelectedIndex);
 
-	virtual bool AddItemToInventory(FItemStack& ItemStack);
-
-	void PlaceItemBackInInventory(const FItemStack& ItemStack);
-
 	FItemStack DecreStackSize(int32 Index, int32 Count);
 
 	FORCEINLINE bool IsValidIndex(int32 Index) const { return Items.IsValidIndex(Index); }
 
+	
+	/*
+	* ÐÂµÄº¯Êý
+	*/
+
+	int32 GetInventorySize() const;
+
+	FItemStack GetItemStack(int32 Index);
+
+	bool IsEmpty(int32 Index) const;
+
+	bool SetItemStack(int32 Index, const FItemStack& NewItemStack);
+
+	void SetHangItemStack(const FItemStack& NewItemStack);
+
 protected:
-	bool AddItemToBackpack(FItemStack& ItemStack);
-	bool AddSameItemToBackpack(FItemStack& InItemStack);
-	bool AddItemStackBackpack(FItemStack& InItemStack);
-
-	bool AddItemToHotbar(FItemStack& ItemStack);
-	bool AddSameItemToHotbar(FItemStack& InItemStack);
-	bool AddItemStackHotbar(FItemStack& InItemStack);
-
 	bool IsHotbarIndex(int32 Index);
-
-	void NotifyAndUpdateUI(int32 Index);
-
-public:
-	UPROPERTY(BlueprintAssignable)
-	FOnBackpackUpdate OnHotbarUpdate;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnBackpackUpdate OnInventoryUpdate;
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
@@ -82,5 +73,5 @@ protected:
 	FItemData OffHand_Test;*/
 
 public:
-	FORCEINLINE FItemStack GetItemStack() const { return HangItemStack; }
+	FORCEINLINE FItemStack GetHangItemStack() { return HangItemStack; }
 };

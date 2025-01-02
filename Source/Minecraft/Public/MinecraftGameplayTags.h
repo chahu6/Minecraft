@@ -24,20 +24,20 @@ public:
 	*/
 
 	FGameplayTag Air;
-	FGameplayTag Item_Block_Stone;
-	FGameplayTag Item_Block_Grass;
-	FGameplayTag Item_Block_Dirt;
-	FGameplayTag Item_Block_Bedrock;
-	FGameplayTag Item_Block_Water;
-	FGameplayTag Item_Block_Sand;
-	FGameplayTag Item_Block_Tallgrass;
-	FGameplayTag Item_Block_Rose;
-	FGameplayTag Item_Block_Log;
-	FGameplayTag Item_Block_Planks;
-	FGameplayTag Item_Block_Chest;
-	FGameplayTag Item_Block_CraftingTable;
-	FGameplayTag Item_Block_Ice;
-	FGameplayTag Item_Block_Leaves;
+	FGameplayTag Stone;
+	FGameplayTag Grass;
+	FGameplayTag Dirt;
+	FGameplayTag Bedrock;
+	FGameplayTag Water;
+	FGameplayTag Sand;
+	FGameplayTag Tallgrass;
+	FGameplayTag Rose;
+	FGameplayTag Log;
+	FGameplayTag Planks;
+	FGameplayTag Chest;
+	FGameplayTag CraftingTable;
+	FGameplayTag Ice;
+	FGameplayTag Leaves;
 
 	TMap<FGameplayTag, item_t> ItemLookupTable;
 	TMap<item_t, FGameplayTag> ReverseItemLookupTable;

@@ -3,7 +3,6 @@
 
 #include "TileEntity/TileEntityChest.h"
 #include "Player/EntityPlayer.h"
-#include "UI/Widget/Chest.h"
 #include "Components/Inventory/InventoryComponent.h"
 
 ATileEntityChest::ATileEntityChest()
@@ -24,9 +23,9 @@ void ATileEntityChest::OnBlockActivated(AWorldManager* WorldManager, const FIntV
 {
 	Super::OnBlockActivated(WorldManager, BlockVoxelLoc, Player);
 
-	if (UChest* Chest = CreateWidget<UChest>(Player->GetController<APlayerController>(), ChestClass))
+	/*if (UChest* Chest = CreateWidget<UChest>(Player->GetController<APlayerController>(), ChestClass))
 	{
 		Chest->ChestInventory = InventoryComponent;
 		Player->DisplayGui(Chest);
-	}
+	}*/
 }

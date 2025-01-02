@@ -17,7 +17,6 @@ class UInputAction;
 class AEntityItem;
 
 class UContainer;
-class UBackpack;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSwitchMainHand, int32);
 
@@ -97,9 +96,6 @@ private:
 
 	FVector GetItemSpawnLocation();
 
-	void SetInputModeUIOnly();
-	void SetInputModeGameOnly();
-
 public:
 	FOnSwitchMainHand OnSwitchMainHand;
 
@@ -143,15 +139,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UBackpackComponent> BackpackComponent;
-
-	UPROPERTY(EditAnywhere, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UBackpack> InventoryWidgetClass;
-
-	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UBackpack> InventoryContainer;
-
-	UPROPERTY()
-	TObjectPtr<UContainer> OpenContainer;
 
 private:
 	enum class EPerspective : uint8

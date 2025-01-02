@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UI/Widget/MinecraftUserWidget.h"
+#include "UI/Widget/View.h"
 #include "Hotbar.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MINECRAFT_API UHotbar : public UMinecraftUserWidget
+class MINECRAFT_API UHotbar : public UView
 {
 	GENERATED_BODY()
 protected:

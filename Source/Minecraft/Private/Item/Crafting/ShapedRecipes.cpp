@@ -50,7 +50,7 @@ FItemStack ShapedRecipes::DeserializeItem(TSharedPtr<FJsonObject> JsonRoot, bool
 	FString ItemName = JsonRoot->HasField(TEXT("item")) ? JsonRoot->GetStringField(TEXT("item")) : TEXT("");
 	int32 Count = bUseCount && JsonRoot->HasField(TEXT("count")) ? JsonRoot->GetNumberField(TEXT("count")) : 1;
 
-	ItemStack.SetItem(UItem::GetItemFromID(ItemName));
+	ItemStack.SetItemID(FGameplayTag::RequestGameplayTag(FName(ItemName)));
 	ItemStack.SetCount(Count);
 
 	return ItemStack;

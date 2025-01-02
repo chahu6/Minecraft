@@ -5,7 +5,7 @@
 
 void UMinecraftGameInstance::Init()
 {
-	Super::Init();
+	Super::Init(); 
 
 }
 

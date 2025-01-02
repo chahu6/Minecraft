@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UI/Widget/MinecraftUserWidget.h"
+#include "UI/Widget/View.h"
 #include "MainUI.generated.h"
 
 class UHotbar;
@@ -9,7 +9,7 @@ class UHotbar;
  * 
  */
 UCLASS()
-class MINECRAFT_API UMainUI : public UMinecraftUserWidget
+class MINECRAFT_API UMainUI : public UView
 {
 	GENERATED_BODY()
 public:

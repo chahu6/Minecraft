@@ -82,7 +82,7 @@ void UCraftingComponent::SetInventorySlotContents_Implementation(int32 Index, co
 
 bool UCraftingComponent::AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack)
 {
-	if (InItemStack.IsEmpty() || !StackList.IsValidIndex(Index)) return false;
+	/*if (InItemStack.IsEmpty() || !StackList.IsValidIndex(Index)) return false;
 
 	FItemStack& ItemStack = StackList[Index];
 
@@ -129,7 +129,8 @@ bool UCraftingComponent::AddItemToInventoryFromIndex_Implementation(int32 Index,
 
 	NotifyAndUpdate();
 
-	return InItemStack.IsEmpty();
+	return InItemStack.IsEmpty();*/
+	return false;
 }
 
 void UCraftingComponent::Clear_Implementation()

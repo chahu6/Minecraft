@@ -2,33 +2,34 @@
 
 
 #include "Item/ItemStack.h"
-#include "Init/Items.h"
 #include "Item/Item.h"
+#include "MinecraftGameplayTags.h"
 
 FItemStack::FItemStack()
-	:StackSize(0)
 {
-	Item = const_cast<UItem*>(UItems::Air);
+	ItemID = AIR;
 }
 
 void FItemStack::Empty()
 {
-	*this = FItemStack();
+	ItemID = AIR;
+	StackSize = 0;
 }
 
 bool FItemStack::IsEmpty() const
 {
-	return (*this) == FItemStack();
+	return ItemID == AIR || StackSize == 0;
 }
 
-bool FItemStack::IsFull() const
-{
-	return StackSize == Item->MaxStackSize;
-}
+//bool FItemStack::IsFull() const
+//{
+//	return StackSize == Item->MaxStackSize;
+//}
 
 bool FItemStack::IsStack() const
 {
-	return Item->bIsStack;
+	//return Item->bIsStack;
+	return false;
 }
 
 int32 FItemStack::GetCount() const
@@ -45,22 +46,23 @@ void FItemStack::SetCount(int32 Size)
 
 UItem* FItemStack::GetItem() const
 {
-	return Item;
+	return UItem::GetItemFromID(ItemID);
 }
 
-void FItemStack::SetItem(UItem* NewItem)
+void FItemStack::SetItemID(const FGameplayTag& InItemID)
 {
-	Item = NewItem;
+	ItemID = InItemID;
 }
 
 int32 FItemStack::GetMaxStackSize() const
 {
-	return Item->MaxStackSize;
+	//return Item->MaxStackSize;
+	return 0;
 }
 
 FItemStack FItemStack::SplitStack(int32 Amount)
 {
-	int32 Num = FMath::Min(Amount, StackSize);
+	const int32 Num = FMath::Min(Amount, StackSize);
 
 	FItemStack ItemStack = *this;
 	ItemStack.SetCount(Num);
@@ -78,12 +80,12 @@ void FItemStack::Grow(int32 Quantity)
 	SetCount(StackSize + Quantity);
 }
 
-bool FItemStack::operator==(const FItemStack& ItemStack) const
+bool FItemStack::operator==(const FItemStack& Other) const
 {
-	return StackSize == ItemStack.StackSize && Item == ItemStack.Item;
+	return ItemID == Other.ItemID && StackSize == Other.StackSize;
 }
 
-bool FItemStack::operator!=(const FItemStack& ItemStack) const
+bool FItemStack::operator!=(const FItemStack& Other) const
 {
-	return !((*this) == ItemStack);
+	return !((*this) == Other);
 }

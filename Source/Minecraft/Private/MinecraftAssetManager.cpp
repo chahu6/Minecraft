@@ -33,6 +33,18 @@ void UMinecraftAssetManager::StartInitialLoading()
 	Setting->BlockDataTable.LoadSynchronous();
 }
 
+void UMinecraftAssetManager::FinishInitialLoading()
+{
+	Super::FinishInitialLoading();
+
+}
+
+void UMinecraftAssetManager::PostInitialAssetScan()
+{
+	Super::PostInitialAssetScan();
+
+}
+
 UItem* UMinecraftAssetManager::ForceLoadItem(const FPrimaryAssetId& PrimaryAssetId, bool bLogWarning)
 {
 	FSoftObjectPath ItemPath = GetPrimaryAssetPath(PrimaryAssetId);
