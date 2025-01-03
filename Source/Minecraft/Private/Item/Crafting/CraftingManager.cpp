@@ -7,19 +7,19 @@
 #include "Item/Crafting/ShapelessRecipes.h"
 #include "Components/Crafting/CraftingComponent.h"
 
-TMap<FName, TSharedPtr<IRecipe>> CraftingManager::REGISTER;
+TMap<FName, TSharedPtr<IRecipe>> FCraftingManager::REGISTER;
 
-void CraftingManager::Init()
+void FCraftingManager::Init()
 {
 	ParseJsonRecipes();
 }
 
-void CraftingManager::Register(const FName& RecipeName, const TSharedPtr<IRecipe>& Recipe)
+void FCraftingManager::Register(const FName& RecipeName, const TSharedPtr<IRecipe>& Recipe)
 {
 	REGISTER.Add(RecipeName, Recipe);
 }
 
-TSharedPtr<IRecipe> CraftingManager::FindMatchingRecipe(UCraftingComponent* CraftingMatrix)
+TSharedPtr<IRecipe> FCraftingManager::FindMatchingRecipe(UCraftingComponent* CraftingMatrix)
 {
 	for (TPair<FName, TSharedPtr<IRecipe>>& Pair : REGISTER)
 	{
@@ -31,7 +31,7 @@ TSharedPtr<IRecipe> CraftingManager::FindMatchingRecipe(UCraftingComponent* Craf
 	return TSharedPtr<IRecipe>();
 }
 
-void CraftingManager::ParseJsonRecipes()
+void FCraftingManager::ParseJsonRecipes()
 {
 	TArray<FString> FilePath;
 	FString FileType = TEXT("*.json");
@@ -61,7 +61,7 @@ void CraftingManager::ParseJsonRecipes()
 	}
 }
 
-TSharedPtr<IRecipe> CraftingManager::ParseRecipeJson(const TSharedPtr<FJsonObject>& JsonObject)
+TSharedPtr<IRecipe> FCraftingManager::ParseRecipeJson(const TSharedPtr<FJsonObject>& JsonObject)
 {
 	TSharedPtr<FJsonValue> TypeValue = JsonObject->TryGetField(TEXT("type"));
 	if (TypeValue.IsValid())

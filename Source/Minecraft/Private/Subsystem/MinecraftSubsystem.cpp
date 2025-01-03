@@ -23,7 +23,7 @@ void UMinecraftSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	UItems::Initialization();
 	UBiomes::Initialization();
 
-	CraftingManager::Init();
+	FCraftingManager::Init();
 }
 
 void UMinecraftSubsystem::LoadMinecraftAssets() const

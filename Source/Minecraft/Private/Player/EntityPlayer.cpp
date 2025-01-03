@@ -196,7 +196,7 @@ void AEntityPlayer::OpenBackpack()
 	{
 		if(AMinecraftHUD* MinecraftHUD = PlayerController->GetHUD<AMinecraftHUD>())
 		{
-			MinecraftHUD->DisplayBag(BackpackComponent);
+			MinecraftHUD->DisplayBag(this);
 		}
 	}
 

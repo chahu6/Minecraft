@@ -4,20 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "UI/WidgetController/MinecraftWidgetController.h"
+#include "UI/WidgetController/MouseEvent.h"
 #include "InventoryWidgetController.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryHangItemUpdateSignature, const FItemStack&, NewItemStack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryUpdateSignature, int32, Index, const FItemStack&, NewItemStack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemUpdateSignature, const FItemStack&, NewItemStack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemClickedUpdateSignature, USlot*, ClickedSlot, const FItemStack&, NewItemStack);
 
 struct FItemStack;
 class USlot;
-
-UENUM(BlueprintType)
-enum class EMouseEvent : uint8
-{
-	LMB,
-	RMB
-};
+class UBackpackComponent;
 
 /**
  * 
@@ -30,13 +25,17 @@ public:
 	virtual void BindCallbacksToDependencies() override;
 
 	UFUNCTION(BlueprintCallable)
-	void SlotClick(USlot* ClickedSlot, EMouseEvent MouseEvent);
+	virtual void SlotClick(USlot* ClickedSlot, EMouseEvent MouseEvent);
 
 	void MouseClick(int32 ClickedIndex, EMouseEvent MouseEvent);
 
 	UPROPERTY(BlueprintAssignable)
-	FOnInventoryUpdateSignature OnInventoryUpdateDelegate;
+	FOnItemClickedUpdateSignature OnSlotClickedUpdateDelegate;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnInventoryHangItemUpdateSignature OnInventoryHangItemUpdateDelegate;
+	FOnItemUpdateSignature OnInventoryHangItemUpdateDelegate;
+
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<UBackpackComponent> BackpackComp;
 };

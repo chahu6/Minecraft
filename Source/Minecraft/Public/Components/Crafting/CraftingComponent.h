@@ -6,7 +6,7 @@
 #include "Interfaces/InventoryInterface.h"
 #include "CraftingComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnCraftingItem);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCraftingResultDelegate, const FItemStack&);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MINECRAFT_API UCraftingComponent : public UActorComponent, public IInventoryInterface
@@ -24,7 +24,6 @@ public:
 	virtual FItemStack DecrStackSize_Implementation(int32 Index, int32 Count) override;
 	virtual FItemStack RemoveStackFromSlot_Implementation(int32 Index) override;
 	virtual void SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack) override;
-	virtual bool AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack);
 	virtual void Clear_Implementation() override;
 	/** end Inventory Interface */
 
@@ -33,15 +32,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShrinkAllItems();
 
-	void Init();
-
 protected:
-	void NotifyAndUpdate();
-
 	void OnCraftMatrixChanged();
 
 public:
-	FOnCraftingItem OnCraftingItem;
+	FOnCraftingResultDelegate OnCraftingResultDelegate;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties", meta = (AllowPrivateAccess = "true"))

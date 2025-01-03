@@ -10,7 +10,7 @@ class UCraftingComponent;
 /**
  * 
  */
-class MINECRAFT_API CraftingManager
+class MINECRAFT_API FCraftingManager
 {
 public:
 	static TMap<FName, TSharedPtr<IRecipe>> REGISTER;

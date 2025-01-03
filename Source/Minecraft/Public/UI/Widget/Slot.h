@@ -8,6 +8,7 @@
 
 class UInventoryInterface;
 struct FItemStack;
+class UContainer;
 
 /**
  * 
@@ -20,9 +21,21 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void FlushItemData(const FItemStack& ItemStack);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool IsItemValid(const FItemStack& ItemStack) const;
+	virtual bool IsItemValid_Implementation(const FItemStack& ItemStack) const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void OnTake();
+	virtual void OnTake_Implementation();
+
+	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+	TObjectPtr<UContainer> Parent;
+
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
 	int32 Index;
 
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
 	TScriptInterface<UInventoryInterface> InventoryInterface;
+
 };

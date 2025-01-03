@@ -13,11 +13,6 @@ void UCraftingResultComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	Init();
-}
-
-void UCraftingResultComponent::Init()
-{
 	StackResult.Init(FItemStack(), 1);
 }
 
@@ -29,6 +24,11 @@ void UCraftingResultComponent::SetRecipeUsed(const TSharedPtr<IRecipe>& InRecipe
 TSharedPtr<IRecipe> UCraftingResultComponent::GetRecipeUsed() const
 {
 	return RecipeUsed;
+}
+
+int32 UCraftingResultComponent::GetSizeInventory_Implementation() const
+{
+	return 1;
 }
 
 FItemStack UCraftingResultComponent::GetItemStack_Implementation(int32 Index) const

@@ -29,6 +29,7 @@ public:
 
 	UItem* GetItem() const;
 	void SetItemID(const FGameplayTag& InItemID);
+	FGameplayTag GetItemID() const;
 
 	bool IsStack() const;
 	int32 GetMaxStackSize() const;

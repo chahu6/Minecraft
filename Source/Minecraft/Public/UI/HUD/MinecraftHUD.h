@@ -8,9 +8,7 @@ class UOverlayWidgetController;
 struct FWidgetControllerParams;
 class UMainUI;
 class UBagWidgetController;
-
 class UContainer;
-class UInventoryInterface;
 
 /**
  * 
@@ -29,7 +27,7 @@ public:
 	UOverlayWidgetController* GetOverlayWidgetController(const FWidgetControllerParams& WCParams);
 	UBagWidgetController* GetBagWidgetController(const FWidgetControllerParams& WCParams);
 
-	void DisplayBag(TScriptInterface<UInventoryInterface> InventoryInterface);
+	void DisplayBag(AActor* OwnerActor);
 
 public:
 	void AddDebugInfo();

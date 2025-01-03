@@ -6,7 +6,8 @@
 #include "UI/WidgetController/InventoryWidgetController.h"
 #include "BagWidgetController.generated.h"
 
-class UBackpackComponent;
+class UCraftingComponent;
+class UCraftingResultComponent;
 
 /**
  * 
@@ -19,4 +20,13 @@ public:
 	virtual void BroadcastInitialValue() override;
 	virtual void BindCallbacksToDependencies() override;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnItemUpdateSignature OnCraftingResultUpdateDelegate;
+
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<UCraftingComponent> CraftingComp;
+
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
+	TObjectPtr<UCraftingResultComponent> CraftingResultComp;
 };

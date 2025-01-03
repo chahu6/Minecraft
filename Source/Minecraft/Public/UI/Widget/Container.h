@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "UI/Widget/View.h"
+#include "UI/WidgetController/MouseEvent.h"
 #include "Container.generated.h"
 
-class UInventoryInterface;
+class USlot;
 
 /**
  * 
@@ -16,9 +17,17 @@ class MINECRAFT_API UContainer : public UView
 {
 	GENERATED_BODY()
 public:
-	void SetInventoryInterface(TScriptInterface<UInventoryInterface> InInventoryInterface);
+	void SetActor(AActor* InOwnerActor);
+
+protected:
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
+	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void SlotClick(USlot* ClickedSlot, EMouseEvent MouseEvent);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (ExposeOnSpawn = "true"))
-	TScriptInterface<UInventoryInterface> InventoryInterface;
+	AActor* OwnerActor;
 };

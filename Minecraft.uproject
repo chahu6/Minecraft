@@ -46,10 +46,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "UnLua",
-			"Enabled": false
-		},
-		{
 			"Name": "HotPatcher",
 			"Enabled": false
 		},

@@ -3,3 +3,11 @@
 
 #include "UI/Widget/Slot.h"
 
+bool USlot::IsItemValid_Implementation(const FItemStack& ItemStack) const
+{
+	return true;
+}
+
+void USlot::OnTake_Implementation()
+{
+}

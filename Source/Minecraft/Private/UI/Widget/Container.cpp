@@ -2,9 +2,36 @@
 
 
 #include "UI/Widget/Container.h"
-#include "Interfaces/InventoryInterface.h"
 
-void UContainer::SetInventoryInterface(TScriptInterface<UInventoryInterface> InInventoryInterface)
+void UContainer::SetActor(AActor* InOwnerActor)
 {
-	InventoryInterface = InInventoryInterface;
+	OwnerActor = InOwnerActor;
+}
+
+void UContainer::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	SetIsFocusable(true);
+	SetInputModeUIOnly();
+}
+
+void UContainer::NativeDestruct()
+{
+	Super::NativeDestruct();
+
+	SetInputModeGameOnly();
+}
+
+FReply UContainer::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+{
+	Super::NativeOnKeyDown(InGeometry, InKeyEvent);
+
+	FKey Key = InKeyEvent.GetKey();
+	if (Key == EKeys::E || Key == EKeys::Escape)
+	{
+		RemoveFromParent();
+	}
+
+	return FReply::Handled();
 }

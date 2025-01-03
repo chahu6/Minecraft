@@ -21,9 +21,8 @@ public:
 	UCraftingResultComponent();
 	virtual void BeginPlay() override;
 
-	void Init();
-
 	/** Inventory Interface */
+	int32 GetSizeInventory_Implementation() const override;
 	virtual FItemStack GetItemStack_Implementation(int32 Index) const override;
 	virtual FItemStack RemoveStackFromSlot_Implementation(int32 Index) override;
 	virtual void SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack) override;

@@ -1,4 +1,4 @@
-#include "UI/Widget/StorageUI/Hotbar.h"
+#include "UI/Widget/Hotbar.h"
 
 void UHotbar::NativePreConstruct()
 {

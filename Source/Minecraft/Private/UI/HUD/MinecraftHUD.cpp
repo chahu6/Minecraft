@@ -69,14 +69,14 @@ UBagWidgetController* AMinecraftHUD::GetBagWidgetController(const FWidgetControl
 	return BagWidgetController;
 }
 
-void AMinecraftHUD::DisplayBag(TScriptInterface<UInventoryInterface> InventoryInterface)
+void AMinecraftHUD::DisplayBag(AActor* OwnerActor)
 {
 	ensure(BagWidgetClass);
 	if (!BagWidgetClass) return;
 
 	APlayerController* PlayerController = GetOwningPlayerController();
 	BagWidget = CreateWidget<UContainer>(PlayerController, BagWidgetClass);
-	BagWidget->SetInventoryInterface(InventoryInterface);
+	BagWidget->SetActor(OwnerActor);
 	BagWidget->SetWidgetController(UMinecraftSystemLibrary::GetBagWidgetController(this));
 	BagWidget->AddToViewport();
 }

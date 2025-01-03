@@ -54,6 +54,11 @@ void FItemStack::SetItemID(const FGameplayTag& InItemID)
 	ItemID = InItemID;
 }
 
+FGameplayTag FItemStack::GetItemID() const
+{
+	return ItemID;
+}
+
 int32 FItemStack::GetMaxStackSize() const
 {
 	//return Item->MaxStackSize;

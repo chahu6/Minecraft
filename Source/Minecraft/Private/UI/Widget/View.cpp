@@ -9,34 +9,6 @@ void UView::SetWidgetController(UObject* InWidgetController)
 	OnWidgetControllerSet();
 }
 
-void UView::NativeConstruct()
-{
-	Super::NativeConstruct();
-
-	SetIsFocusable(true);
-	SetInputModeUIOnly();
-}
-
-void UView::NativeDestruct()
-{
-	Super::NativeDestruct();
-
-	SetInputModeGameOnly();
-}
-
-FReply UView::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
-{
-	Super::NativeOnKeyDown(InGeometry, InKeyEvent);
-
-	FKey Key = InKeyEvent.GetKey();
-	if (Key == EKeys::E || Key == EKeys::Escape)
-	{
-		RemoveFromParent();
-	}
-
-	return FReply::Handled();
-}
-
 void UView::SetInputModeUIOnly()
 {
 	APlayerController* PlayerController = GetOwningPlayer();

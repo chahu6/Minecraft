@@ -22,7 +22,7 @@ void UBackpackComponent::BeginPlay()
 	Items[0] = ItemStack;
 
 	FItemStack WoodItemStack;
-	WoodItemStack.SetCount(1);
+	WoodItemStack.SetCount(64);
 	WoodItemStack.SetItemID(FMinecraftGameplayTags::Get().Log);
 	Items[1] = WoodItemStack;
 

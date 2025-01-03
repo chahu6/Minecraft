@@ -6,8 +6,6 @@
 #include "UObject/NoExportTypes.h"
 #include "MinecraftWidgetController.generated.h"
 
-class UBackpackComponent;
-
 USTRUCT(BlueprintType)
 struct FWidgetControllerParams
 {
@@ -52,7 +50,4 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<APawn> Pawn;
-
-	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
-	TObjectPtr<UBackpackComponent> Backpack;
 };

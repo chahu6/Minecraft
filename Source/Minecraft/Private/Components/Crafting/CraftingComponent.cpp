@@ -1,6 +1,5 @@
 #include "Components/Crafting/CraftingComponent.h"
 #include "Utils/ItemStackHelper.h"
-
 #include "Item/Crafting/CraftingManager.h"
 #include "Item/Crafting/IRecipe.h"
 
@@ -13,7 +12,7 @@ void UCraftingComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Init();
+	StackList.Init(FItemStack(), InventoryWidth * InventoryHeight);
 }
 
 int32 UCraftingComponent::GetSizeInventory_Implementation() const
@@ -55,9 +54,9 @@ FItemStack UCraftingComponent::DecrStackSize_Implementation(int32 Index, int32 C
 {
 	FItemStack ItemStack = ItemStackHelper::GetAndSplit(StackList, Index, Count);
 	
-	if (!ItemStack.IsEmpty())
+	if (GetItemStack_Implementation(Index).IsEmpty())
 	{
-		NotifyAndUpdate();
+		OnCraftMatrixChanged();
 	}
 
 	return ItemStack;
@@ -67,7 +66,7 @@ FItemStack UCraftingComponent::RemoveStackFromSlot_Implementation(int32 Index)
 {
 	FItemStack ItemStack = ItemStackHelper::GetAndRemove(StackList, Index);
 
-	NotifyAndUpdate();
+	OnCraftMatrixChanged();
 	return ItemStack;
 }
 
@@ -76,61 +75,8 @@ void UCraftingComponent::SetInventorySlotContents_Implementation(int32 Index, co
 	if (StackList.IsValidIndex(Index))
 	{
 		StackList[Index] = Stack;
-		NotifyAndUpdate();
+		OnCraftMatrixChanged();
 	}
-}
-
-bool UCraftingComponent::AddItemToInventoryFromIndex_Implementation(int32 Index, FItemStack& InItemStack)
-{
-	/*if (InItemStack.IsEmpty() || !StackList.IsValidIndex(Index)) return false;
-
-	FItemStack& ItemStack = StackList[Index];
-
-	if (ItemStack.IsEmpty())
-	{
-		ItemStack = InItemStack;
-		InItemStack.Empty();
-	}
-	else
-	{
-		if (InItemStack.IsStack())
-		{
-			if (ItemStack.GetItem() == InItemStack.GetItem())
-			{
-				if (!ItemStack.IsFull())
-				{
-					int32 Sum = ItemStack.GetCount() + InItemStack.GetCount();
-					if (Sum <= ItemStack.GetMaxStackSize())
-					{
-						ItemStack.SetCount(Sum);
-						InItemStack.Empty();
-					}
-					else
-					{
-						ItemStack.SetCount(ItemStack.GetMaxStackSize());
-						InItemStack.SetCount(Sum - ItemStack.GetCount());
-					}
-				}
-			}
-			else
-			{
-				FItemStack TempItemStack = ItemStack;
-				ItemStack = InItemStack;
-				InItemStack = TempItemStack;
-			}
-		}
-		else
-		{
-			FItemStack TempItemStack = ItemStack;
-			ItemStack = InItemStack;
-			InItemStack = TempItemStack;
-		}
-	}
-
-	NotifyAndUpdate();
-
-	return InItemStack.IsEmpty();*/
-	return false;
 }
 
 void UCraftingComponent::Clear_Implementation()
@@ -139,6 +85,7 @@ void UCraftingComponent::Clear_Implementation()
 	{
 		ItemStack.Empty();
 	}
+	OnCraftMatrixChanged();
 }
 
 FItemStack UCraftingComponent::GetStackInRowAndColumn(int32 Row, int32 Column)
@@ -159,29 +106,19 @@ void UCraftingComponent::ShrinkAllItems()
 		ItemStack.Shrink(1);
 	}
 
-	NotifyAndUpdate();
-}
-
-void UCraftingComponent::Init()
-{
-	StackList.Init(FItemStack(), InventoryWidth * InventoryHeight);
-}
-
-void UCraftingComponent::NotifyAndUpdate()
-{
-	//OnCraftMatrixChanged();
-	OnCraftingItem.Broadcast();
+	OnCraftMatrixChanged();
 }
 
 void UCraftingComponent::OnCraftMatrixChanged()
 {
-	FItemStack ItemStack;
-	TSharedPtr<IRecipe> Recipe = CraftingManager::FindMatchingRecipe(this);
+	TSharedPtr<IRecipe> Recipe = FCraftingManager::FindMatchingRecipe(this);
 	if (Recipe.IsValid())
 	{
-		ItemStack = Recipe->GetCraftingResult();
+		FItemStack ItemStack = Recipe->GetCraftingResult();
+		OnCraftingResultDelegate.Broadcast(ItemStack);
 	}
-
-	StackList.Last() = ItemStack;
-	//OutputItemStack = ItemStack;
+	else
+	{
+		OnCraftingResultDelegate.Broadcast(FItemStack());
+	}
 }
