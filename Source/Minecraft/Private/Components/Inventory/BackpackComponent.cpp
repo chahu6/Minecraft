@@ -30,6 +30,10 @@ void UBackpackComponent::BeginPlay()
 	ChestItemStack.SetCount(1);
 	ChestItemStack.SetItemID(FMinecraftGameplayTags::Get().Chest);
 	Items[2] = ChestItemStack;
+
+	OnInventoryItemUpdateDelegate.Broadcast(0, Items[0]);
+	OnInventoryItemUpdateDelegate.Broadcast(1, Items[1]);
+	OnInventoryItemUpdateDelegate.Broadcast(2, Items[2]);
 }
 
 int32 UBackpackComponent::GetSizeInventory_Implementation() const
@@ -71,13 +75,21 @@ FItemStack UBackpackComponent::DecrStackSize_Implementation(int32 Index, int32 C
 {
 	FItemStack ItemStack = ItemStackHelper::GetAndSplit(Items, Index, Count);
 
+	if (!ItemStack.IsEmpty())
+	{
+		OnInventoryItemUpdateDelegate.Broadcast(Index, GetItemStack_Implementation(Index));
+	}
+
 	return ItemStack;
 }
 
 FItemStack UBackpackComponent::RemoveStackFromSlot_Implementation(int32 Index)
 {
 	FItemStack ItemStack = ItemStackHelper::GetAndRemove(Items, Index);
-
+	if (!ItemStack.IsEmpty())
+	{
+		OnInventoryItemUpdateDelegate.Broadcast(Index, GetItemStack_Implementation(Index));
+	}
 	return ItemStack;
 }
 
@@ -86,6 +98,11 @@ void UBackpackComponent::SetInventorySlotContents_Implementation(int32 Index, co
 	if (IsValidIndex(Index))
 	{
 		Items[Index] = Stack;
+
+		if (!Items[Index].IsEmpty())
+		{
+			OnInventoryItemUpdateDelegate.Broadcast(Index, Items[Index]);
+		}
 	}
 }
 
@@ -120,16 +137,6 @@ bool UBackpackComponent::IsEmpty(int32 Index) const
 	return false;
 }
 
-bool UBackpackComponent::SetItemStack(int32 Index, const FItemStack& NewItemStack)
-{
-	if (IsValidIndex(Index))
-	{
-		Items[Index] = NewItemStack;
-		return true;
-	}
-	return false;
-}
-
 void UBackpackComponent::SetHangItemStack(const FItemStack& NewItemStack)
 {
 	HangItemStack = NewItemStack;
@@ -154,26 +161,9 @@ void UBackpackComponent::ConsumeItem(int32 SelectedIndex)
 		FItemStack& ItemStack = Items[SelectedIndex];
 		ItemStack.Shrink(1);
 	}
-
 }
 
 bool UBackpackComponent::IsHotbarIndex(int32 Index)
 {
 	return Index >= 0 && Index < 9;
-}
-
-FItemStack UBackpackComponent::DecreStackSize(int32 Index, int32 Count)
-{
-	FItemStack ReturnValue;
-
-	if (IsValidIndex(Index))
-	{
-		FItemStack& ItemStack = Items[Index];
-		if (!ItemStack.IsEmpty())
-		{
-			ReturnValue = ItemStack.SplitStack(Count);
-		}
-	}
-
-	return ReturnValue;
 }

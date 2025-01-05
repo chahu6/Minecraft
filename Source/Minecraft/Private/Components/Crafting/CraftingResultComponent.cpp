@@ -46,3 +46,10 @@ void UCraftingResultComponent::SetInventorySlotContents_Implementation(int32 Ind
 	StackResult[0] = Stack;
 }
 
+FItemStack UCraftingResultComponent::DecrStackSize_Implementation(int32 Index, int32 Count)
+{
+	FItemStack ItemStack = ItemStackHelper::GetAndSplit(StackResult, Index, Count);
+
+	return ItemStack;
+}
+

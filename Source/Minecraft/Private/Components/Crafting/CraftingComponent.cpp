@@ -54,7 +54,7 @@ FItemStack UCraftingComponent::DecrStackSize_Implementation(int32 Index, int32 C
 {
 	FItemStack ItemStack = ItemStackHelper::GetAndSplit(StackList, Index, Count);
 	
-	if (GetItemStack_Implementation(Index).IsEmpty())
+	if (!ItemStack.IsEmpty())
 	{
 		OnCraftMatrixChanged();
 	}
@@ -107,6 +107,11 @@ void UCraftingComponent::ShrinkAllItems()
 	}
 
 	OnCraftMatrixChanged();
+}
+
+void UCraftingComponent::UpdateCrafting()
+{
+	OnCraftingMatrixDelegate.Broadcast();
 }
 
 void UCraftingComponent::OnCraftMatrixChanged()

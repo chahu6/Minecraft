@@ -13,6 +13,8 @@ UBlock* UItemBlock::GetBlock() const
 
 bool UItemBlock::OnItemUse(AEntityPlayer* Player, AWorldManager* WorldManager, const FIntVector& BlockVoxelLocation, const FVector& HitNormal)
 {
+    if (WorldManager == nullptr) return false;
+
     FIntVector PlaceBlockVoxelLocation;
     PlaceBlockVoxelLocation.X = BlockVoxelLocation.X + HitNormal.X;
     PlaceBlockVoxelLocation.Y = BlockVoxelLocation.Y + HitNormal.Y;

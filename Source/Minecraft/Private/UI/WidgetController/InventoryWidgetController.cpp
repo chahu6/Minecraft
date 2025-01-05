@@ -18,7 +18,9 @@ void UInventoryWidgetController::MouseClick(int32 ClickedIndex, EMouseEvent Mous
 
 void UInventoryWidgetController::SlotClick(USlot* ClickedSlot, EMouseEvent MouseEvent)
 {
-	int32 ClickedIndex = ClickedSlot->Index;
+	bool bFlag = true;
+
+	const int32 ClickedIndex = ClickedSlot->Index;
 	TScriptInterface<UInventoryInterface> InventoryInterface = ClickedSlot->InventoryInterface;
 
 	FItemStack ClickedItemStack = IInventoryInterface::Execute_GetItemStack(InventoryInterface.GetObject(), ClickedIndex);
@@ -32,6 +34,10 @@ void UInventoryWidgetController::SlotClick(USlot* ClickedSlot, EMouseEvent Mouse
 			IInventoryInterface::Execute_SetInventorySlotContents(InventoryInterface.GetObject(), ClickedIndex, HangItemStack.SplitStack(Count));
 			BackpackComp->SetHangItemStack(HangItemStack);
 		}
+		else
+		{
+			bFlag = false;
+		}
 	}
 	else
 	{
@@ -40,22 +46,23 @@ void UInventoryWidgetController::SlotClick(USlot* ClickedSlot, EMouseEvent Mouse
 			const int32 Count = MouseEvent == EMouseEvent::LMB ? ClickedItemStack.GetCount() : (ClickedItemStack.GetCount() + 1) / 2;
 			FItemStack DecrItemStack = IInventoryInterface::Execute_DecrStackSize(InventoryInterface.GetObject(), ClickedIndex, Count);
 			BackpackComp->SetHangItemStack(DecrItemStack);
+
+			ClickedSlot->OnTake();
 		}
 		else
 		{
 			if (ClickedItemStack.GetItemID() == HangItemStack.GetItemID())
 			{
-				int32 Count = HangItemStack.GetCount();
+				int32 Count = ClickedItemStack.GetCount();
 
-				if (Count > HangItemStack.GetMaxStackSize() - ClickedItemStack.GetCount())
+				if (Count + HangItemStack .GetCount() <= HangItemStack.GetMaxStackSize())
 				{
-					Count = HangItemStack.GetMaxStackSize() - ClickedItemStack.GetCount();
-				}
+					HangItemStack.Grow(Count);
+					IInventoryInterface::Execute_DecrStackSize(InventoryInterface.GetObject(), ClickedIndex, Count);
+					BackpackComp->SetHangItemStack(HangItemStack);
 
-				HangItemStack.Shrink(Count);
-				ClickedItemStack.Grow(Count);
-				BackpackComp->SetHangItemStack(HangItemStack);
-				IInventoryInterface::Execute_SetInventorySlotContents(InventoryInterface.GetObject(), ClickedIndex, ClickedItemStack);
+					ClickedSlot->OnTake();
+				}
 			}
 			else
 			{
@@ -65,6 +72,9 @@ void UInventoryWidgetController::SlotClick(USlot* ClickedSlot, EMouseEvent Mouse
 		}
 	}
 
-	OnSlotClickedUpdateDelegate.Broadcast(ClickedSlot, IInventoryInterface::Execute_GetItemStack(InventoryInterface.GetObject(), ClickedIndex));
-	OnInventoryHangItemUpdateDelegate.Broadcast(BackpackComp->GetHangItemStack());
+	if (bFlag)
+	{
+		OnSlotClickedUpdateDelegate.Broadcast(ClickedSlot, IInventoryInterface::Execute_GetItemStack(InventoryInterface.GetObject(), ClickedIndex));
+		OnInventoryHangItemUpdateDelegate.Broadcast(0, BackpackComp->GetHangItemStack());
+	}
 }

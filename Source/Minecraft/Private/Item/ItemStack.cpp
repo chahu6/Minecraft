@@ -61,8 +61,7 @@ FGameplayTag FItemStack::GetItemID() const
 
 int32 FItemStack::GetMaxStackSize() const
 {
-	//return Item->MaxStackSize;
-	return 0;
+	return GetItem()->MaxStackSize;
 }
 
 FItemStack FItemStack::SplitStack(int32 Amount)

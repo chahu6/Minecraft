@@ -42,10 +42,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "LuaSocket",
-			"Enabled": false
-		},
-		{
 			"Name": "HotPatcher",
 			"Enabled": false
 		},

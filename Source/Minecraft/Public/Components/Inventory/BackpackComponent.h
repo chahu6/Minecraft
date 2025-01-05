@@ -6,6 +6,8 @@
 #include "Interfaces/InventoryInterface.h"
 #include "BackpackComponent.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnItemUpdateDelegate, int32, const FItemStack&);
+
 /**
  * 
  */
@@ -34,8 +36,6 @@ public:
 
 	virtual void ConsumeItem(int32 SelectedIndex);
 
-	FItemStack DecreStackSize(int32 Index, int32 Count);
-
 	FORCEINLINE bool IsValidIndex(int32 Index) const { return Items.IsValidIndex(Index); }
 
 	
@@ -49,9 +49,9 @@ public:
 
 	bool IsEmpty(int32 Index) const;
 
-	bool SetItemStack(int32 Index, const FItemStack& NewItemStack);
-
 	void SetHangItemStack(const FItemStack& NewItemStack);
+
+	FOnItemUpdateDelegate OnInventoryItemUpdateDelegate;
 
 protected:
 	bool IsHotbarIndex(int32 Index);

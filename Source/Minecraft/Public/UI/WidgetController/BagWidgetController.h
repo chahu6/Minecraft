@@ -9,6 +9,8 @@
 class UCraftingComponent;
 class UCraftingResultComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCraftingMatrixUpdateSignature);
+
 /**
  * 
  */
@@ -20,6 +22,11 @@ public:
 	virtual void BroadcastInitialValue() override;
 	virtual void BindCallbacksToDependencies() override;
 
+	virtual void BeginDestroy() override;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnCraftingMatrixUpdateSignature OnCraftingMatrixUpdateDelegate;
+
 	UPROPERTY(BlueprintAssignable)
 	FOnItemUpdateSignature OnCraftingResultUpdateDelegate;
 
@@ -29,4 +36,5 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<UCraftingResultComponent> CraftingResultComp;
+
 };

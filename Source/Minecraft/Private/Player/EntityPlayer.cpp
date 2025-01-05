@@ -276,7 +276,7 @@ AEntityItem* AEntityPlayer::DropItem(bool bDropAll)
 	FItemStack MainHandItemStack = GetMainHandItem();
 	int32 Count = bDropAll && !MainHandItemStack.IsEmpty() ? MainHandItemStack.GetCount() : 1;
 
-	return DropItem(BackpackComponent->DecreStackSize(MainHandIndex, Count));
+	return DropItem(BackpackComponent->DecrStackSize_Implementation(MainHandIndex, Count));
 }
 
 AEntityItem* AEntityPlayer::DropItem(const FItemStack& ItemStack)

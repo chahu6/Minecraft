@@ -7,7 +7,7 @@
 #include "UI/WidgetController/MouseEvent.h"
 #include "InventoryWidgetController.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemUpdateSignature, const FItemStack&, NewItemStack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUpdateSignature, int32, InIndex, const FItemStack&, NewItemStack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemClickedUpdateSignature, USlot*, ClickedSlot, const FItemStack&, NewItemStack);
 
 struct FItemStack;

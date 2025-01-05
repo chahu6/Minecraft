@@ -6,6 +6,7 @@
 
 void UOverlayWidgetController::BroadcastInitialValue()
 {
+
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()

@@ -26,6 +26,7 @@ public:
 	virtual FItemStack GetItemStack_Implementation(int32 Index) const override;
 	virtual FItemStack RemoveStackFromSlot_Implementation(int32 Index) override;
 	virtual void SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack) override;
+	virtual FItemStack DecrStackSize_Implementation(int32 Index, int32 Count) override;
 	/** end Inventory Interface */
 
 public:
