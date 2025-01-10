@@ -18,8 +18,6 @@ void UInventoryWidgetController::MouseClick(int32 ClickedIndex, EMouseEvent Mous
 
 void UInventoryWidgetController::SlotClick(USlot* ClickedSlot, EMouseEvent MouseEvent)
 {
-	bool bFlag = true;
-
 	const int32 ClickedIndex = ClickedSlot->Index;
 	TScriptInterface<UInventoryInterface> InventoryInterface = ClickedSlot->InventoryInterface;
 
@@ -33,10 +31,6 @@ void UInventoryWidgetController::SlotClick(USlot* ClickedSlot, EMouseEvent Mouse
 			const int32 Count = MouseEvent == EMouseEvent::LMB ? HangItemStack.GetCount() : 1;
 			IInventoryInterface::Execute_SetInventorySlotContents(InventoryInterface.GetObject(), ClickedIndex, HangItemStack.SplitStack(Count));
 			BackpackComp->SetHangItemStack(HangItemStack);
-		}
-		else
-		{
-			bFlag = false;
 		}
 	}
 	else
@@ -53,16 +47,17 @@ void UInventoryWidgetController::SlotClick(USlot* ClickedSlot, EMouseEvent Mouse
 		{
 			if (ClickedItemStack.GetItemID() == HangItemStack.GetItemID())
 			{
-				int32 Count = ClickedItemStack.GetCount();
+				int32 Count = MouseEvent == EMouseEvent::LMB ? HangItemStack.GetCount() : 1;
 
-				if (Count + HangItemStack .GetCount() <= HangItemStack.GetMaxStackSize())
+				if (Count > HangItemStack.GetMaxStackSize() - ClickedItemStack.GetCount())
 				{
-					HangItemStack.Grow(Count);
-					IInventoryInterface::Execute_DecrStackSize(InventoryInterface.GetObject(), ClickedIndex, Count);
-					BackpackComp->SetHangItemStack(HangItemStack);
-
-					ClickedSlot->OnTake();
+					Count = HangItemStack.GetMaxStackSize() - ClickedItemStack.GetCount();
 				}
+
+				HangItemStack.Shrink(Count);
+				ClickedItemStack.Grow(Count);
+				IInventoryInterface::Execute_SetInventorySlotContents(InventoryInterface.GetObject(), ClickedIndex, ClickedItemStack);
+				BackpackComp->SetHangItemStack(HangItemStack);
 			}
 			else
 			{
@@ -70,11 +65,5 @@ void UInventoryWidgetController::SlotClick(USlot* ClickedSlot, EMouseEvent Mouse
 				BackpackComp->SetHangItemStack(ClickedItemStack);
 			}
 		}
-	}
-
-	if (bFlag)
-	{
-		OnSlotClickedUpdateDelegate.Broadcast(ClickedSlot, IInventoryInterface::Execute_GetItemStack(InventoryInterface.GetObject(), ClickedIndex));
-		OnInventoryHangItemUpdateDelegate.Broadcast(0, BackpackComp->GetHangItemStack());
 	}
 }

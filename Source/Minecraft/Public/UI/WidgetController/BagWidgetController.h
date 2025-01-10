@@ -9,7 +9,7 @@
 class UCraftingComponent;
 class UCraftingResultComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCraftingMatrixUpdateSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHangItemUpdateSignature, const FItemStack&, NewItemStack);
 
 /**
  * 
@@ -25,7 +25,16 @@ public:
 	virtual void BeginDestroy() override;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnCraftingMatrixUpdateSignature OnCraftingMatrixUpdateDelegate;
+	FOnItemUpdateSignature OnBagItemUpdateDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnItemUpdateSignature OnHotbarItemUpdateDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnHangItemUpdateSignature OnHangItemUpdateSignature;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnItemUpdateSignature OnCraftingItemUpdateDelegate;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnItemUpdateSignature OnCraftingResultUpdateDelegate;

@@ -10,8 +10,6 @@
 
 class IRecipe;
 
-DECLARE_MULTICAST_DELEGATE(FOnCraftingResult);
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MINECRAFT_API UCraftingResultComponent : public UActorComponent, public IInventoryInterface
 {
@@ -33,7 +31,7 @@ public:
 	void SetRecipeUsed(const TSharedPtr<IRecipe>& InRecipe);
 	TSharedPtr<IRecipe> GetRecipeUsed() const;
 
-	FOnCraftingResult OnCraftingResult;
+	FOnItemUpdateDelegate OnCraftingResultDelegate;
 
 protected:
 	UPROPERTY(BlueprintReadOnly)

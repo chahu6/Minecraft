@@ -20,4 +20,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "WidgetController|Attributes")
 	FOnAttributeChangedSignature OnSwitchMainHand;
+
+	UPROPERTY(BlueprintAssignable, Category = "WidgetController|Attributes")
+	FOnItemUpdateSignature OnHotbarUpdateSignature;
 };

@@ -6,7 +6,6 @@
 #include "Interfaces/InventoryInterface.h"
 #include "CraftingComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnCraftingMatrixUpdateDelegate);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnCraftingResultDelegate, const FItemStack&);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -33,15 +32,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShrinkAllItems();
 
-	UFUNCTION()
-	void UpdateCrafting();
-
 protected:
 	void OnCraftMatrixChanged();
 
 public:
 	FOnCraftingResultDelegate OnCraftingResultDelegate;
-	FOnCraftingMatrixUpdateDelegate OnCraftingMatrixDelegate;
+	FOnItemUpdateDelegate OnItemUpdateDelegate;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties", meta = (AllowPrivateAccess = "true"))

@@ -59,6 +59,8 @@ FItemStack UCraftingComponent::DecrStackSize_Implementation(int32 Index, int32 C
 		OnCraftMatrixChanged();
 	}
 
+	OnItemUpdateDelegate.Broadcast(Index, GetItemStack_Implementation(Index));
+
 	return ItemStack;
 }
 
@@ -75,6 +77,8 @@ void UCraftingComponent::SetInventorySlotContents_Implementation(int32 Index, co
 	if (StackList.IsValidIndex(Index))
 	{
 		StackList[Index] = Stack;
+
+	OnItemUpdateDelegate.Broadcast(Index, Stack);
 		OnCraftMatrixChanged();
 	}
 }
@@ -107,11 +111,6 @@ void UCraftingComponent::ShrinkAllItems()
 	}
 
 	OnCraftMatrixChanged();
-}
-
-void UCraftingComponent::UpdateCrafting()
-{
-	OnCraftingMatrixDelegate.Broadcast();
 }
 
 void UCraftingComponent::OnCraftMatrixChanged()

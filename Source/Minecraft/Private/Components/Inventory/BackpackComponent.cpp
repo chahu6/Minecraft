@@ -31,9 +31,9 @@ void UBackpackComponent::BeginPlay()
 	ChestItemStack.SetItemID(FMinecraftGameplayTags::Get().Chest);
 	Items[2] = ChestItemStack;
 
-	OnInventoryItemUpdateDelegate.Broadcast(0, Items[0]);
-	OnInventoryItemUpdateDelegate.Broadcast(1, Items[1]);
-	OnInventoryItemUpdateDelegate.Broadcast(2, Items[2]);
+	OnHotbarItemUpdateDelegate.Broadcast(0, Items[0]);
+	OnHotbarItemUpdateDelegate.Broadcast(1, Items[1]);
+	OnHotbarItemUpdateDelegate.Broadcast(2, Items[2]);
 }
 
 int32 UBackpackComponent::GetSizeInventory_Implementation() const
@@ -73,23 +73,23 @@ FItemStack UBackpackComponent::GetItemStack_Implementation(int32 Index) const
 
 FItemStack UBackpackComponent::DecrStackSize_Implementation(int32 Index, int32 Count)
 {
+	if (!Items.IsValidIndex(Index)) return FItemStack();
+
 	FItemStack ItemStack = ItemStackHelper::GetAndSplit(Items, Index, Count);
 
-	if (!ItemStack.IsEmpty())
-	{
-		OnInventoryItemUpdateDelegate.Broadcast(Index, GetItemStack_Implementation(Index));
-	}
+	Notify(Index);
 
 	return ItemStack;
 }
 
 FItemStack UBackpackComponent::RemoveStackFromSlot_Implementation(int32 Index)
 {
+	if (!Items.IsValidIndex(Index)) return FItemStack();
+
 	FItemStack ItemStack = ItemStackHelper::GetAndRemove(Items, Index);
-	if (!ItemStack.IsEmpty())
-	{
-		OnInventoryItemUpdateDelegate.Broadcast(Index, GetItemStack_Implementation(Index));
-	}
+
+	Notify(Index);
+
 	return ItemStack;
 }
 
@@ -99,10 +99,7 @@ void UBackpackComponent::SetInventorySlotContents_Implementation(int32 Index, co
 	{
 		Items[Index] = Stack;
 
-		if (!Items[Index].IsEmpty())
-		{
-			OnInventoryItemUpdateDelegate.Broadcast(Index, Items[Index]);
-		}
+		Notify(Index);
 	}
 }
 
@@ -114,32 +111,10 @@ void UBackpackComponent::Clear_Implementation()
 	}
 }
 
-int32 UBackpackComponent::GetInventorySize() const
-{
-	return Items.Num();
-}
-
-FItemStack UBackpackComponent::GetItemStack(int32 Index)
-{
-	if (Items.IsValidIndex(Index))
-	{
-		return Items[Index];
-	}
-	return FItemStack();
-}
-
-bool UBackpackComponent::IsEmpty(int32 Index) const
-{
-	if (IsValidIndex(Index))
-	{
-		return Items[Index].IsEmpty();
-	}
-	return false;
-}
-
 void UBackpackComponent::SetHangItemStack(const FItemStack& NewItemStack)
 {
 	HangItemStack = NewItemStack;
+	OnHangItemUpdateDelegate.Broadcast(HangItemStack);
 }
 
 FItemStack UBackpackComponent::GetHotbarItemStack(int32 SelectedIndex)
@@ -160,6 +135,18 @@ void UBackpackComponent::ConsumeItem(int32 SelectedIndex)
 	{
 		FItemStack& ItemStack = Items[SelectedIndex];
 		ItemStack.Shrink(1);
+	}
+}
+
+void UBackpackComponent::Notify(int32 Index)
+{
+	if (IsHotbarIndex(Index))
+	{
+		OnHotbarItemUpdateDelegate.Broadcast(Index, Items[Index]);
+	}
+	else
+	{
+		OnInventoryItemUpdateDelegate.Broadcast(Index, Items[Index]);
 	}
 }
 

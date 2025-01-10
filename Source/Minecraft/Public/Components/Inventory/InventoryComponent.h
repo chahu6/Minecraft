@@ -8,8 +8,6 @@
 #include "Interfaces/InventoryInterface.h"
 #include "InventoryComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdate);
-
 /**
 * 
 */
@@ -36,10 +34,6 @@ public:
 
 protected:
 	FORCEINLINE bool IsValidIndex(int32 Index) const { return Items.IsValidIndex(Index); }
-
-public:
-	UPROPERTY(BlueprintAssignable)
-	FOnInventoryUpdate OnInventoryUpdate;
 
 protected:
 	UPROPERTY(BlueprintReadOnly)

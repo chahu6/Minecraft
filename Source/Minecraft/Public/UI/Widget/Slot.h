@@ -37,5 +37,4 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
 	TScriptInterface<UInventoryInterface> InventoryInterface;
-
 };

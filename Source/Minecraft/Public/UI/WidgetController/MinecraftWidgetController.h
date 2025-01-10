@@ -6,6 +6,8 @@
 #include "UObject/NoExportTypes.h"
 #include "MinecraftWidgetController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUpdateSignature, int32, InIndex, const FItemStack&, NewItemStack);
+
 USTRUCT(BlueprintType)
 struct FWidgetControllerParams
 {

@@ -44,6 +44,8 @@ FItemStack UCraftingResultComponent::RemoveStackFromSlot_Implementation(int32 In
 void UCraftingResultComponent::SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack)
 {
 	StackResult[0] = Stack;
+
+	OnCraftingResultDelegate.Broadcast(0, Stack);
 }
 
 FItemStack UCraftingResultComponent::DecrStackSize_Implementation(int32 Index, int32 Count)

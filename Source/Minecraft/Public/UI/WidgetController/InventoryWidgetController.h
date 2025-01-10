@@ -7,9 +7,6 @@
 #include "UI/WidgetController/MouseEvent.h"
 #include "InventoryWidgetController.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUpdateSignature, int32, InIndex, const FItemStack&, NewItemStack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemClickedUpdateSignature, USlot*, ClickedSlot, const FItemStack&, NewItemStack);
-
 struct FItemStack;
 class USlot;
 class UBackpackComponent;
@@ -28,12 +25,6 @@ public:
 	virtual void SlotClick(USlot* ClickedSlot, EMouseEvent MouseEvent);
 
 	void MouseClick(int32 ClickedIndex, EMouseEvent MouseEvent);
-
-	UPROPERTY(BlueprintAssignable)
-	FOnItemClickedUpdateSignature OnSlotClickedUpdateDelegate;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnItemUpdateSignature OnInventoryHangItemUpdateDelegate;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")

@@ -30,8 +30,6 @@ function M:OnTake()
     for i = 0, num - 1 do
         self.CraftingMatrix:DecrStackSize(i, 1)
     end
-
-    self.CraftingMatrix:UpdateCrafting()
 end
 
 return M
