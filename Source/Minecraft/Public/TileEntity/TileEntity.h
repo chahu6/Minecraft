@@ -33,6 +33,12 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UBlock> Block;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	TObjectPtr<USkeletalMeshComponent> SkeletalMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
+	TObjectPtr<UStaticMeshComponent> StaticMesh;
+
 public:
 	FORCEINLINE void SetBlock(UBlock* InBlock) { Block = InBlock; }
 	FORCEINLINE UBlock* GetBlock() const { return Block; }

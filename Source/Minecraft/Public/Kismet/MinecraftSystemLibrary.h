@@ -9,6 +9,7 @@
 class UBagWidgetController;
 class AMinecraftHUD;
 struct FWidgetControllerParams;
+class UWorkbenchWidgetController;
 
 /**
  * 
@@ -24,4 +25,6 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (DefaultToSelf = "WorldContextObject"), Category = "MinecraftSystemLibrary|WidgetController")
 	static UBagWidgetController* GetBagWidgetController(const UObject* WorldContextObject);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (DefaultToSelf = "WorldContextObject"), Category = "MinecraftSystemLibrary|WidgetController")
+	static UWorkbenchWidgetController* GetWorkbenchWidgetController(const UObject* WorldContextObject);
 };

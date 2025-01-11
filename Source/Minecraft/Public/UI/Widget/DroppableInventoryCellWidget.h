@@ -3,14 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "World/Block/BlockTileEntity.h"
-#include "BlockWorkbench.generated.h"
+#include "UI/Widget/Slot.h"
+#include "DroppableInventoryCellWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MINECRAFT_API UBlockWorkbench : public UBlockTileEntity
+class MINECRAFT_API UDroppableInventoryCellWidget : public USlot
 {
 	GENERATED_BODY()
+	
 };

@@ -2,6 +2,7 @@
 
 
 #include "UI/Widget/Container.h"
+#include "UI/WidgetController/InventoryWidgetController.h"
 
 void UContainer::SetActor(AActor* InOwnerActor)
 {
@@ -34,4 +35,12 @@ FReply UContainer::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent&
 	}
 
 	return FReply::Handled();
+}
+
+void UContainer::SlotClick_Implementation(USlot* ClickedSlot, EMouseEvent MouseEvent)
+{
+	if (UInventoryWidgetController* InventoryWidgetController = Cast<UInventoryWidgetController>(WidgetController))
+	{
+		InventoryWidgetController->SlotClick(ClickedSlot, MouseEvent);
+	}
 }

@@ -17,6 +17,7 @@ class UInputAction;
 class AEntityItem;
 
 class UContainer;
+class UMinecraftWidgetController;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSwitchMainHand, int32);
 
@@ -65,7 +66,9 @@ public:
 	virtual bool OnItemPickup_Implementation(FItemStack& ItemStack) override;
 	/** Interactive Interface end*/
 
-	bool DisplayGui(UContainer* Container);
+	UFUNCTION(BlueprintCallable)
+	void DisplayGUI(TSubclassOf<UContainer> WidgetClass, UMinecraftWidgetController* WidgetController, AActor* OwnerActor);
+
 	void CloseContainer();
 
 	AEntityItem* DropItem(bool bDropAll = false);

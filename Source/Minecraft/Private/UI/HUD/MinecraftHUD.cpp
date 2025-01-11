@@ -4,6 +4,7 @@
 #include "UI/WidgetController/BagWidgetController.h"
 #include "UI/Widget/Container.h"
 #include "Kismet/MinecraftSystemLibrary.h"
+#include "UI/WidgetController/WorkbenchWidgetController.h"
 
 void AMinecraftHUD::BeginPlay()
 {
@@ -69,16 +70,37 @@ UBagWidgetController* AMinecraftHUD::GetBagWidgetController(const FWidgetControl
 	return BagWidgetController;
 }
 
+UWorkbenchWidgetController* AMinecraftHUD::GetWorkbenchWidgetController(const FWidgetControllerParams& WCParams)
+{
+	ensure(WorkbenchWidgetControllerClass);
+	if (WorkbenchWidgetController == nullptr)
+	{
+		WorkbenchWidgetController = NewObject<UWorkbenchWidgetController>(this, WorkbenchWidgetControllerClass);
+		WorkbenchWidgetController->SetWidgetControllerParams(WCParams);
+		WorkbenchWidgetController->BindCallbacksToDependencies();
+	}
+	return WorkbenchWidgetController;
+}
+
 void AMinecraftHUD::DisplayBag(AActor* OwnerActor)
 {
 	ensure(BagWidgetClass);
 	if (!BagWidgetClass) return;
 
 	APlayerController* PlayerController = GetOwningPlayerController();
-	BagWidget = CreateWidget<UContainer>(PlayerController, BagWidgetClass);
-	BagWidget->SetActor(OwnerActor);
-	BagWidget->SetWidgetController(UMinecraftSystemLibrary::GetBagWidgetController(this));
-	BagWidget->AddToViewport();
+	OpenWidget = CreateWidget<UContainer>(PlayerController, BagWidgetClass);
+	OpenWidget->SetActor(OwnerActor);
+	OpenWidget->SetWidgetController(UMinecraftSystemLibrary::GetBagWidgetController(this));
+	OpenWidget->AddToViewport();
+}
+
+void AMinecraftHUD::DisplayGUI(TSubclassOf<UContainer> WidgetClass, UMinecraftWidgetController* WidgetController, AActor* OwnerActor)
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+	OpenWidget = CreateWidget<UContainer>(PlayerController, WidgetClass);
+	OpenWidget->SetActor(OwnerActor);
+	OpenWidget->SetWidgetController(WidgetController);
+	OpenWidget->AddToViewport();
 }
 
 void AMinecraftHUD::AddDebugInfo()

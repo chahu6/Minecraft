@@ -35,7 +35,7 @@ public:
 	FGameplayTag Log;
 	FGameplayTag Planks;
 	FGameplayTag Chest;
-	FGameplayTag CraftingTable;
+	FGameplayTag Workbench;
 	FGameplayTag Ice;
 	FGameplayTag Leaves;
 

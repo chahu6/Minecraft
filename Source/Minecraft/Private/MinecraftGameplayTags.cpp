@@ -60,8 +60,8 @@ void FMinecraftGameplayTags::InitializeNativeGameplayTags()
 		FName("Item.Block.Chest")
 	);
 
-	GameplayTags.CraftingTable = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Item.Block.CraftingTable")
+	GameplayTags.Workbench = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Item.Block.Workbench")
 	);
 
 	GameplayTags.Ice = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -84,7 +84,7 @@ void FMinecraftGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.ItemLookupTable.Add(GameplayTags.Log, 9);
 	GameplayTags.ItemLookupTable.Add(GameplayTags.Planks, 10);
 	GameplayTags.ItemLookupTable.Add(GameplayTags.Chest, 11);
-	GameplayTags.ItemLookupTable.Add(GameplayTags.CraftingTable, 12);
+	GameplayTags.ItemLookupTable.Add(GameplayTags.Workbench, 12);
 	GameplayTags.ItemLookupTable.Add(GameplayTags.Ice, 13);
 	GameplayTags.ItemLookupTable.Add(GameplayTags.Leaves, 14);
 

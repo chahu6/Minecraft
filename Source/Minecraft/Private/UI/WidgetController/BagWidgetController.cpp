@@ -8,6 +8,7 @@
 
 void UBagWidgetController::BroadcastInitialValue()
 {
+
 }
 
 void UBagWidgetController::BindCallbacksToDependencies()

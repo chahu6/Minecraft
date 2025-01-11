@@ -9,6 +9,8 @@ struct FWidgetControllerParams;
 class UMainUI;
 class UBagWidgetController;
 class UContainer;
+class UWorkbenchWidgetController;
+class UMinecraftWidgetController;
 
 /**
  * 
@@ -26,8 +28,11 @@ public:
 
 	UOverlayWidgetController* GetOverlayWidgetController(const FWidgetControllerParams& WCParams);
 	UBagWidgetController* GetBagWidgetController(const FWidgetControllerParams& WCParams);
+	UWorkbenchWidgetController* GetWorkbenchWidgetController(const FWidgetControllerParams& WCParams);
 
 	void DisplayBag(AActor* OwnerActor);
+
+	void DisplayGUI(TSubclassOf<UContainer> WidgetClass, UMinecraftWidgetController* WidgetController, AActor* OwnerActor);
 
 public:
 	void AddDebugInfo();
@@ -58,6 +63,12 @@ private:
 	TObjectPtr<UBagWidgetController> BagWidgetController;
 
 	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UWorkbenchWidgetController> WorkbenchWidgetControllerClass;
+
+	UPROPERTY()
+	TObjectPtr<UWorkbenchWidgetController> WorkbenchWidgetController;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UMainUI> MainUIClass;
 
 	UPROPERTY()
@@ -67,7 +78,7 @@ private:
 	TSubclassOf<UContainer> BagWidgetClass;
 
 	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UContainer> BagWidget;
+	TObjectPtr<UContainer> OpenWidget;
 
 	// Ê®×Ö×¼ÐÇ
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")

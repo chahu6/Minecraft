@@ -199,12 +199,6 @@ void AEntityPlayer::OpenBackpack()
 			MinecraftHUD->DisplayBag(this);
 		}
 	}
-
-	//BagWidget = CreateWidget<UView>(GetController<APlayerController>(), BagWidgetClass);
-	//BagWidget->AddToViewport();
-	//OpenContainer = InventoryContainer;
-
-	//ToggleInventory();
 }
 
 void AEntityPlayer::SwitchingItem(const FInputActionValue& Value)
@@ -305,17 +299,15 @@ bool AEntityPlayer::OnItemPickup_Implementation(FItemStack& ItemStack)
 	return true;
 }
 
-bool AEntityPlayer::DisplayGui(UContainer* Container)
+void AEntityPlayer::DisplayGUI(TSubclassOf<UContainer> WidgetClass, UMinecraftWidgetController* WidgetController, AActor* OwnerActor)
 {
-	if (Container)
+	if (APlayerController* PlayerController = GetController<APlayerController>())
 	{
-		//OpenContainer = Container;
-		//OpenContainer->AddToViewport();
-		//SetInputModeUIOnly();
-		return true;
+		if (AMinecraftHUD* MinecraftHUD = PlayerController->GetHUD<AMinecraftHUD>())
+		{
+			MinecraftHUD->DisplayGUI(WidgetClass, WidgetController, OwnerActor);
+		}
 	}
-
-	return false;
 }
 
 void AEntityPlayer::CloseContainer()

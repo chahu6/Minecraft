@@ -8,6 +8,8 @@
 #include "Container.generated.h"
 
 class USlot;
+class UCanvasPanel;
+class UDroppableInventoryCellWidget;
 
 /**
  * 
@@ -24,10 +26,19 @@ protected:
 	virtual void NativeDestruct() override;
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SlotClick(USlot* ClickedSlot, EMouseEvent MouseEvent);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (ExposeOnSpawn = "true"))
 	AActor* OwnerActor;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Player")
+	TObjectPtr<UDroppableInventoryCellWidget> HangItem;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player")
+	FVector2D HangImageSize = { 100.f, 100.f };
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UCanvasPanel> CanvasPanel;
 };

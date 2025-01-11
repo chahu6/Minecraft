@@ -33,3 +33,14 @@ UBagWidgetController* UMinecraftSystemLibrary::GetBagWidgetController(const UObj
     }
     return nullptr;
 }
+
+UWorkbenchWidgetController* UMinecraftSystemLibrary::GetWorkbenchWidgetController(const UObject* WorldContextObject)
+{
+    FWidgetControllerParams WCParams;
+    AMinecraftHUD* MinecraftHUD = nullptr;
+    if (MakeWidgetControllerParams(WorldContextObject, WCParams, MinecraftHUD))
+    {
+        return MinecraftHUD->GetWorkbenchWidgetController(WCParams);
+    }
+    return nullptr;
+}

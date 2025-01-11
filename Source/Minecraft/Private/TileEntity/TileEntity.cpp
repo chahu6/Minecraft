@@ -6,6 +6,13 @@
 ATileEntity::ATileEntity()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
+	SkeletalMesh->SetupAttachment(RootComponent);
+
+	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	StaticMesh->SetupAttachment(RootComponent);
 }
 
 void ATileEntity::BeginPlay()

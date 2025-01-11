@@ -7,9 +7,6 @@
 
 ATileEntityChest::ATileEntityChest()
 {
-	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
-	RootComponent = SkeletalMesh;
-
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 }
 

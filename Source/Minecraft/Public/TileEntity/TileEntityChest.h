@@ -27,9 +27,6 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
-	TObjectPtr<USkeletalMeshComponent> SkeletalMesh;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Properties")
 	TObjectPtr<UInventoryComponent> InventoryComponent;
 

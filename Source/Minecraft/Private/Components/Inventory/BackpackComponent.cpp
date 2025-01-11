@@ -18,7 +18,7 @@ void UBackpackComponent::BeginPlay()
 
 	FItemStack ItemStack;
 	ItemStack.SetCount(1);
-	ItemStack.SetItemID(FMinecraftGameplayTags::Get().CraftingTable);
+	ItemStack.SetItemID(FMinecraftGameplayTags::Get().Workbench);
 	Items[0] = ItemStack;
 
 	FItemStack WoodItemStack;
