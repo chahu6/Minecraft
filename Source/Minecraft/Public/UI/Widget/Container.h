@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UI/Widget/View.h"
-#include "UI/WidgetController/MouseEvent.h"
+#include "UI/MouseEvent.h"
 #include "Container.generated.h"
 
 class USlot;

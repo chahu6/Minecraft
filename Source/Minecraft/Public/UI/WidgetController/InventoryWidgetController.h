@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UI/WidgetController/MinecraftWidgetController.h"
-#include "UI/WidgetController/MouseEvent.h"
+#include "UI/MouseEvent.h"
 #include "InventoryWidgetController.generated.h"
 
 struct FItemStack;
