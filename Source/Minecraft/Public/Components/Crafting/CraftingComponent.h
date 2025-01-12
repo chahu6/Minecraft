@@ -6,7 +6,7 @@
 #include "Interfaces/InventoryInterface.h"
 #include "CraftingComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnCraftingResultDelegate, const FItemStack&);
+class UCraftingResultComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MINECRAFT_API UCraftingComponent : public UActorComponent, public IInventoryInterface
@@ -36,8 +36,8 @@ protected:
 	void OnCraftMatrixChanged();
 
 public:
-	FOnCraftingResultDelegate OnCraftingResultDelegate;
-	FOnItemUpdateDelegate OnItemUpdateDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FOnItemUpdateSignature OnItemUpdateDelegate;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties", meta = (AllowPrivateAccess = "true"))
@@ -48,6 +48,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FItemStack> StackList;
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCraftingResultComponent> CraftingResult;
 
 public:
 	FORCEINLINE void SetInventoryWidth(int32 InInventoryWidth) { InventoryWidth = InInventoryWidth; }

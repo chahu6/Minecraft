@@ -2,10 +2,11 @@
 #include "UI/HUD/MinecraftHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "Controller/CameraManager/MinecraftPlayerCameraManager.h"
-#include "SimplexNoiseLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "UI/Widget/ProgressBarWidget.h"
 #include "Components/ProgressBar.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
 
 AMCPlayerController::AMCPlayerController()
 {
@@ -16,7 +17,14 @@ void AMCPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	ensure(PlayerControllerMappingContext);
+
 	MinecraftHUD = GetHUD<AMinecraftHUD>();
+
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		Subsystem->AddMappingContext(PlayerControllerMappingContext, 0);
+	}
 }
 
 void AMCPlayerController::OnPossess(APawn* InPawn)
@@ -28,6 +36,12 @@ void AMCPlayerController::OnPossess(APawn* InPawn)
 void AMCPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
+
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
+	{
+		// Êó±ê¹öÂÖ
+		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Triggered, this, &AMCPlayerController::SwitchingWheel);
+	}
 
 	InputComponent->BindAction("ShowDebugInfo", IE_Pressed, this, &AMCPlayerController::ShowDebugInfo);
 }
@@ -88,4 +102,11 @@ void AMCPlayerController::ShowDebugInfo()
 			bIsDebug = true;
 		}
 	}
+}
+
+void AMCPlayerController::SwitchingWheel(const FInputActionValue& Value)
+{
+	const int32 WheelValue = -Value.Get<float>();
+
+	OnSwitchWheelDelegate.Broadcast(WheelValue);
 }

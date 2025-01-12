@@ -9,7 +9,7 @@
 class UCraftingComponent;
 class UCraftingResultComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHangItemUpdateSignature, const FItemStack&, NewItemStack);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHangItemUpdateSignature, const FItemStack&, NewItemStack);
 
 /**
  * 
@@ -30,8 +30,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnItemUpdateSignature OnHotbarItemUpdateDelegate;
 
-	UPROPERTY(BlueprintAssignable)
-	FOnHangItemUpdateSignature OnHangItemUpdateSignature;
+	//UPROPERTY(BlueprintAssignable)
+	//FOnHangItemUpdateSignature OnHangItemUpdateSignature;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnItemUpdateSignature OnCraftingItemUpdateDelegate;

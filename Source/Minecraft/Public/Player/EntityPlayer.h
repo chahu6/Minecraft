@@ -17,9 +17,6 @@ class UInputAction;
 class AEntityItem;
 
 class UContainer;
-class UMinecraftWidgetController;
-
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnSwitchMainHand, int32);
 
 UCLASS()
 class MINECRAFT_API AEntityPlayer : public AMinecraftEntity, public IInteractiveInterface
@@ -39,9 +36,6 @@ class MINECRAFT_API AEntityPlayer : public AMinecraftEntity, public IInteractive
 	TObjectPtr<UInputAction> OpenBackpackAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputAction> WheelAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> DropItemAction;
 
 public:
@@ -55,7 +49,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION()
 	void UpdateMainHandItem();
 
 	FItemStack GetMainHandItem();
@@ -67,7 +60,7 @@ public:
 	/** Interactive Interface end*/
 
 	UFUNCTION(BlueprintCallable)
-	void DisplayGUI(TSubclassOf<UContainer> WidgetClass, UMinecraftWidgetController* WidgetController, AActor* OwnerActor);
+	void DisplayGUI(TSubclassOf<UContainer> WidgetClass, AActor* OwnerActor);
 
 	void CloseContainer();
 
@@ -88,7 +81,10 @@ private:
 	void OnResetAction();
 
 	void OpenBackpack();
-	void SwitchingItem(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void SwitchingItem(int32 WheelValue);
+
 	void DropAction();
 
 	void Initialization();
@@ -98,9 +94,6 @@ private:
 	//void ToggleInventory();
 
 	FVector GetItemSpawnLocation();
-
-public:
-	FOnSwitchMainHand OnSwitchMainHand;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")

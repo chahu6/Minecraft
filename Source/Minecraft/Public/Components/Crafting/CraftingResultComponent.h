@@ -31,7 +31,8 @@ public:
 	void SetRecipeUsed(const TSharedPtr<IRecipe>& InRecipe);
 	TSharedPtr<IRecipe> GetRecipeUsed() const;
 
-	FOnItemUpdateDelegate OnCraftingResultDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FOnItemUpdateSignature OnCraftingResultDelegate;
 
 protected:
 	UPROPERTY(BlueprintReadOnly)

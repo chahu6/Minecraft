@@ -6,7 +6,7 @@
 #include "Interfaces/InventoryInterface.h"
 #include "BackpackComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnHangItemUpdateDelegate, const FItemStack&);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHangItemUpdateSignature, const FItemStack&, NewItemStack);
 
 /**
  * 
@@ -47,9 +47,14 @@ public:
 
 	void SetHangItemStack(const FItemStack& NewItemStack);
 
-	FOnItemUpdateDelegate OnInventoryItemUpdateDelegate;
-	FOnItemUpdateDelegate OnHotbarItemUpdateDelegate;
-	FOnHangItemUpdateDelegate OnHangItemUpdateDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FOnItemUpdateSignature OnInventoryItemUpdateDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnItemUpdateSignature OnHotbarItemUpdateDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnHangItemUpdateSignature OnHangItemUpdateDelegate;
 
 protected:
 	bool IsHotbarIndex(int32 Index);

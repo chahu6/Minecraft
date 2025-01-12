@@ -14,7 +14,7 @@ class UInventoryInterface : public UInterface
 	GENERATED_BODY()
 };
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnItemUpdateDelegate, int32, const FItemStack&);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemUpdateSignature, int32, Index, const FItemStack&, NewItemStack);
 
 /**
  * 

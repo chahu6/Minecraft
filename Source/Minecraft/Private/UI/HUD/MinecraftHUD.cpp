@@ -90,16 +90,15 @@ void AMinecraftHUD::DisplayBag(AActor* OwnerActor)
 	APlayerController* PlayerController = GetOwningPlayerController();
 	OpenWidget = CreateWidget<UContainer>(PlayerController, BagWidgetClass);
 	OpenWidget->SetActor(OwnerActor);
-	OpenWidget->SetWidgetController(UMinecraftSystemLibrary::GetBagWidgetController(this));
+	//OpenWidget->SetWidgetController(UMinecraftSystemLibrary::GetBagWidgetController(this));
 	OpenWidget->AddToViewport();
 }
 
-void AMinecraftHUD::DisplayGUI(TSubclassOf<UContainer> WidgetClass, UMinecraftWidgetController* WidgetController, AActor* OwnerActor)
+void AMinecraftHUD::DisplayGUI(TSubclassOf<UContainer> WidgetClass, AActor* OwnerActor)
 {
 	APlayerController* PlayerController = GetOwningPlayerController();
 	OpenWidget = CreateWidget<UContainer>(PlayerController, WidgetClass);
 	OpenWidget->SetActor(OwnerActor);
-	OpenWidget->SetWidgetController(WidgetController);
 	OpenWidget->AddToViewport();
 }
 
@@ -130,12 +129,12 @@ void AMinecraftHUD::InitMainUI(APlayerController* PC, APlayerState* PS, APawn* P
 	{
 		MainUI = CreateWidget<UMainUI>(PlayerController, MainUIClass);
 
-		const FWidgetControllerParams WCParams(PC, PS, Pawn);
+		/*const FWidgetControllerParams WCParams(PC, PS, Pawn);
 		UOverlayWidgetController* WidgetController = GetOverlayWidgetController(WCParams);
-		check(WidgetController);
+		check(WidgetController);*/
 
-		MainUI->SetWidgetController(WidgetController);
-		WidgetController->BroadcastInitialValue();
+		//MainUI->SetWidgetController(WidgetController);
+		//WidgetController->BroadcastInitialValue();
 
 		MainUI->AddToViewport();
 	}

@@ -10,6 +10,8 @@
 class USlot;
 class UCanvasPanel;
 class UDroppableInventoryCellWidget;
+class UBackpackComponent;
+class UUniformGridPanel;
 
 /**
  * 
@@ -19,6 +21,7 @@ class MINECRAFT_API UContainer : public UView
 {
 	GENERATED_BODY()
 public:
+	UContainer();
 	void SetActor(AActor* InOwnerActor);
 
 protected:
@@ -27,8 +30,24 @@ protected:
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+	void BindCallbacksToDependencies();
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SlotClick(USlot* ClickedSlot, EMouseEvent MouseEvent);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void FlushHangItem(const FItemStack& NewItemStack);
+
+	UFUNCTION()
+	void OnBagItemUpdateDelegateEvent(int32 Index, const FItemStack& NewItemStack);
+
+	UFUNCTION()
+	void OnHotbarItemUpdateDelegateEvent(int32 Index, const FItemStack& NewItemStack);
+
+	UFUNCTION()
+	void OnHangItemUpdateEvent(const FItemStack& NewItemStack);
+
+	void InitBackpack();
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (ExposeOnSpawn = "true"))
@@ -37,9 +56,24 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category = "Player")
 	TObjectPtr<UDroppableInventoryCellWidget> HangItem;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TSubclassOf<UDroppableInventoryCellWidget> HangItemClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TSubclassOf<USlot> SlotClass;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player")
 	FVector2D HangImageSize = { 100.f, 100.f };
+
+	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	TObjectPtr<UBackpackComponent> BackpackComp;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UCanvasPanel> CanvasPanel;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UUniformGridPanel> Inventory;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UUniformGridPanel> Hotbar;
 };

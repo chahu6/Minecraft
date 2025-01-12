@@ -1,11 +1,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
 #include "MCPlayerController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSwitchWheelSignature, int32, WheelValue);
+
 class AMinecraftHUD;
 class UProgressBarWidget;
+class UInputMappingContext;
+class UInputAction;
+
 /**
  * 
  */
@@ -13,6 +19,13 @@ UCLASS()
 class MINECRAFT_API AMCPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputMappingContext> PlayerControllerMappingContext;
+
+	/** Wheel Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> WheelAction;
 
 public:
 	AMCPlayerController();
@@ -28,8 +41,13 @@ public:
 
 	void DisplayGUI(const TSubclassOf<UUserWidget>& UserWidgetClass);
 
+	UPROPERTY(BlueprintAssignable)
+	FOnSwitchWheelSignature OnSwitchWheelDelegate;
+
 private:
 	void ShowDebugInfo();
+
+	void SwitchingWheel(const FInputActionValue& Value);
 
 protected:
 	UPROPERTY()

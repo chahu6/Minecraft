@@ -99,6 +99,8 @@ void AEntityPlayer::PossessedBy(AController* NewController)
 		{
 			MinecraftHUD->InitMainUI(MCPlayerController, GetPlayerState(), this);
 		}
+
+		MCPlayerController->OnSwitchWheelDelegate.AddDynamic(this, &ThisClass::SwitchingItem);
 	}
 }
 
@@ -201,15 +203,24 @@ void AEntityPlayer::OpenBackpack()
 	}
 }
 
-void AEntityPlayer::SwitchingItem(const FInputActionValue& Value)
+void AEntityPlayer::SwitchingItem(int32 WheelValue)
 {
-	const int32 WheelValue = -Value.Get<float>();
-	
 	MainHandIndex = (MainHandIndex + WheelValue + 9) % 9;
 
 	UpdateMainHandItem();
+}
 
-	OnSwitchMainHand.Broadcast(MainHandIndex);
+void AEntityPlayer::UpdateMainHandItem()
+{
+	FItemStack MainItemStack = GetMainHandItem();
+
+	if (!MainItemStack.IsEmpty())
+	{
+
+	}
+
+	ItemMesh->SetStaticMesh(MainItemStack.GetItem()->StaticMesh);
+	ItemSkeletalMesh->SetSkeletalMesh(MainItemStack.GetItem()->SkeletalMesh);
 }
 
 void AEntityPlayer::Initialization()
@@ -233,19 +244,6 @@ FVector AEntityPlayer::GetItemSpawnLocation()
 	const FVector ForwardVector = GetController<APlayerController>()->PlayerCameraManager->GetActorForwardVector();
 	
 	return ForwardVector * 100.f + GetPawnViewLocation();
-}
-
-void AEntityPlayer::UpdateMainHandItem()
-{
-	FItemStack MainItemStack = GetMainHandItem();
-
-	if (!MainItemStack.IsEmpty())
-	{
-
-	}
-
-	ItemMesh->SetStaticMesh(MainItemStack.GetItem()->StaticMesh);
-	ItemSkeletalMesh->SetSkeletalMesh(MainItemStack.GetItem()->SkeletalMesh);
 }
 
 FItemStack AEntityPlayer::GetMainHandItem()
@@ -299,13 +297,13 @@ bool AEntityPlayer::OnItemPickup_Implementation(FItemStack& ItemStack)
 	return true;
 }
 
-void AEntityPlayer::DisplayGUI(TSubclassOf<UContainer> WidgetClass, UMinecraftWidgetController* WidgetController, AActor* OwnerActor)
+void AEntityPlayer::DisplayGUI(TSubclassOf<UContainer> WidgetClass, AActor* OwnerActor)
 {
 	if (APlayerController* PlayerController = GetController<APlayerController>())
 	{
 		if (AMinecraftHUD* MinecraftHUD = PlayerController->GetHUD<AMinecraftHUD>())
 		{
-			MinecraftHUD->DisplayGUI(WidgetClass, WidgetController, OwnerActor);
+			MinecraftHUD->DisplayGUI(WidgetClass, OwnerActor);
 		}
 	}
 }
@@ -333,10 +331,7 @@ void AEntityPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// 打开背包
 		EnhancedInputComponent->BindAction(OpenBackpackAction, ETriggerEvent::Started, this, &AEntityPlayer::OpenBackpack);
-
-		// 鼠标滚轮
-		EnhancedInputComponent->BindAction(WheelAction, ETriggerEvent::Triggered, this, &AEntityPlayer::SwitchingItem);
-
+		
 		// DropItem
 		EnhancedInputComponent->BindAction(DropItemAction, ETriggerEvent::Started, this, &AEntityPlayer::DropAction);
 	}

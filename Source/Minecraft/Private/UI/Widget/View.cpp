@@ -3,11 +3,11 @@
 
 #include "UI/Widget/View.h"
 
-void UView::SetWidgetController(UObject* InWidgetController)
-{
-	WidgetController = InWidgetController;
-	OnWidgetControllerSet();
-}
+//void UView::SetWidgetController(UObject* InWidgetController)
+//{
+//	WidgetController = InWidgetController;
+//	OnWidgetControllerSet();
+//}
 
 void UView::SetInputModeUIOnly()
 {

@@ -14,16 +14,16 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 {
 	if (AEntityPlayer* Player = Cast<AEntityPlayer>(Pawn))
 	{
-		Player->OnSwitchMainHand.AddLambda([this](int32 HotbarIndex) {
-				OnSwitchMainHand.Broadcast(HotbarIndex);
-			}
-		);
+		//Player->OnSwitchMainHand.AddLambda([this](int32 HotbarIndex) {
+		//		OnSwitchMainHand.Broadcast(HotbarIndex);
+		//	}
+		//);
 	}
 
 	if (UBackpackComponent* BackpackComp = Pawn->GetComponentByClass<UBackpackComponent>())
 	{
-		BackpackComp->OnHotbarItemUpdateDelegate.AddLambda([this](int32 Index, const FItemStack& NewItemStack) {
+	/*	BackpackComp->OnHotbarItemUpdateDelegate.AddLambda([this](int32 Index, const FItemStack& NewItemStack) {
 			OnHotbarUpdateSignature.Broadcast(Index, NewItemStack);
-		});
+		});*/
 	}
 }

@@ -18,7 +18,7 @@ void UBagWidgetController::BindCallbacksToDependencies()
 	CraftingComp = Pawn->GetComponentByClass<UCraftingComponent>();
 	CraftingResultComp = Pawn->GetComponentByClass<UCraftingResultComponent>();
 
-	BackpackComp->OnInventoryItemUpdateDelegate.AddLambda([this](int32 Index, const FItemStack& NewItemStack) {
+	/*BackpackComp->OnInventoryItemUpdateDelegate.AddLambda([this](int32 Index, const FItemStack& NewItemStack) {
 		OnBagItemUpdateDelegate.Broadcast(Index - 9, NewItemStack);
 	});
 
@@ -40,7 +40,7 @@ void UBagWidgetController::BindCallbacksToDependencies()
 
 	CraftingResultComp->OnCraftingResultDelegate.AddLambda([this](int32 Index, const FItemStack& NewItemStack) {
 		OnCraftingResultUpdateDelegate.Broadcast(Index, NewItemStack);
-	});
+	});*/
 }
 
 void UBagWidgetController::BeginDestroy()

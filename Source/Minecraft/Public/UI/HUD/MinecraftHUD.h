@@ -32,7 +32,7 @@ public:
 
 	void DisplayBag(AActor* OwnerActor);
 
-	void DisplayGUI(TSubclassOf<UContainer> WidgetClass, UMinecraftWidgetController* WidgetController, AActor* OwnerActor);
+	void DisplayGUI(TSubclassOf<UContainer> WidgetClass, AActor* OwnerActor);
 
 public:
 	void AddDebugInfo();

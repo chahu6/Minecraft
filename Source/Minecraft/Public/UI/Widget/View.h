@@ -14,17 +14,17 @@ class MINECRAFT_API UView : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintCallable)
-	void SetWidgetController(UObject* InWidgetController);
+	//UFUNCTION(BlueprintCallable)
+	//void SetWidgetController(UObject* InWidgetController);
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnWidgetControllerSet();
+	//UFUNCTION(BlueprintImplementableEvent)
+	//void OnWidgetControllerSet();
 
 	void SetInputModeUIOnly();
 	void SetInputModeGameOnly();
 
-protected:
-	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<UObject> WidgetController;
+//protected:
+//	UPROPERTY(BlueprintReadOnly)
+//	TObjectPtr<UObject> WidgetController;
 };

@@ -2,6 +2,7 @@
 #include "Utils/ItemStackHelper.h"
 #include "Item/Crafting/CraftingManager.h"
 #include "Item/Crafting/IRecipe.h"
+#include "Components/Crafting/CraftingResultComponent.h"
 
 UCraftingComponent::UCraftingComponent()
 {
@@ -11,6 +12,8 @@ UCraftingComponent::UCraftingComponent()
 void UCraftingComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CraftingResult = GetOwner()->GetComponentByClass<UCraftingResultComponent>();
 
 	StackList.Init(FItemStack(), InventoryWidth * InventoryHeight);
 }
@@ -118,11 +121,11 @@ void UCraftingComponent::OnCraftMatrixChanged()
 	TSharedPtr<IRecipe> Recipe = FCraftingManager::FindMatchingRecipe(this);
 	if (Recipe.IsValid())
 	{
-		FItemStack ItemStack = Recipe->GetCraftingResult();
-		OnCraftingResultDelegate.Broadcast(ItemStack);
+		const FItemStack ItemStack = Recipe->GetCraftingResult();
+		CraftingResult->SetInventorySlotContents_Implementation(0, ItemStack);
 	}
 	else
 	{
-		OnCraftingResultDelegate.Broadcast(FItemStack());
+		CraftingResult->SetInventorySlotContents_Implementation(0, FItemStack());
 	}
 }
