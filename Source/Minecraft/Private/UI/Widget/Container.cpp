@@ -31,6 +31,15 @@ void UContainer::SetActor(AActor* InOwnerActor)
 	OwnerActor = InOwnerActor;
 }
 
+UActorComponent* UContainer::GetComponentByClass(TSubclassOf<UActorComponent> ComponentClass) const
+{
+	if (IsValid(OwnerActor))
+	{
+		return OwnerActor->GetComponentByClass(ComponentClass);
+	}
+	return nullptr;
+}
+
 void UContainer::NativeConstruct()
 {
 	SetIsFocusable(true);
@@ -101,6 +110,14 @@ void UContainer::FlushHangItem_Implementation(const FItemStack& NewItemStack)
 		UCanvasPanelSlot* CanvasPanelSlot = CanvasPanel->AddChildToCanvas(HangItem);
 		CanvasPanelSlot->SetSize(HangImageSize);
 		HangItem->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
+}
+
+void UContainer::FlushItemFromWidget(UPanelWidget* PanelWidget, int32 Index, const FItemStack& NewItemStack)
+{
+	if (USlot* InventorySlot = Cast<USlot>(PanelWidget->GetChildAt(Index)))
+	{
+		InventorySlot->FlushItemData(NewItemStack);
 	}
 }
 

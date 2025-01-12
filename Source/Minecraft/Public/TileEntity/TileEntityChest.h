@@ -8,7 +8,7 @@
 #include "TileEntityChest.generated.h"
 
 class UInventoryComponent;
-class UChest;
+class UContainer;
 
 /**
  * 
@@ -30,6 +30,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Properties")
 	TObjectPtr<UInventoryComponent> InventoryComponent;
 
-	//UPROPERTY(EditAnywhere, Category = "Properties")
-	//TSubclassOf<UChest> ChestClass;
+	UPROPERTY(EditAnywhere, Category = "Properties")
+	TSubclassOf<UContainer> ChestClass;
 };

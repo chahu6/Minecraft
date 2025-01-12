@@ -131,22 +131,18 @@ void UBackpackComponent::ConsumeItem(int32 SelectedIndex)
 {
 	if (!IsValidIndex(SelectedIndex)) return;
 
-	if (IsValidIndex(SelectedIndex))
-	{
-		FItemStack& ItemStack = Items[SelectedIndex];
-		ItemStack.Shrink(1);
-	}
+	DecrStackSize_Implementation(SelectedIndex, 1);
 }
 
 void UBackpackComponent::Notify(int32 Index)
 {
 	if (IsHotbarIndex(Index))
 	{
-		OnHotbarItemUpdateDelegate.Broadcast(Index, Items[Index]);
+		OnHotbarItemUpdateDelegate.Broadcast(Index, GetItemStack_Implementation(Index));
 	}
 	else
 	{
-		OnInventoryItemUpdateDelegate.Broadcast(Index, Items[Index]);
+		OnInventoryItemUpdateDelegate.Broadcast(Index, GetItemStack_Implementation(Index));
 	}
 }
 

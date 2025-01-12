@@ -96,10 +96,13 @@ void AMinecraftHUD::DisplayBag(AActor* OwnerActor)
 
 void AMinecraftHUD::DisplayGUI(TSubclassOf<UContainer> WidgetClass, AActor* OwnerActor)
 {
-	APlayerController* PlayerController = GetOwningPlayerController();
-	OpenWidget = CreateWidget<UContainer>(PlayerController, WidgetClass);
-	OpenWidget->SetActor(OwnerActor);
-	OpenWidget->AddToViewport();
+	if (WidgetClass)
+	{
+		APlayerController* PlayerController = GetOwningPlayerController();
+		OpenWidget = CreateWidget<UContainer>(PlayerController, WidgetClass);
+		OpenWidget->SetActor(OwnerActor);
+		OpenWidget->AddToViewport();
+	}
 }
 
 void AMinecraftHUD::AddDebugInfo()

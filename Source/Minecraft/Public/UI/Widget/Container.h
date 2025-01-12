@@ -24,6 +24,9 @@ public:
 	UContainer();
 	void SetActor(AActor* InOwnerActor);
 
+	UFUNCTION(BlueprintCallable, Category = "View", meta = (ComponentClass = "/Script/Engine.ActorComponent"), meta = (DeterminesOutputType = "ComponentClass"))
+	UActorComponent* GetComponentByClass(TSubclassOf<UActorComponent> ComponentClass) const;
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -37,6 +40,9 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void FlushHangItem(const FItemStack& NewItemStack);
+
+	UFUNCTION(BlueprintCallable)
+	void FlushItemFromWidget(UPanelWidget* PanelWidget, int32 Index, const FItemStack& NewItemStack);
 
 	UFUNCTION()
 	void OnBagItemUpdateDelegateEvent(int32 Index, const FItemStack& NewItemStack);

@@ -2,7 +2,7 @@
 
 
 #include "Components/Inventory/InventoryComponent.h"
-#include "Item/Item.h"
+#include "Utils/ItemStackHelper.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -23,31 +23,64 @@ int32 UInventoryComponent::GetSizeInventory_Implementation() const
 
 bool UInventoryComponent::IsEmpty_Implementation() const
 {
-	return false;
+	for (const FItemStack& ItemStack : Items)
+	{
+		if (!ItemStack.IsEmpty())
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 bool UInventoryComponent::IsEmptyFromIndex_Implementation(int32 Index) const
 {
+	if (Items.IsValidIndex(Index))
+	{
+		return Items[Index].IsEmpty();
+	}
 	return false;
 }
 
 FItemStack UInventoryComponent::GetItemStack_Implementation(int32 Index) const
 {
+	if (Items.IsValidIndex(Index))
+	{
+		return Items[Index];
+	}
 	return FItemStack();
 }
 
 FItemStack UInventoryComponent::DecrStackSize_Implementation(int32 Index, int32 Count)
 {
-	return FItemStack();
+	if (!Items.IsValidIndex(Index)) return FItemStack();
+
+	FItemStack ItemStack = ItemStackHelper::GetAndSplit(Items, Index, Count);
+
+	Notify(Index);
+
+	return ItemStack;
 }
 
 FItemStack UInventoryComponent::RemoveStackFromSlot_Implementation(int32 Index)
 {
-	return FItemStack();
+	if (!Items.IsValidIndex(Index)) return FItemStack();
+
+	FItemStack ItemStack = ItemStackHelper::GetAndRemove(Items, Index);
+
+	Notify(Index);
+
+	return ItemStack;
 }
 
 void UInventoryComponent::SetInventorySlotContents_Implementation(int32 Index, const FItemStack& Stack)
 {
+	if (IsValidIndex(Index))
+	{
+		Items[Index] = Stack;
+
+		Notify(Index);
+	}
 }
 
 void UInventoryComponent::Clear_Implementation()
@@ -56,4 +89,9 @@ void UInventoryComponent::Clear_Implementation()
 	{
 		ItemStack.Empty();
 	}
+}
+
+void UInventoryComponent::Notify(int32 Index)
+{
+	OnInventoryItemUpdateDelegate.Broadcast(Index, GetItemStack_Implementation(Index));
 }

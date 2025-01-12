@@ -32,8 +32,13 @@ public:
 	virtual void Clear_Implementation() override;
 	/** end Inventory Interface */
 
+	UPROPERTY(BlueprintAssignable)
+	FOnItemUpdateSignature OnInventoryItemUpdateDelegate;
+
 protected:
 	FORCEINLINE bool IsValidIndex(int32 Index) const { return Items.IsValidIndex(Index); }
+
+	virtual void Notify(int32 Index);
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
