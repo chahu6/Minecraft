@@ -3,3 +3,7 @@
 
 #include "UI/WidgetController/WorkbenchWidgetController.h"
 
+void UWorkbenchWidgetController::BindCallbacksToDependencies()
+{
+	Super::BindCallbacksToDependencies();
+}

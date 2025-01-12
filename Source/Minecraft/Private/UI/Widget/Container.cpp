@@ -3,6 +3,9 @@
 
 #include "UI/Widget/Container.h"
 #include "UI/WidgetController/InventoryWidgetController.h"
+#include "UI/Widget/DroppableInventoryCellWidget.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 
 void UContainer::SetActor(AActor* InOwnerActor)
 {
@@ -35,6 +38,22 @@ FReply UContainer::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent&
 	}
 
 	return FReply::Handled();
+}
+
+void UContainer::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	if (IsValid(HangItem))
+	{
+		if (UCanvasPanelSlot* CanvasPanelSlot = Cast<UCanvasPanelSlot>(HangItem->Slot))
+		{
+			FVector2D Location;
+			UWidgetLayoutLibrary::GetMousePositionScaledByDPI(GetOwningPlayer(), Location.X, Location.Y);
+
+			CanvasPanelSlot->SetPosition(Location - (HangImageSize / 2.f));
+		}
+	}
 }
 
 void UContainer::SlotClick_Implementation(USlot* ClickedSlot, EMouseEvent MouseEvent)

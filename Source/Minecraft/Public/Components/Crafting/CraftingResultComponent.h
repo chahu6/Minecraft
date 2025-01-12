@@ -37,5 +37,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	TArray<FItemStack> StackResult;
 
+	UPROPERTY(EditDefaultsOnly)
+	int32 Number = 1;
+
 	TSharedPtr<IRecipe> RecipeUsed;
 };

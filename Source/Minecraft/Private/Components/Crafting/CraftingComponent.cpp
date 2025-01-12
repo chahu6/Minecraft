@@ -78,7 +78,7 @@ void UCraftingComponent::SetInventorySlotContents_Implementation(int32 Index, co
 	{
 		StackList[Index] = Stack;
 
-	OnItemUpdateDelegate.Broadcast(Index, Stack);
+		OnItemUpdateDelegate.Broadcast(Index, Stack);
 		OnCraftMatrixChanged();
 	}
 }

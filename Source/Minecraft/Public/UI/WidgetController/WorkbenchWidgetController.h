@@ -13,5 +13,6 @@ UCLASS()
 class MINECRAFT_API UWorkbenchWidgetController : public UBagWidgetController
 {
 	GENERATED_BODY()
-	
+public:
+	virtual void BindCallbacksToDependencies() override;
 };
