@@ -12,4 +12,14 @@ public:
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
+	static inline FBrickGridModule& Get()
+	{
+		return FModuleManager::LoadModuleChecked<FBrickGridModule>("BrickGrid");
+	}
+
+	static inline bool IsAvailable()
+	{
+		return FModuleManager::Get().IsModuleLoaded("BrickGrid");
+	}
 };

@@ -6,83 +6,85 @@
 #include "DynamicMeshBuilder.h"
 #include "Materials/MaterialRenderProxy.h"
 #include "MaterialDomain.h"
+#include "MeshMaterialShader.h"
+#include "VoxelProcMeshBuffers.h"
 
-static void InitVertexFactoryData(FBrickChunkVertexFactory* VertexFactory, FBrickChunkVertexBuffer* InVertexBuffer);
+FVoxelProcMeshBuffersRenderData::FVoxelProcMeshBuffersRenderData(const TSharedRef<const FVoxelProcMeshBuffers>& InBuffers, ERHIFeatureLevel::Type InFeatureLevel)
+	:VertexFactory(InFeatureLevel, "FVoxelProcMeshBuffersRenderData")
+	, Buffers(InBuffers)
+{
+	check(IsInRenderingThread());
+
+	FVoxelProcMeshBuffers& InitBuffers = const_cast<FVoxelProcMeshBuffers&>(*Buffers);
+	BeginInitResource(&InitBuffers.VertexBuffers.PositionVertexBuffer);
+	BeginInitResource(&InitBuffers.VertexBuffers.StaticMeshVertexBuffer);
+	BeginInitResource(&InitBuffers.VertexBuffers.ColorVertexBuffer);
+	BeginInitResource(&InitBuffers.IndexBuffer);
+
+	const FStaticMeshVertexBuffers& VertexBuffers = Buffers->VertexBuffers;
+	const FDynamicMeshIndexBuffer32& IndexBuffer = Buffers->IndexBuffer;
+
+	FLocalVertexFactory::FDataType Data;
+	VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&VertexFactory, Data);
+	VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&VertexFactory, Data);
+	VertexBuffers.StaticMeshVertexBuffer.BindPackedTexCoordVertexBuffer(&VertexFactory, Data);
+	VertexBuffers.ColorVertexBuffer.BindColorVertexBuffer(&VertexFactory, Data);
+	VertexFactory.SetData(Data);
+	VertexFactory.InitResource();
+}
+
+FVoxelProcMeshBuffersRenderData::~FVoxelProcMeshBuffersRenderData()
+{
+	check(IsInRenderingThread());
+
+	FVoxelProcMeshBuffers& InitBuffers = const_cast<FVoxelProcMeshBuffers&>(*Buffers);
+	InitBuffers.VertexBuffers.PositionVertexBuffer.ReleaseResource();
+	InitBuffers.VertexBuffers.StaticMeshVertexBuffer.ReleaseResource();
+	InitBuffers.VertexBuffers.ColorVertexBuffer.ReleaseResource();
+	InitBuffers.IndexBuffer.ReleaseResource();
+	VertexFactory.ReleaseResource();
+}
+
+TSharedRef<FVoxelProcMeshBuffersRenderData> FVoxelProcMeshBuffersRenderData::GetRenderData(const TSharedRef<const FVoxelProcMeshBuffers>& InBuffers, ERHIFeatureLevel::Type InFeatureLevel)
+{
+	check(IsInRenderingThread());
+	if (!InBuffers->RenderData.IsValid())
+	{
+		TSharedRef<FVoxelProcMeshBuffersRenderData> Result = TSharedRef<FVoxelProcMeshBuffersRenderData>(new FVoxelProcMeshBuffersRenderData(InBuffers, InFeatureLevel));
+		InBuffers->RenderData = Result;
+		return Result;
+	}
+	else
+	{
+		return InBuffers->RenderData.Pin().ToSharedRef();
+	}
+}
 
 FBrickChunkSceneProxy::FBrickChunkSceneProxy(UBrickRenderComponent* InComponent)
 	:FPrimitiveSceneProxy(InComponent)
-	, VertexFactory(GetScene().GetFeatureLevel(), "FBrickGridSceneProxy")
+	, Component(InComponent)
 	, WireframeColor(InComponent->WireframeColor)
 {
 	//bWillEverBeLit = false; //设定为false则会跳过一些只被光照图元所需的工作
 
-#if 1
-	TArray<FDynamicMeshVertex> OutVerts;
-	FDynamicMeshVertex V0, V1, V2, V3;
+	//bHasDeformableMesh = false;
 
-	V0.Position = FVector3f(0.f, 0.f, 0.f);
-	int32 I0 = OutVerts.Add(V0);
-	V1.Position = FVector3f(100.f, 0.f, 0.f);
-	int32 I1 = OutVerts.Add(V1);
-	V2.Position = FVector3f(0.f, 100.f, 0.f);
-	int32 I2 = OutVerts.Add(V2);
-	V3.Position = FVector3f(100.f, 100.f, 0.f);
-	int32 I3 = OutVerts.Add(V3);
+	//EnableGPUSceneSupportFlags();
 
-	IndexBuffer.Indices.Add(I0);
-	IndexBuffer.Indices.Add(I2);
-	IndexBuffer.Indices.Add(I1);
-	IndexBuffer.Indices.Add(I1);
-	IndexBuffer.Indices.Add(I2);
-	IndexBuffer.Indices.Add(I3);
+	const int32 NumSections = Component->ProcMeshSections.Num();
+	Sections.SetNum(NumSections);
+	for (int32 SectionIndex = 0; SectionIndex < NumSections; SectionIndex++)
+	{
+		const UBrickRenderComponent::FVoxelProcMeshSection& SrcSection = Component->ProcMeshSections[SectionIndex];
+		FVoxelProcMeshProxySection& NewSection = Sections[SectionIndex];
 
-	VertexBuffers.InitFromDynamicVertex(&VertexFactory, OutVerts);
-
-	BeginInitResource(&VertexBuffers.StaticMeshVertexBuffer);
-	BeginInitResource(&VertexBuffers.PositionVertexBuffer);
-	BeginInitResource(&VertexBuffers.ColorVertexBuffer);
-
-#else
-	const int32 BoxSize = 100;
-
-	VertexBuffer.Vertices.Add(FBrickVertex({ 0,0,0 }, 0));
-	VertexBuffer.Vertices.Add(FBrickVertex({ BoxSize,0,0 }, 0));
-	VertexBuffer.Vertices.Add(FBrickVertex({ 0,BoxSize,0 }, 0));
-	VertexBuffer.Vertices.Add(FBrickVertex({ 0,0,BoxSize }, 0));
-
-	//填充索引
-	IndexBuffer.Indices.Add(0);
-	IndexBuffer.Indices.Add(1);
-	IndexBuffer.Indices.Add(2);
-	IndexBuffer.Indices.Add(0);
-	IndexBuffer.Indices.Add(2);
-	IndexBuffer.Indices.Add(3);
-	IndexBuffer.Indices.Add(0);
-	IndexBuffer.Indices.Add(3);
-	IndexBuffer.Indices.Add(1);
-	IndexBuffer.Indices.Add(3);
-	IndexBuffer.Indices.Add(2);
-	IndexBuffer.Indices.Add(1);
-
-	//VertexFactory.Init(&VertexBuffer);
-
-	InitVertexFactoryData(&VertexFactory, &VertexBuffer);
-
-	BeginInitResource(&VertexBuffer);
-#endif
-
-	BeginInitResource(&VertexFactory);
-	BeginInitResource(&IndexBuffer);
+		NewSection.Buffers = SrcSection.Buffers;
+	}
 }
 
 FBrickChunkSceneProxy::~FBrickChunkSceneProxy()
 {
-	//VertexBuffer.ReleaseResource();
-	VertexBuffers.PositionVertexBuffer.ReleaseResource();
-	VertexBuffers.StaticMeshVertexBuffer.ReleaseResource();
-	VertexBuffers.ColorVertexBuffer.ReleaseResource();
-	IndexBuffer.ReleaseResource();
-	VertexFactory.ReleaseResource();
+
 }
 
 SIZE_T FBrickChunkSceneProxy::GetTypeHash() const
@@ -108,47 +110,14 @@ void FBrickChunkSceneProxy::GetDynamicMeshElements(const TArray<const FSceneView
 		Collector.RegisterOneFrameMaterialProxy(WireframeMaterialInstance);
 	}
 
-	for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ++ViewIndex)
+	FMaterialRenderProxy* MaterialProxy = bWireframe ? WireframeMaterialInstance : UMaterial::GetDefaultMaterial(EMaterialDomain::MD_Surface)->GetRenderProxy();
+	for (const FVoxelProcMeshProxySection& Section : Sections)
 	{
-		if (VisibilityMap & (1 << ViewIndex))
+		for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ++ViewIndex)
 		{
-			FMaterialRenderProxy* MaterialProxy = bWireframe ? WireframeMaterialInstance : UMaterial::GetDefaultMaterial(EMaterialDomain::MD_Surface)->GetRenderProxy();
+			if (!(VisibilityMap & (1 << ViewIndex))) continue;
 
-			FMeshBatch& Mesh = Collector.AllocateMesh();
-			FMeshBatchElement& BatchElement = Mesh.Elements[0];
-			BatchElement.IndexBuffer = &IndexBuffer;
-			Mesh.VertexFactory = &VertexFactory;
-			Mesh.bWireframe = bWireframe;
-			Mesh.MaterialRenderProxy = MaterialProxy;
-
-			bool bHasPrecomputedVolumetricLightmap;
-			FMatrix PreviousLocalToWorld;
-			int32 SingleCaptureIndex;
-			bool bOutputVelocity;
-			GetScene().GetPrimitiveUniformShaderParameters_RenderThread(GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex, bOutputVelocity);
-			bOutputVelocity |= AlwaysHasVelocity();
-
-			FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer = Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
-			DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, DrawsVelocity(), bOutputVelocity);
-			BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
-
-			// 设定索引范围
-			BatchElement.FirstIndex = 0;
-			BatchElement.NumPrimitives = IndexBuffer.Indices.Num() / 3;
-			// 设定定点范围
-			BatchElement.MinVertexIndex = 0;
-			//BatchElement.MaxVertexIndex = VertexBuffer.Vertices.Num() - 1;
-			BatchElement.MaxVertexIndex = VertexBuffers.PositionVertexBuffer.GetNumVertices() - 1;
-
-			// 是否反向剔除
-			Mesh.ReverseCulling = IsLocalToWorldDeterminantNegative();
-			// 设定图元类型
-			Mesh.Type = PT_TriangleList;
-			// 设定深度优先级组
-			Mesh.DepthPriorityGroup = SDPG_World;
-			//
-			Mesh.bCanApplyViewModeOverrides = false;
-
+			FMeshBatch& Mesh = DrawSection(Collector, Section, MaterialProxy, false, bWireframe);
 			Collector.AddMesh(ViewIndex, Mesh);
 		}
 	}
@@ -183,37 +152,70 @@ void FBrickChunkSceneProxy::BuildFace(const FVector& InBlockPos)
 	//const int32 Index = 
 }
 
-/* Helper function that initializes a render resource if it's not initialized, or updates it otherwise*/
-static inline void InitOrUpdateResource(FRenderResource* Resource)
+void FBrickChunkSceneProxy::CreateRenderThreadResources()
 {
-	if (!Resource->IsInitialized())
+	check(IsInRenderingThread());
+
+	for (FVoxelProcMeshProxySection& Section : Sections)
 	{
-		Resource->InitResource();
-	}
-	else
-	{
-		Resource->UpdateRHI();
+		check(!Section.RenderData.IsValid());
+		check(Section.Buffers.IsValid());
+		Section.RenderData = FVoxelProcMeshBuffersRenderData::GetRenderData(Section.Buffers.ToSharedRef(), GetScene().GetFeatureLevel());
 	}
 }
 
-static void InitVertexFactoryData(FBrickChunkVertexFactory* VertexFactory, FBrickChunkVertexBuffer* InVertexBuffer)
+void FBrickChunkSceneProxy::DestroyRenderThreadResources()
 {
-	ENQUEUE_RENDER_COMMAND(StaticMeshVertexBuffersLegacyInit)(
-		[VertexFactory, InVertexBuffer](FRHICommandListImmediate& RHICmdList)
-		{
-			//Initialize or update the RHI vertex buffers
-			InitOrUpdateResource(InVertexBuffer);
+	check(IsInRenderingThread());
+	
+	for (FVoxelProcMeshProxySection& Section : Sections)
+	{
+		Section.RenderData.Reset();
+	}
+}
 
-			//Use the RHI vertex buffers to create the needed Vertex stream components in an FDataType instance, and then set it as the data of the vertex factory
-			FLocalVertexFactory::FDataType Data;
+FMeshBatch& FBrickChunkSceneProxy::DrawSection(FMeshElementCollector& Collector, const FVoxelProcMeshProxySection& Section, const FMaterialRenderProxy* MaterialRenderProxy, bool bEnableTessellation, bool bWireframe) const
+{
+	// TODO: 在此处插入 return 语句
+	check(Section.RenderData.IsValid());
+	check(MaterialRenderProxy);
 
-			Data.PositionComponent = STRUCTMEMBER_VERTEXSTREAMCOMPONENT(InVertexBuffer, FBrickVertex, X, VET_UByte4N);
-			Data.TextureCoordinates.Add(STRUCTMEMBER_VERTEXSTREAMCOMPONENT(InVertexBuffer, FBrickVertex, X, VET_UByte4N));
-			Data.ColorComponent = STRUCTMEMBER_VERTEXSTREAMCOMPONENT(InVertexBuffer, FBrickVertex, X, VET_Color);
+	FMeshBatch& Mesh = Collector.AllocateMesh();
 
-			VertexFactory->SetData(Data);
+	Mesh.VertexFactory = &Section.RenderData->VertexFactory;
+	Mesh.bWireframe = bWireframe;
+	Mesh.MaterialRenderProxy = MaterialRenderProxy;
+	Mesh.bUseWireframeSelectionColoring = IsSelected() && bWireframe;
+	// 是否反向剔除
+	Mesh.ReverseCulling = IsLocalToWorldDeterminantNegative();
+	// 设定图元类型
+	Mesh.Type = PT_TriangleList;
+	// 设定深度优先级组
+	Mesh.DepthPriorityGroup = SDPG_World;
+	//
+	Mesh.bCanApplyViewModeOverrides = false;
 
-			//Initalize the vertex factory using the data that we just set, this will call the InitRHI() method that we implemented in out vertex factory
-			InitOrUpdateResource(VertexFactory);
-		});
+	/*bool bHasPrecomputedVolumetricLightmap;
+	FMatrix PreviousLocalToWorld;
+	int32 SingleCaptureIndex;
+	bool bOutputVelocity;
+	GetScene().GetPrimitiveUniformShaderParameters_RenderThread(GetPrimitiveSceneInfo(), bHasPrecomputedVolumetricLightmap, PreviousLocalToWorld, SingleCaptureIndex, bOutputVelocity);
+	bOutputVelocity |= AlwaysHasVelocity();
+
+	FDynamicPrimitiveUniformBuffer& DynamicPrimitiveUniformBuffer = Collector.AllocateOneFrameResource<FDynamicPrimitiveUniformBuffer>();
+	DynamicPrimitiveUniformBuffer.Set(GetLocalToWorld(), PreviousLocalToWorld, GetBounds(), GetLocalBounds(), true, bHasPrecomputedVolumetricLightmap, DrawsVelocity(), bOutputVelocity);*/
+
+	FMeshBatchElement& BatchElement = Mesh.Elements[0];
+	BatchElement.IndexBuffer = &Section.Buffers->IndexBuffer;
+	//BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
+	//BatchElement.PrimitiveIdMode = PrimID_DynamicPrimitiveShaderData;
+
+	// 设定索引范围
+	BatchElement.FirstIndex = 0;
+	BatchElement.NumPrimitives = Section.Buffers->IndexBuffer.Indices.Num() / 3;
+	// 设定定点范围
+	BatchElement.MinVertexIndex = 0;
+	BatchElement.MaxVertexIndex = Section.Buffers->VertexBuffers.PositionVertexBuffer.GetNumVertices() - 1;
+	
+	return Mesh;
 }
