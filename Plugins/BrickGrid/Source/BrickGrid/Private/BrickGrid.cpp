@@ -6,8 +6,8 @@
 
 void FBrickGridModule::StartupModule()
 {
-	const FString ShaderDirectory = FPaths::Combine(FPaths::ProjectPluginsDir(), TEXT("BrickGrid/Shaders/Private"));
-	AddShaderSourceDirectoryMapping("/CustomShaders", ShaderDirectory);
+	//const FString ShaderDirectory = FPaths::Combine(FPaths::ProjectPluginsDir(), TEXT("BrickGrid/Shaders/Private"));
+	//AddShaderSourceDirectoryMapping("/CustomShaders", ShaderDirectory);
 }
 
 void FBrickGridModule::ShutdownModule()

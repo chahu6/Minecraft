@@ -31,7 +31,7 @@ APooledActor* UObjectPoolComponent::SpawnPooledActor()
 
 	PooledActor->SetTimeToLive(TimeToLive);
 	PooledActor->FinishSpawning(FTransform(), true);
-	ObjectPool.AddUnique(PooledActor);
+	//ObjectPool.AddUnique(PooledActor);
 	PooledActor->SetInUse(false);
 	return PooledActor;
 }

@@ -22,7 +22,7 @@ void UBlockMeshComponent::BeginPlay()
 void UBlockMeshComponent::Render(const TMap<FGameplayTag, TSharedPtr<FMeshData>>& NewMeshDatas)
 {
 	int32 Key = 0;
-	ClearAllMeshSections();
+	//ClearAllMeshSections();
 	for (auto MeshData = NewMeshDatas.CreateConstIterator(); MeshData; ++MeshData)
 	{
 		if (MeshData->Value->Vertices.IsEmpty()) continue;

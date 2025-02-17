@@ -5,21 +5,12 @@
 #include "BrickChunkSceneProxy.h"
 #include "VoxelProcMeshBuffers.h"
 
-FPrimitiveSceneProxy* UBrickRenderComponent::CreateSceneProxy()
-{
-	return new FBrickChunkSceneProxy(this);
-}
-
-FBoxSphereBounds UBrickRenderComponent::CalcBounds(const FTransform& LocalToWorld) const
-{
-	//return FBoxSphereBounds(LocalToWorld.GetLocation(), FVector(1000000.0f, 1000000.0f, 1000000.0f), 1000000.0f);
-	return FBoxSphereBounds(LocalBounds.TransformBy(LocalToWorld));
-}
-
 UBrickRenderComponent::UBrickRenderComponent()
 {
+	PrimaryComponentTick.bCanEverTick = false; // False
+
 	Mobility = EComponentMobility::Movable;
-	CastShadow = true;
+	SetCastShadow(true);
 
 	TUniquePtr<FVoxelProcMeshBuffers> Buffers = MakeUnique<FVoxelProcMeshBuffers>();
 
@@ -83,6 +74,17 @@ void UBrickRenderComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
 	UPrimitiveComponent::OnComponentDestroyed(bDestroyingHierarchy);
 
 	ProcMeshSections.Reset();
+}
+
+FPrimitiveSceneProxy* UBrickRenderComponent::CreateSceneProxy()
+{
+	return new FBrickChunkSceneProxy(this);
+}
+
+FBoxSphereBounds UBrickRenderComponent::CalcBounds(const FTransform& LocalToWorld) const
+{
+	//return FBoxSphereBounds(LocalToWorld.GetLocation(), FVector(1000000.0f, 1000000.0f, 1000000.0f), 1000000.0f);
+	return FBoxSphereBounds(LocalBounds.TransformBy(LocalToWorld));
 }
 
 void UBrickRenderComponent::UpdateLocalBounds()

@@ -48,6 +48,10 @@
 		{
 			"Name": "Swipe",
 			"Enabled": false
+		},
+		{
+			"Name": "GeometryScripting",
+			"Enabled": true
 		}
 	]
 }

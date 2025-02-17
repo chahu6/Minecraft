@@ -31,7 +31,6 @@ public:
 	UPROPERTY(EditAnywhere)
 	FColor WireframeColor;
 
-
 private:
 	void UpdateLocalBounds();
 

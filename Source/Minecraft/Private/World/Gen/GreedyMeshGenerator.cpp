@@ -10,56 +10,60 @@
 
 void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChunkPos& InChunkPos)
 {
-	TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDataCache = WorldInfo.ChunkDataMap[InChunkPos]->MeshDataCache;
-	MeshDataCache.Empty();
-	const FBlockPos ChunkBlockPos = InChunkPos.ToBlockPos();
-
-	TArray<FQuadInfo> TranslucentBlocks;
-	TArray<FQuadInfo> PlantBlocks;
-
-	for (int32 X = 0; X < WorldGenerator::CHUNK_SIZE; ++X)
+	double DebugThisTime = 0;
 	{
-		for (int32 Y = 0; Y < WorldGenerator::CHUNK_SIZE; ++Y)
-		{
-			for (int32 Z = 0; Z < WorldGenerator::CHUNK_HEIGHT; ++Z)
-			{
-				const FBlockPos BlockPos = ChunkBlockPos + FBlockPos(X, Y, Z);
-				const UBlock* Block = WorldInfo.GetBlockState(BlockPos).GetBlock();
-				if (Block->BlockID == AIR || Block->GetRenderType() != EBlockRenderType::Surface)
-					continue;
+		SCOPE_SECONDS_COUNTER(DebugThisTime);
 
-				if (Block->bTranslucent && Block->IsFullBlock())
+		TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDataCache = WorldInfo.ChunkDataMap[InChunkPos]->MeshDataCache;
+		MeshDataCache.Empty();
+		const FBlockPos ChunkBlockPos = InChunkPos.ToBlockPos();
+
+		TArray<FQuadInfo> TranslucentBlocks;
+		TArray<FQuadInfo> PlantBlocks;
+
+		for (int32 X = 0; X < WorldGenerator::CHUNK_SIZE; ++X)
+		{
+			for (int32 Y = 0; Y < WorldGenerator::CHUNK_SIZE; ++Y)
+			{
+				for (int32 Z = 0; Z < WorldGenerator::CHUNK_HEIGHT; ++Z)
 				{
-					TranslucentBlocks.Add({ FVector(X, Y, Z), Block->BlockID });
-				}
-				else if (Block->bTranslucent && !Block->IsFullBlock())
-				{
-					PlantBlocks.Add({ FVector(X, Y, Z), Block->BlockID });
+					const FBlockPos BlockPos = ChunkBlockPos + FBlockPos(X, Y, Z);
+					const UBlock* Block = WorldInfo.GetBlockState(BlockPos).GetBlock();
+					if (Block->BlockID == AIR || Block->GetRenderType() != EBlockRenderType::Surface)
+						continue;
+
+					if (Block->bTranslucent && Block->IsFullBlock())
+					{
+						TranslucentBlocks.Add({ FVector(X, Y, Z), Block->BlockID });
+					}
+					else if (Block->bTranslucent && !Block->IsFullBlock())
+					{
+						PlantBlocks.Add({ FVector(X, Y, Z), Block->BlockID });
+					}
 				}
 			}
 		}
-	}
 
-	// 生成方块面片
-	for (int32 Axis = 0; Axis < 3; ++Axis)
-	{
-		const int32 Axis1 = (Axis + 1) % 3;
-		const int32 Axis2 = (Axis + 2) % 3;
-
-		int32 MainAxisLimit = 0;
-		int32 Axis1Limit = 0;
-		int32 Axis2Limit = 0;
-
-		FIntVector DeltaAxis1 = FIntVector::ZeroValue;
-		FIntVector DeltaAxis2 = FIntVector::ZeroValue;
-
-		FIntVector ChunkItr = FIntVector::ZeroValue;
-		FIntVector AxisMask = FIntVector::ZeroValue;
-
-		AxisMask[Axis] = 1;
-
-		switch (Axis)
+		// 生成方块面片
+		for (int32 Axis = 0; Axis < 3; ++Axis)
 		{
+			const int32 Axis1 = (Axis + 1) % 3;
+			const int32 Axis2 = (Axis + 2) % 3;
+
+			int32 MainAxisLimit = 0;
+			int32 Axis1Limit = 0;
+			int32 Axis2Limit = 0;
+
+			FIntVector DeltaAxis1 = FIntVector::ZeroValue;
+			FIntVector DeltaAxis2 = FIntVector::ZeroValue;
+
+			FIntVector ChunkItr = FIntVector::ZeroValue;
+			FIntVector AxisMask = FIntVector::ZeroValue;
+
+			AxisMask[Axis] = 1;
+
+			switch (Axis)
+			{
 			case 0: // X轴
 			{
 				MainAxisLimit = WorldGenerator::CHUNK_SIZE;
@@ -81,135 +85,138 @@ void GreedyMeshGenerator::BuildGreedyChunkMesh(GlobalInfo& WorldInfo, const FChu
 				Axis2Limit = WorldGenerator::CHUNK_SIZE;
 				break;
 			}
-		}
+			}
 
-		TArray<FMask> Mask;
-		Mask.SetNum(Axis1Limit * Axis2Limit);
+			TArray<FMask> Mask;
+			Mask.SetNum(Axis1Limit * Axis2Limit);
 
-		for (ChunkItr[Axis] = -1; ChunkItr[Axis] < MainAxisLimit;)
-		{
-			int32 N = 0;
-
-			for (ChunkItr[Axis2] = 0; ChunkItr[Axis2] < Axis2Limit; ++ChunkItr[Axis2])
+			for (ChunkItr[Axis] = -1; ChunkItr[Axis] < MainAxisLimit;)
 			{
-				for (ChunkItr[Axis1] = 0; ChunkItr[Axis1] < Axis1Limit; ++ChunkItr[Axis1])
+				int32 N = 0;
+
+				for (ChunkItr[Axis2] = 0; ChunkItr[Axis2] < Axis2Limit; ++ChunkItr[Axis2])
 				{
-					const FBlockState CurrentBlockState = WorldInfo.GetBlockState(ChunkItr + FIntVector(ChunkBlockPos.X, ChunkBlockPos.Y, 0));
-					const FBlockState CompareBlockState = WorldInfo.GetBlockState((ChunkItr + AxisMask) + FIntVector(ChunkBlockPos.X, ChunkBlockPos.Y, 0));
-
-					const FGameplayTag CurrentBlockID = CurrentBlockState.GetBlock()->BlockID;
-					const FGameplayTag CompareBlockID = CompareBlockState.GetBlock()->BlockID;
-					const UBlock* CurrentBlock = CurrentBlockState.GetBlock();
-					const UBlock* CompareBlock = CompareBlockState.GetBlock();
-
-					const bool bCurrentBlockOpaque = !CurrentBlockState.IsAir() && CurrentBlock->GetRenderType() == EBlockRenderType::Surface && CurrentBlock->IsFullBlock() && !CurrentBlock->bTranslucent;
-					const bool bCompareBlockOpaque = !CompareBlockState.IsAir() && CompareBlock->GetRenderType() == EBlockRenderType::Surface && CompareBlock->IsFullBlock() && !CompareBlock->bTranslucent;
-					if (bCurrentBlockOpaque == bCompareBlockOpaque)
+					for (ChunkItr[Axis1] = 0; ChunkItr[Axis1] < Axis1Limit; ++ChunkItr[Axis1])
 					{
-						Mask[N++] = FMask{ AIR, 0 };
-					}
-					else if (bCurrentBlockOpaque)
-					{
-						if (ChunkItr[Axis] == -1)
+						const FBlockState CurrentBlockState = WorldInfo.GetBlockState(ChunkItr + FIntVector(ChunkBlockPos.X, ChunkBlockPos.Y, 0));
+						const FBlockState CompareBlockState = WorldInfo.GetBlockState((ChunkItr + AxisMask) + FIntVector(ChunkBlockPos.X, ChunkBlockPos.Y, 0));
+
+						const FGameplayTag CurrentBlockID = CurrentBlockState.GetBlock()->BlockID;
+						const FGameplayTag CompareBlockID = CompareBlockState.GetBlock()->BlockID;
+						const UBlock* CurrentBlock = CurrentBlockState.GetBlock();
+						const UBlock* CompareBlock = CompareBlockState.GetBlock();
+
+						const bool bCurrentBlockOpaque = !CurrentBlockState.IsAir() && CurrentBlock->GetRenderType() == EBlockRenderType::Surface && CurrentBlock->IsFullBlock() && !CurrentBlock->bTranslucent;
+						const bool bCompareBlockOpaque = !CompareBlockState.IsAir() && CompareBlock->GetRenderType() == EBlockRenderType::Surface && CompareBlock->IsFullBlock() && !CompareBlock->bTranslucent;
+						if (bCurrentBlockOpaque == bCompareBlockOpaque)
 						{
 							Mask[N++] = FMask{ AIR, 0 };
 						}
+						else if (bCurrentBlockOpaque)
+						{
+							if (ChunkItr[Axis] == -1)
+							{
+								Mask[N++] = FMask{ AIR, 0 };
+							}
+							else
+							{
+								Mask[N++] = FMask{ CurrentBlockID, 1 };
+							}
+						}
 						else
 						{
-							Mask[N++] = FMask{ CurrentBlockID, 1 };
-						}
-					}
-					else
-					{
-						if (ChunkItr[Axis] == MainAxisLimit - 1)
-						{
-							Mask[N++] = FMask{ AIR, 0 };
-						}
-						else
-						{
-							Mask[N++] = FMask{ CompareBlockID, -1 };
+							if (ChunkItr[Axis] == MainAxisLimit - 1)
+							{
+								Mask[N++] = FMask{ AIR, 0 };
+							}
+							else
+							{
+								Mask[N++] = FMask{ CompareBlockID, -1 };
+							}
 						}
 					}
 				}
-			}
 
-			++ChunkItr[Axis];
-			N = 0;
+				++ChunkItr[Axis];
+				N = 0;
 
-			for (int32 j = 0; j < Axis2Limit; ++j)
-			{
-				for (int32 i = 0; i < Axis1Limit;)
+				for (int32 j = 0; j < Axis2Limit; ++j)
 				{
-					if (Mask[N].Normal != 0)
+					for (int32 i = 0; i < Axis1Limit;)
 					{
-						const FMask CurrentMask = Mask[N];
-						ChunkItr[Axis1] = i;
-						ChunkItr[Axis2] = j;
-
-						int32 Width;
-						for (Width = 1; i + Width < Axis1Limit && CompareMask(Mask[N + Width], CurrentMask); ++Width)
+						if (Mask[N].Normal != 0)
 						{
-						}
+							const FMask CurrentMask = Mask[N];
+							ChunkItr[Axis1] = i;
+							ChunkItr[Axis2] = j;
 
-						int32 Height;
-						bool bDone = false;
-
-						for (Height = 1; j + Height < Axis2Limit; ++Height)
-						{
-							for (int32 k = 0; k < Width; ++k)
+							int32 Width;
+							for (Width = 1; i + Width < Axis1Limit && CompareMask(Mask[N + Width], CurrentMask); ++Width)
 							{
-								if (CompareMask(Mask[N + k + Height * Axis1Limit], CurrentMask))
+							}
+
+							int32 Height;
+							bool bDone = false;
+
+							for (Height = 1; j + Height < Axis2Limit; ++Height)
+							{
+								for (int32 k = 0; k < Width; ++k)
 								{
-									continue;
+									if (CompareMask(Mask[N + k + Height * Axis1Limit], CurrentMask))
+									{
+										continue;
+									}
+
+									bDone = true;
+									break;
 								}
 
-								bDone = true;
-								break;
+								if (bDone) break;
 							}
+							DeltaAxis1[Axis1] = Width;
+							DeltaAxis2[Axis2] = Height;
 
-							if (bDone) break;
-						}
-						DeltaAxis1[Axis1] = Width;
-						DeltaAxis2[Axis2] = Height;
+							CreateQuad(
+								CurrentMask, AxisMask, Width, Height,
+								ChunkItr,
+								ChunkItr + DeltaAxis1,
+								ChunkItr + DeltaAxis2,
+								ChunkItr + DeltaAxis1 + DeltaAxis2,
+								MeshDataCache
+							);
 
-						CreateQuad(
-							CurrentMask, AxisMask, Width, Height,
-							ChunkItr,
-							ChunkItr + DeltaAxis1,
-							ChunkItr + DeltaAxis2,
-							ChunkItr + DeltaAxis1 + DeltaAxis2,
-							MeshDataCache
-						);
+							DeltaAxis1 = FIntVector::ZeroValue;
+							DeltaAxis2 = FIntVector::ZeroValue;
 
-						DeltaAxis1 = FIntVector::ZeroValue;
-						DeltaAxis2 = FIntVector::ZeroValue;
-
-						for (int32 l = 0; l < Height; ++l)
-						{
-							for (int32 k = 0; k < Width; ++k)
+							for (int32 l = 0; l < Height; ++l)
 							{
-								Mask[N + k + l * Axis1Limit] = FMask{ AIR, 0 };
+								for (int32 k = 0; k < Width; ++k)
+								{
+									Mask[N + k + l * Axis1Limit] = FMask{ AIR, 0 };
+								}
 							}
-						}
 
-						i += Width;
-						N += Width;
-					}
-					else
-					{
-						i++;
-						N++;
+							i += Width;
+							N += Width;
+						}
+						else
+						{
+							i++;
+							N++;
+						}
 					}
 				}
 			}
 		}
+
+		// 生成半透明方块
+		CreateBlock(TranslucentBlocks, MeshDataCache);
+
+		// 生成植物面片
+		CreatePlant(PlantBlocks, MeshDataCache);
 	}
 
-	// 生成半透明方块
-	CreateBlock(TranslucentBlocks, MeshDataCache);
-
-	// 生成植物面片
-	CreatePlant(PlantBlocks, MeshDataCache);
+	UE_LOG(LogTemp, Log, TEXT("%s Consuming Time: %.2f"), *FString(__FUNCTION__), DebugThisTime);
 }
 
 bool GreedyMeshGenerator::CompareMask(const FMask& M1, const FMask& M2)
@@ -512,57 +519,63 @@ void GreedyMeshGenerator::BuildFace(EFaceType FaceType, const FVector& InBlockPo
 
 void GreedyMeshGenerator::BuildChunkMesh(GlobalInfo& WorldInfo, const FChunkPos& InChunkPos)
 {
-	TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDataCache = WorldInfo.ChunkDataMap[InChunkPos]->MeshDataCache;
-
-	const FBlockPos ChunkBlockPos = InChunkPos.ToBlockPos();
-
-	for (int32 X = 0; X < WorldGenerator::CHUNK_SIZE; ++X)
+	double DebugThisTime = 0;
 	{
-		for (int32 Y = 0; Y < WorldGenerator::CHUNK_SIZE; ++Y)
+		SCOPE_SECONDS_COUNTER(DebugThisTime);
+
+		TMap<FGameplayTag, TSharedPtr<FMeshData>>& MeshDataCache = WorldInfo.ChunkDataMap[InChunkPos]->MeshDataCache;
+
+		const FBlockPos ChunkBlockPos = InChunkPos.ToBlockPos();
+
+		for (int32 X = 0; X < WorldGenerator::CHUNK_SIZE; ++X)
 		{
-			for (int32 Z = 0; Z < WorldGenerator::CHUNK_HEIGHT; ++Z)
+			for (int32 Y = 0; Y < WorldGenerator::CHUNK_SIZE; ++Y)
 			{
-				const FBlockPos BlockPos = ChunkBlockPos + FBlockPos(X, Y, Z);
+				for (int32 Z = 0; Z < WorldGenerator::CHUNK_HEIGHT; ++Z)
+				{
+					const FBlockPos BlockPos = ChunkBlockPos + FBlockPos(X, Y, Z);
 
-				const FBlockState BlockState = WorldInfo.GetBlockState(BlockPos);
-				if (BlockState.IsAir() || BlockState.GetBlock()->GetRenderType() != EBlockRenderType::Surface)
-					continue;
+					const FBlockState BlockState = WorldInfo.GetBlockState(BlockPos);
+					if (BlockState.IsAir() || BlockState.GetBlock()->GetRenderType() != EBlockRenderType::Surface)
+						continue;
 
-				TSharedPtr<FMeshData> MeshData = nullptr;
-				if (MeshDataCache.Contains(BlockState.GetBlock()->BlockID))
-				{
-					MeshData = MeshDataCache[BlockState.GetBlock()->BlockID];
-				}
-				else
-				{
-					MeshData = MeshDataCache.Add(BlockState.GetBlock()->BlockID, MakeShared<FMeshData>());
-				}
+					TSharedPtr<FMeshData> MeshData = nullptr;
+					if (MeshDataCache.Contains(BlockState.GetBlock()->BlockID))
+					{
+						MeshData = MeshDataCache[BlockState.GetBlock()->BlockID];
+					}
+					else
+					{
+						MeshData = MeshDataCache.Add(BlockState.GetBlock()->BlockID, MakeShared<FMeshData>());
+					}
 
-				if (IsRender(EFaceType::Up, WorldInfo, BlockPos))
-				{
-					BuildFace(EFaceType::Up, FVector(X, Y, Z), MeshData.ToSharedRef());
-				}
-				if (IsRender(EFaceType::Down, WorldInfo, BlockPos))
-				{
-					BuildFace(EFaceType::Down, FVector(X, Y, Z), MeshData.ToSharedRef());
-				}
-				if (IsRender(EFaceType::Forward, WorldInfo, BlockPos))
-				{
-					BuildFace(EFaceType::Forward, FVector(X, Y, Z), MeshData.ToSharedRef());
-				}
-				if (IsRender(EFaceType::Backward, WorldInfo, BlockPos))
-				{
-					BuildFace(EFaceType::Backward, FVector(X, Y, Z), MeshData.ToSharedRef());
-				}
-				if (IsRender(EFaceType::Left, WorldInfo, BlockPos))
-				{
-					BuildFace(EFaceType::Left, FVector(X, Y, Z), MeshData.ToSharedRef());
-				}
-				if (IsRender(EFaceType::Right, WorldInfo, BlockPos))
-				{
-					BuildFace(EFaceType::Right, FVector(X, Y, Z), MeshData.ToSharedRef());
+					if (IsRender(EFaceType::Up, WorldInfo, BlockPos))
+					{
+						BuildFace(EFaceType::Up, FVector(X, Y, Z), MeshData.ToSharedRef());
+					}
+					if (IsRender(EFaceType::Down, WorldInfo, BlockPos))
+					{
+						BuildFace(EFaceType::Down, FVector(X, Y, Z), MeshData.ToSharedRef());
+					}
+					if (IsRender(EFaceType::Forward, WorldInfo, BlockPos))
+					{
+						BuildFace(EFaceType::Forward, FVector(X, Y, Z), MeshData.ToSharedRef());
+					}
+					if (IsRender(EFaceType::Backward, WorldInfo, BlockPos))
+					{
+						BuildFace(EFaceType::Backward, FVector(X, Y, Z), MeshData.ToSharedRef());
+					}
+					if (IsRender(EFaceType::Left, WorldInfo, BlockPos))
+					{
+						BuildFace(EFaceType::Left, FVector(X, Y, Z), MeshData.ToSharedRef());
+					}
+					if (IsRender(EFaceType::Right, WorldInfo, BlockPos))
+					{
+						BuildFace(EFaceType::Right, FVector(X, Y, Z), MeshData.ToSharedRef());
+					}
 				}
 			}
 		}
 	}
+	UE_LOG(LogTemp, Log, TEXT("%s Consuming Time: %.2f"), *FString(__FUNCTION__), DebugThisTime);
 }
