@@ -39,7 +39,7 @@ public class BrickGrid : ModuleRules
 				"Slate",
 				"SlateCore",
 				"RHI",
-				"RenderCore",
+				"RenderCore"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

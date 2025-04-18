@@ -41,6 +41,16 @@ namespace WorldGenerator
 
 	// 指定一个世界的最低地表高度
 	constexpr int32 SURFACE_HEIGHT = 20;
+
+	const FVector NORMALS[6] =
+	{
+		{  1.f,  0.f,  0.f }, // Front
+		{ -1.f,  0.f,  0.f }, // Back
+		{  0.f,  0.f,  1.f }, // Top
+		{  0.f,  0.f, -1.f }, // Bottom
+		{  0.f, -1.f,  0.f }, // Left
+		{  0.f,  1.f,  0.f } // Right
+	};
 }
 
 // 一些工具宏函数

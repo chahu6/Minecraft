@@ -33,7 +33,7 @@ FBlockState GlobalInfo::GetBlockState(int32 X, int32 Y, int32 Z)
 {
 	const FChunkPos ChunkPos = FChunkHelper::ChunkPosFromBlockPos(X, Y);
 
-	FScopeLock ScopeLock(&CriticalSection);
+	FScopeLock ScopeLock(&CriticalSection); // @TODO ÐÔÄÜÆ¿¾±£¡£¡£¡
 	if (ChunkDataMap.Contains(ChunkPos))
 	{
 		TSharedPtr<FChunkData> ChunkData = ChunkDataMap[ChunkPos];

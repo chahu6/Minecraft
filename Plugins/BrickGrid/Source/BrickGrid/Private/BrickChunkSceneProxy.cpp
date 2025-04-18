@@ -8,6 +8,43 @@
 #include "MaterialDomain.h"
 #include "MeshMaterialShader.h"
 #include "VoxelProcMeshBuffers.h"
+#include "MeshDrawShaderBindings.h"
+
+// Shader parameter
+BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FCustomShaderVFParameters, )
+SHADER_PARAMETER_SRV(Buffer<float2>, VertexFetch_TexCoordBuffer)
+// UV描述信息不会全部用到，先占位。
+SHADER_PARAMETER(FInt32Vector4, VertexFetch_Parameters) //(ColorIndexMask, NumTexCoords, LightMapCoordIndex, EffectiveBaseVertexIndex)
+END_GLOBAL_SHADER_PARAMETER_STRUCT()
+
+IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FCustomShaderVFParameters, "MyMeshVF");
+
+// Shader uniform buffer binding
+class FMyMeshVFShaderParameters : public FVertexFactoryShaderParameters 
+{
+	DECLARE_TYPE_LAYOUT(FMyMeshVFShaderParameters, NonVirtual);
+
+public:
+	void GetElementShaderBindings(
+		const FSceneInterface* Scene,
+		const FSceneView* View,
+		const FMeshMaterialShader* Shader,
+		const EVertexInputStreamType InputStreamType,
+		ERHIFeatureLevel::Type FeatureLevel,
+		const FVertexFactory* VertexFactory,
+		const FMeshBatchElement& BatchElement,
+		FMeshDrawSingleShaderBindings& ShaderBindings,
+		FVertexInputStreamArray& VertexStreams) const
+	{
+		FBrickGridVertexFactory* CustomShaderVF = (FBrickGridVertexFactory*)VertexFactory;
+		const auto& ShaderParameter = Shader->GetUniformBufferParameter<FCustomShaderVFParameters>();
+		ShaderBindings.Add(ShaderParameter, CustomShaderVF->UniformBuffer);
+	}
+};
+
+IMPLEMENT_TYPE_LAYOUT(FMyMeshVFShaderParameters);
+IMPLEMENT_VERTEX_FACTORY_PARAMETER_TYPE(FBrickGridVertexFactory, EShaderFrequency::SF_Vertex, FMyMeshVFShaderParameters);
+
 
 FVoxelProcMeshBuffersRenderData::FVoxelProcMeshBuffersRenderData(const TSharedRef<const FVoxelProcMeshBuffers>& InBuffers, ERHIFeatureLevel::Type InFeatureLevel)
 	:VertexFactory(InFeatureLevel, "FVoxelProcMeshBuffersRenderData")
@@ -64,7 +101,11 @@ FBrickChunkSceneProxy::FBrickChunkSceneProxy(UBrickRenderComponent* InComponent)
 	:FPrimitiveSceneProxy(InComponent)
 	, Component(InComponent)
 	, WireframeColor(InComponent->WireframeColor)
+	, VertexFactory(GetScene().GetFeatureLevel())
 {
+
+	MyMaterialRenderProxy = InComponent->GetMyMaterial() ? InComponent->GetMyMaterial()->GetRenderProxy() : nullptr;
+
 	//bWillEverBeLit = false; //设定为false则会跳过一些只被光照图元所需的工作
 
 	//bHasDeformableMesh = false;
@@ -80,11 +121,33 @@ FBrickChunkSceneProxy::FBrickChunkSceneProxy(UBrickRenderComponent* InComponent)
 
 		NewSection.Buffers = SrcSection.Buffers;
 	}
+
+	FVector3f Data[]{
+			{-50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f, -50.0f}, { 50.0f,  50.0f, -50.0f}, { 50.0f,  50.0f, -50.0f}, {-50.0f,  50.0f, -50.0f}, {-50.0f, -50.0f, -50.0f},
+			{-50.0f, -50.0f,  50.0f}, { 50.0f,  50.0f,  50.0f}, { 50.0f, -50.0f,  50.0f}, { 50.0f,  50.0f,  50.0f}, {-50.0f, -50.0f,  50.0f}, {-50.0f,  50.0f,  50.0f},
+			{-50.0f,  50.0f,  50.0f}, {-50.0f, -50.0f, -50.0f}, {-50.0f,  50.0f, -50.0f}, {-50.0f, -50.0f, -50.0f}, {-50.0f,  50.0f,  50.0f}, {-50.0f, -50.0f,  50.0f},
+			{ 50.0f,  50.0f,  50.0f}, { 50.0f,  50.0f, -50.0f}, { 50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f,  50.0f}, { 50.0f,  50.0f,  50.0f},
+			{-50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f,  50.0f}, { 50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f,  50.0f}, {-50.0f, -50.0f, -50.0f}, {-50.0f, -50.0f,  50.0f},
+			{-50.0f,  50.0f, -50.0f}, { 50.0f,  50.0f, -50.0f}, { 50.0f,  50.0f,  50.0f}, { 50.0f,  50.0f,  50.0f}, {-50.0f,  50.0f,  50.0f}, {-50.0f,  50.0f, -50.0f},
+	};
+
+	uint16 Index[36];
+	for (int32 i = 0; i < 36; ++i) {
+		Index[i] = (uint16)i;
+	}
+
+	VertexBuffer.Vertices.Append(Data);
+	IndexBuffer.Indices.Append(Index);
 }
 
 FBrickChunkSceneProxy::~FBrickChunkSceneProxy()
 {
+	VertexBuffer.ReleaseResource();
+	IndexBuffer.ReleaseResource();
+	VertexFactory.ReleaseResource();
 
+	if (UVBuffer) UVBuffer->ReleaseResource();
+	UVBufferSRV.SafeRelease();
 }
 
 SIZE_T FBrickChunkSceneProxy::GetTypeHash() const
@@ -110,15 +173,49 @@ void FBrickChunkSceneProxy::GetDynamicMeshElements(const TArray<const FSceneView
 		Collector.RegisterOneFrameMaterialProxy(WireframeMaterialInstance);
 	}
 
-	FMaterialRenderProxy* MaterialProxy = bWireframe ? WireframeMaterialInstance : UMaterial::GetDefaultMaterial(EMaterialDomain::MD_Surface)->GetRenderProxy();
-	for (const FVoxelProcMeshProxySection& Section : Sections)
-	{
-		for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ++ViewIndex)
-		{
-			if (!(VisibilityMap & (1 << ViewIndex))) continue;
+	//FMaterialRenderProxy* MaterialProxy = bWireframe ? WireframeMaterialInstance : UMaterial::GetDefaultMaterial(EMaterialDomain::MD_Surface)->GetRenderProxy();
+	//for (const FVoxelProcMeshProxySection& Section : Sections)
+	//{
+	//	for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ++ViewIndex)
+	//	{
+	//		if (!(VisibilityMap & (1 << ViewIndex))) continue;
 
-			FMeshBatch& Mesh = DrawSection(Collector, Section, MaterialProxy, false, bWireframe);
-			Collector.AddMesh(ViewIndex, Mesh);
+	//		//FMeshBatch& Mesh = DrawSection(Collector, Section, MaterialProxy, false, bWireframe);
+	//		//Collector.AddMesh(ViewIndex, Mesh);
+	//	}
+	//}
+
+	// 暂时使用默认材质
+	FMaterialRenderProxy* MaterialRenderProxy = bWireframe ? WireframeMaterialInstance : (MyMaterialRenderProxy ? MyMaterialRenderProxy : UMaterial::GetDefaultMaterial(EMaterialDomain::MD_Surface)->GetRenderProxy());
+	// 逐view 搜集
+	for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ++ViewIndex) 
+	{
+		if (VisibilityMap & (1 << ViewIndex)) 
+		{
+			// Create a mesh batch
+			FMeshBatch& MeshBatch = Collector.AllocateMesh();
+			MeshBatch.bUseAsOccluder = false;
+			MeshBatch.VertexFactory = &VertexFactory;
+			MeshBatch.ReverseCulling = IsLocalToWorldDeterminantNegative();
+			MeshBatch.DepthPriorityGroup = SDPG_World;
+			MeshBatch.Type = EPrimitiveType::PT_TriangleList;
+
+			MeshBatch.bWireframe = bWireframe;
+			MeshBatch.MaterialRenderProxy = MaterialRenderProxy;
+			MeshBatch.bUseWireframeSelectionColoring = IsSelected() && bWireframe;
+
+			// Setup index buffer
+			FMeshBatchElement& Element = MeshBatch.Elements[0];
+			Element.FirstIndex = 0;
+			Element.NumPrimitives = IndexBuffer.Indices.Num() / 3;
+			Element.IndexBuffer = &IndexBuffer;
+			Element.MinVertexIndex = 0;
+			Element.MaxVertexIndex = VertexBuffer.Vertices.Num() - 1;
+
+			// Primitive uniform buffer is required.
+			Element.PrimitiveUniformBuffer = GetUniformBuffer();
+			MeshBatch.bCanApplyViewModeOverrides = false;
+			Collector.AddMesh(ViewIndex, MeshBatch);
 		}
 	}
 }
@@ -138,7 +235,7 @@ FPrimitiveViewRelevance FBrickChunkSceneProxy::GetViewRelevance(const FSceneView
 	Result.bRenderCustomDepth = ShouldRenderCustomDepth();
 	Result.bTranslucentSelfShadow = bCastVolumetricTranslucentShadow;
 	Result.bVelocityRelevance = DrawsVelocity() && Result.bOpaque && Result.bRenderInMainPass;
-
+	Result.bShadowRelevance = false;
 	return Result;
 }
 
@@ -156,12 +253,26 @@ void FBrickChunkSceneProxy::CreateRenderThreadResources()
 {
 	check(IsInRenderingThread());
 
-	for (FVoxelProcMeshProxySection& Section : Sections)
-	{
-		check(!Section.RenderData.IsValid());
-		check(Section.Buffers.IsValid());
-		Section.RenderData = FVoxelProcMeshBuffersRenderData::GetRenderData(Section.Buffers.ToSharedRef(), GetScene().GetFeatureLevel());
-	}
+	//for (FVoxelProcMeshProxySection& Section : Sections)
+	//{
+	//	check(!Section.RenderData.IsValid());
+	//	check(Section.Buffers.IsValid());
+	//	Section.RenderData = FVoxelProcMeshBuffersRenderData::GetRenderData(Section.Buffers.ToSharedRef(), GetScene().GetFeatureLevel());
+	//}
+
+	UVBuffer = MakeUnique<FVoxelChunkUVBuffer>();
+	UVBuffer->InitResource();
+	UVBufferSRV = RHICreateShaderResourceView(UVBuffer->VertexBufferRHI, sizeof(FVector2DHalf), PF_G16R16F);
+
+	FCustomShaderVFParameters Params;
+	Params.VertexFetch_Parameters = { 0, 1, 0, 0 };
+	Params.VertexFetch_TexCoordBuffer = UVBufferSRV;
+	VertexFactory.UniformBuffer = FCustomShaderVFParameters::CreateUniformBuffer(Params, EUniformBufferUsage::UniformBuffer_MultiFrame);
+
+	VertexBuffer.InitResource();
+	IndexBuffer.InitResource();
+	VertexFactory.PositionVertexBuffer = &VertexBuffer;
+	VertexFactory.InitResource();
 }
 
 void FBrickChunkSceneProxy::DestroyRenderThreadResources()

@@ -10,8 +10,9 @@ UBrickRenderComponent::UBrickRenderComponent()
 	PrimaryComponentTick.bCanEverTick = false; // False
 
 	Mobility = EComponentMobility::Movable;
-	SetCastShadow(true);
+	SetCastShadow(false);
 
+	
 	TUniquePtr<FVoxelProcMeshBuffers> Buffers = MakeUnique<FVoxelProcMeshBuffers>();
 
 	TArray<FDynamicMeshVertex> Vertices;
@@ -67,6 +68,7 @@ UBrickRenderComponent::UBrickRenderComponent()
 	}
 
 	AddProcMeshSection(MoveTemp(Buffers));
+	
 }
 
 void UBrickRenderComponent::OnComponentDestroyed(bool bDestroyingHierarchy)
@@ -83,8 +85,21 @@ FPrimitiveSceneProxy* UBrickRenderComponent::CreateSceneProxy()
 
 FBoxSphereBounds UBrickRenderComponent::CalcBounds(const FTransform& LocalToWorld) const
 {
-	//return FBoxSphereBounds(LocalToWorld.GetLocation(), FVector(1000000.0f, 1000000.0f, 1000000.0f), 1000000.0f);
-	return FBoxSphereBounds(LocalBounds.TransformBy(LocalToWorld));
+	return FBoxSphereBounds(LocalToWorld.GetLocation(), FVector(1000.0f, 1000.0f, 1000.0f), 1000.0f);
+	//return FBoxSphereBounds(LocalBounds.TransformBy(LocalToWorld));
+}
+
+UMaterialInterface* UBrickRenderComponent::GetMyMaterial() const
+{
+	return MyMaterial.Get();
+}
+
+void UBrickRenderComponent::GetUsedMaterials(TArray<UMaterialInterface*>& OutMaterials, bool bGetDebugMaterials) const
+{
+	if (MyMaterial)
+	{
+		OutMaterials.Add(MyMaterial.Get());
+	}
 }
 
 void UBrickRenderComponent::UpdateLocalBounds()
@@ -129,5 +144,10 @@ void UBrickRenderComponent::SetProcMeshSection(int32 Index, TUniquePtr<FVoxelPro
 	Buffers->UpdateStats();
 
 	ProcMeshSections[Index].Buffers = MakeShareable(Buffers.Release());
+
+}
+
+void UBrickRenderComponent::CreateMeshSection(int32 SectionIndex, const TArray<FVector>& Vertices, const TArray<int32>& Triangles, const TArray<FVector>& Normals)
+{
 
 }

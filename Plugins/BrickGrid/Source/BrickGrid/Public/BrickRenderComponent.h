@@ -28,8 +28,14 @@ public:
 	int32 AddProcMeshSection(TUniquePtr<FVoxelProcMeshBuffers> Buffers);
 	void SetProcMeshSection(int32 Index, TUniquePtr<FVoxelProcMeshBuffers> Buffers);
 
-	UPROPERTY(EditAnywhere)
+	UFUNCTION(BlueprintCallable)
+	void CreateMeshSection(int32 SectionIndex, const TArray<FVector>& Vertices, const TArray<int32>& Triangles, const TArray<FVector>& Normals);
+
+	UPROPERTY(EditAnywhere, Category = "Debug")
 	FColor WireframeColor;
+
+	UMaterialInterface* GetMyMaterial() const;
+	virtual void GetUsedMaterials(TArray<UMaterialInterface*>& OutMaterials, bool bGetDebugMaterials) const override;
 
 private:
 	void UpdateLocalBounds();
@@ -42,4 +48,7 @@ private:
 
 	TArray<FVoxelProcMeshSection> ProcMeshSections;
 	FBoxSphereBounds LocalBounds;
+
+	UPROPERTY(EditAnywhere, Category = "Rendering")
+	TObjectPtr<UMaterialInterface> MyMaterial;
 };
