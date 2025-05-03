@@ -8,43 +8,6 @@
 #include "MaterialDomain.h"
 #include "MeshMaterialShader.h"
 #include "VoxelProcMeshBuffers.h"
-#include "MeshDrawShaderBindings.h"
-
-// Shader parameter
-BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FCustomShaderVFParameters, )
-SHADER_PARAMETER_SRV(Buffer<float2>, VertexFetch_TexCoordBuffer)
-// UV描述信息不会全部用到，先占位。
-SHADER_PARAMETER(FInt32Vector4, VertexFetch_Parameters) //(ColorIndexMask, NumTexCoords, LightMapCoordIndex, EffectiveBaseVertexIndex)
-END_GLOBAL_SHADER_PARAMETER_STRUCT()
-
-IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FCustomShaderVFParameters, "MyMeshVF");
-
-// Shader uniform buffer binding
-class FMyMeshVFShaderParameters : public FVertexFactoryShaderParameters 
-{
-	DECLARE_TYPE_LAYOUT(FMyMeshVFShaderParameters, NonVirtual);
-
-public:
-	void GetElementShaderBindings(
-		const FSceneInterface* Scene,
-		const FSceneView* View,
-		const FMeshMaterialShader* Shader,
-		const EVertexInputStreamType InputStreamType,
-		ERHIFeatureLevel::Type FeatureLevel,
-		const FVertexFactory* VertexFactory,
-		const FMeshBatchElement& BatchElement,
-		FMeshDrawSingleShaderBindings& ShaderBindings,
-		FVertexInputStreamArray& VertexStreams) const
-	{
-		FBrickGridVertexFactory* CustomShaderVF = (FBrickGridVertexFactory*)VertexFactory;
-		const auto& ShaderParameter = Shader->GetUniformBufferParameter<FCustomShaderVFParameters>();
-		ShaderBindings.Add(ShaderParameter, CustomShaderVF->UniformBuffer);
-	}
-};
-
-IMPLEMENT_TYPE_LAYOUT(FMyMeshVFShaderParameters);
-IMPLEMENT_VERTEX_FACTORY_PARAMETER_TYPE(FBrickGridVertexFactory, EShaderFrequency::SF_Vertex, FMyMeshVFShaderParameters);
-
 
 FVoxelProcMeshBuffersRenderData::FVoxelProcMeshBuffersRenderData(const TSharedRef<const FVoxelProcMeshBuffers>& InBuffers, ERHIFeatureLevel::Type InFeatureLevel)
 	:VertexFactory(InFeatureLevel, "FVoxelProcMeshBuffersRenderData")
@@ -122,19 +85,20 @@ FBrickChunkSceneProxy::FBrickChunkSceneProxy(UBrickRenderComponent* InComponent)
 		NewSection.Buffers = SrcSection.Buffers;
 	}
 
-	FVector3f Data[]{
-			{-50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f, -50.0f}, { 50.0f,  50.0f, -50.0f}, { 50.0f,  50.0f, -50.0f}, {-50.0f,  50.0f, -50.0f}, {-50.0f, -50.0f, -50.0f},
-			{-50.0f, -50.0f,  50.0f}, { 50.0f,  50.0f,  50.0f}, { 50.0f, -50.0f,  50.0f}, { 50.0f,  50.0f,  50.0f}, {-50.0f, -50.0f,  50.0f}, {-50.0f,  50.0f,  50.0f},
-			{-50.0f,  50.0f,  50.0f}, {-50.0f, -50.0f, -50.0f}, {-50.0f,  50.0f, -50.0f}, {-50.0f, -50.0f, -50.0f}, {-50.0f,  50.0f,  50.0f}, {-50.0f, -50.0f,  50.0f},
-			{ 50.0f,  50.0f,  50.0f}, { 50.0f,  50.0f, -50.0f}, { 50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f,  50.0f}, { 50.0f,  50.0f,  50.0f},
-			{-50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f,  50.0f}, { 50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f,  50.0f}, {-50.0f, -50.0f, -50.0f}, {-50.0f, -50.0f,  50.0f},
-			{-50.0f,  50.0f, -50.0f}, { 50.0f,  50.0f, -50.0f}, { 50.0f,  50.0f,  50.0f}, { 50.0f,  50.0f,  50.0f}, {-50.0f,  50.0f,  50.0f}, {-50.0f,  50.0f, -50.0f},
+	FVector3f Data[]
+	{
+		{-50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f, -50.0f}, { 50.0f,  50.0f, -50.0f}, {-50.0f,  50.0f, -50.0f}
 	};
 
-	uint16 Index[36];
-	for (int32 i = 0; i < 36; ++i) {
-		Index[i] = (uint16)i;
-	}
+	//uint16 Index[36];
+	//for (int32 i = 0; i < 36; ++i) {
+	//	Index[i] = (uint16)i;
+	//}
+
+	uint16 Index[] = {
+		0, 2, 1,
+		0, 3, 2
+	};
 
 	VertexBuffer.Vertices.Append(Data);
 	IndexBuffer.Indices.Append(Index);
@@ -262,12 +226,13 @@ void FBrickChunkSceneProxy::CreateRenderThreadResources()
 
 	UVBuffer = MakeUnique<FVoxelChunkUVBuffer>();
 	UVBuffer->InitResource();
-	UVBufferSRV = RHICreateShaderResourceView(UVBuffer->VertexBufferRHI, sizeof(FVector2DHalf), PF_G16R16F);
+
+	UVBufferSRV = RHICreateShaderResourceView(FShaderResourceViewInitializer(UVBuffer->VertexBufferRHI, PF_G16R16F));
 
 	FCustomShaderVFParameters Params;
 	Params.VertexFetch_Parameters = { 0, 1, 0, 0 };
 	Params.VertexFetch_TexCoordBuffer = UVBufferSRV;
-	VertexFactory.UniformBuffer = FCustomShaderVFParameters::CreateUniformBuffer(Params, EUniformBufferUsage::UniformBuffer_MultiFrame);
+	VertexFactory.SetParameters(Params);
 
 	VertexBuffer.InitResource();
 	IndexBuffer.InitResource();

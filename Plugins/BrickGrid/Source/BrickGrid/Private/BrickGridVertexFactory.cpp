@@ -42,8 +42,29 @@ void FBrickGridVertexFactory::ReleaseRHI()
 	FVertexFactory::ReleaseRHI();
 }
 
+void FBrickGridVertexFactory::SetParameters(const FCustomShaderVFParameters& InUniformParameters)
+{
+	UniformBuffer = TUniformBufferRef<FCustomShaderVFParameters>::CreateUniformBufferImmediate(InUniformParameters, EUniformBufferUsage::UniformBuffer_MultiFrame);
+}
+
 IMPLEMENT_VERTEX_FACTORY_TYPE(FBrickGridVertexFactory,
 	"/CustomShaders/BrickGridVertexFactory.ush",
 	EVertexFactoryFlags::UsedWithMaterials			 // 可用用于材质
 	| EVertexFactoryFlags::SupportsManualVertexFetch // 支持Manual vertex fetch
 );
+
+void FMyMeshVFShaderParameters::Bind(const FShaderParameterMap& ParameterMap)
+{
+}
+
+void FMyMeshVFShaderParameters::GetElementShaderBindings(const FSceneInterface* Scene, const FSceneView* View, const FMeshMaterialShader* Shader, const EVertexInputStreamType InputStreamType, ERHIFeatureLevel::Type FeatureLevel, const FVertexFactory* VertexFactory, const FMeshBatchElement& BatchElement, FMeshDrawSingleShaderBindings& ShaderBindings, FVertexInputStreamArray& VertexStreams) const
+{
+	FBrickGridVertexFactory* CustomShaderVF = (FBrickGridVertexFactory*)VertexFactory;
+	const auto& ShaderParameter = Shader->GetUniformBufferParameter<FCustomShaderVFParameters>();
+	ShaderBindings.Add(ShaderParameter, CustomShaderVF->GetUniformBuffer());
+}
+
+IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FCustomShaderVFParameters, "MyMeshVF");
+
+IMPLEMENT_TYPE_LAYOUT(FMyMeshVFShaderParameters);
+IMPLEMENT_VERTEX_FACTORY_PARAMETER_TYPE(FBrickGridVertexFactory, EShaderFrequency::SF_Vertex, FMyMeshVFShaderParameters);

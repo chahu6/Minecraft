@@ -9,12 +9,21 @@
 
 #include "/Engine/Private/VertexFactoryCommon.ush"
 
+// 定义宏，用于索引MyMeshVF.VertexFetch_Parameters
+#if MANUAL_VERTEX_FETCH
+	#define VF_ColorIndexMask_Index 0
+	#define VF_NumTexcoords_Index 1
+	#define FV_LightMapIndex_Index 2
+	#define VF_VertexOffset 3
+#endif //! MANUAL_VERTEX_FETCH
+
 /**
  * Vertex attributes to fetch.
  */
 struct FVertexFactoryInput
 {
     float4 Position : ATTRIBUTE0;
+	
 	/** Unique vertex ID. */
 	uint VertexId : SV_VertexID;
 	/** This doesn't use instancing */
@@ -26,11 +35,35 @@ struct FVertexFactoryInput
  */
 struct FVertexFactoryInterpolantsVSToPS
 {
-	/** Dummy value to interpolate. */
-	float2 DummyTexCoord : TEXCOORD0;
-
-	half4 Color : COLOR0;
+#if NUM_TEX_COORD_INTERPOLATORS
+	float4	TexCoords[(NUM_TEX_COORD_INTERPOLATORS+1)/2]	: TEXCOORD0;
+#elif USE_PARTICLE_SUBUVS
+	float4	TexCoords[1] : TEXCOORD0;
+#endif
+	
+    half4 Color : COLOR0;
 };
+
+#if NUM_TEX_COORD_INTERPOLATORS
+float2 GetUV(FVertexFactoryInterpolantsVSToPS Interpolants, int UVIndex)
+{
+	float4 UVVector = Interpolants.TexCoords[UVIndex / 2];
+	return UVIndex % 2 ? UVVector.zw : UVVector.xy;
+}
+
+void SetUV(inout FVertexFactoryInterpolantsVSToPS Interpolants, int UVIndex, float InValue)
+{
+	FLATTEN
+	if(UVIndex % 2)
+	{
+		Interpolants.TexCoords[UVIndex / 2].zw = InValue;
+	}
+	else
+	{
+		Interpolants.TexCoords[UVIndex / 2].xy = InValue;
+	}
+}
+#endif
 
 /**
  * Intermediate values computed in the vertex shader.
@@ -84,7 +117,7 @@ FMaterialPixelParameters GetMaterialPixelParameters(FVertexFactoryInterpolantsVS
 	UNROLL
 	for (int CoordinateIndex = 0; CoordinateIndex < NUM_MATERIAL_TEXCOORDS; CoordinateIndex++)
 	{
-		Result.TexCoords[CoordinateIndex] = Interpolants.DummyTexCoord;
+		Result.TexCoords[CoordinateIndex] = GetUV(Interpolants, CoordinateIndex);
 	}
 #endif	//NUM_MATERIAL_TEXCOORDS
 
@@ -110,6 +143,17 @@ FMaterialVertexParameters GetMaterialVertexParameters(FVertexFactoryInput Input,
 	Result.WorldPosition = WorldPosition;
 	Result.VertexColor = Intermediates.Color;
 	Result.TangentToWorld = mul(TangentToLocal, GetLocalToWorld3x3());
+	
+#if MANUAL_VERTEX_FETCH && NUM_MATERIAL_TEXCOORDS_VERTEX
+		const uint NumFetchTexCoords = MyMeshVF.VertexFetch_Parameters[VF_NumTexcoords_Index];
+		UNROLL
+		for (uint CoordinateIndex = 0; CoordinateIndex < NUM_MATERIAL_TEXCOORDS_VERTEX; CoordinateIndex++)
+		{
+			// Clamp coordinates to mesh's maximum as materials can request more than are available
+			uint ClampedCoordinateIndex = min(CoordinateIndex, NumFetchTexCoords-1);
+			Result.TexCoords[CoordinateIndex] = MyMeshVF.VertexFetch_TexCoordBuffer[NumFetchTexCoords * (MyMeshVF.VertexFetch_Parameters[VF_VertexOffset] + Input.VertexId) + ClampedCoordinateIndex];
+		}
+#endif
 	return Result;
 }
 
@@ -147,9 +191,22 @@ float3 VertexFactoryGetPositionForVertexLighting(FVertexFactoryInput Input, FVer
 FVertexFactoryInterpolantsVSToPS VertexFactoryGetInterpolantsVSToPS(FVertexFactoryInput Input, FVertexFactoryIntermediates Intermediates, FMaterialVertexParameters VertexParameters)
 {
 	FVertexFactoryInterpolantsVSToPS Interpolants;
-	Interpolants.DummyTexCoord = float2(0,0);
 
 	Interpolants.Color = Intermediates.Color;
+	
+#if NUM_TEX_COORD_INTERPOLATORS
+	float2 CustomizedUVs[NUM_TEX_COORD_INTERPOLATORS];
+	GetMaterialCustomizedUVs(VertexParameters, CustomizedUVs);
+	GetCustomInterpolators(VertexParameters, CustomizedUVs);
+	
+	UNROLL
+	for (int CoordinateIndex = 0; CoordinateIndex < NUM_TEX_COORD_INTERPOLATORS; CoordinateIndex++)
+	{
+		SetUV(Interpolants, CoordinateIndex, CustomizedUVs[CoordinateIndex]);
+	}
+#elif NUM_MATERIAL_TEXCOORDS_VERTEX == 0 && USE_PARTICLE_SUBUVS
+	SetUV(Interpolants, 0, MyMeshVF.VertexFetch_TexCoordBuffer[MyMeshVF.VertexFetch_Parameters[VF_NumTexcoords_Index] * (MyMeshVF.VertexFetch_Parameters[VF_VertexOffset] + Input.VertexId)]);
+#endif
 
 	return Interpolants;
 }

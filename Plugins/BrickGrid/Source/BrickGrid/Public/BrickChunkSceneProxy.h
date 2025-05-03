@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "DynamicMeshBuilder.h"
 #include "DataDrivenShaderPlatformInfo.h"
-//#include "RenderResource.h"
 #include "BrickGridVertexFactory.h"
 
 class UBrickRenderComponent;
@@ -61,12 +60,7 @@ public:
 	{
 		TResourceArray<FVector2DHalf> Data;
 		Data = {
-			{ 0.0f,  0.0f }, { 1.0f,  0.0f }, { 1.0f,  1.0f }, { 1.0f,  1.0f }, { 0.0f,  1.0f }, { 0.0f,  0.0f },
-			{ 0.0f,  0.0f }, { 1.0f,  1.0f }, { 1.0f,  0.0f }, { 1.0f,  1.0f }, { 0.0f,  0.0f }, { 0.0f,  1.0f },
-			{ 1.0f,  0.0f }, { 0.0f,  1.0f }, { 1.0f,  1.0f }, { 0.0f,  1.0f }, { 1.0f,  0.0f }, { 0.0f,  0.0f },
-			{ 1.0f,  0.0f }, { 1.0f,  1.0f }, { 0.0f,  1.0f }, { 0.0f,  1.0f }, { 0.0f,  0.0f }, { 1.0f,  0.0f },
-			{ 0.0f,  1.0f }, { 1.0f,  0.0f }, { 1.0f,  1.0f }, { 1.0f,  0.0f }, { 0.0f,  1.0f }, { 0.0f,  0.0f },
-			{ 0.0f,  1.0f }, { 1.0f,  1.0f }, { 1.0f,  0.0f }, { 1.0f,  0.0f }, { 0.0f,  0.0f }, { 0.0f,  1.0f },
+			{ 0.0f,  0.0f }, { 1.0f,  0.0f }, { 1.0f,  1.0f }, { 1.0f,  1.0f }, { 0.0f,  1.0f }, { 0.0f,  0.0f }
 		};
 		FRHIResourceCreateInfo CreateInfo(TEXT("FVoxelChunkUVBuffer"));
 		VertexBufferRHI = RHICreateVertexBuffer(Data.Num() * sizeof(FVector2DHalf), EBufferUsageFlags::Static, CreateInfo);
