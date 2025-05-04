@@ -9,12 +9,13 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable, meta = (BlueprintSpawnableComponent))
 class VOXEL_API UVoxelRenderComponent : public UPrimitiveComponent
 {
 	GENERATED_BODY()
 
 public:
+	UVoxelRenderComponent();
 
 	// Begin UPrimitiveComponent interface.
 	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;

@@ -85,19 +85,18 @@ FBrickChunkSceneProxy::FBrickChunkSceneProxy(UBrickRenderComponent* InComponent)
 		NewSection.Buffers = SrcSection.Buffers;
 	}
 
-	FVector3f Data[]
+	FVector4f Data[]
 	{
-		{-50.0f, -50.0f, -50.0f}, { 50.0f, -50.0f, -50.0f}, { 50.0f,  50.0f, -50.0f}, {-50.0f,  50.0f, -50.0f}
+		FVector4f(-50.0f, -50.0f, -50.0f, 1.f), FVector4f(50.0f, -50.0f, -50.0f, 1.f), FVector4f(50.0f,  50.0f, -50.0f, 1.f), FVector4f(50.0f,  50.0f, -50.0f, 1.f), FVector4f(-50.0f,  50.0f, -50.0f, 1.f), FVector4f(-50.0f,  -50.0f, -50.0f, 1.f)
 	};
-
 	//uint16 Index[36];
 	//for (int32 i = 0; i < 36; ++i) {
 	//	Index[i] = (uint16)i;
 	//}
 
 	uint16 Index[] = {
-		0, 2, 1,
-		0, 3, 2
+		0, 1, 2, 
+		3, 4, 5
 	};
 
 	VertexBuffer.Vertices.Append(Data);
@@ -107,6 +106,7 @@ FBrickChunkSceneProxy::FBrickChunkSceneProxy(UBrickRenderComponent* InComponent)
 FBrickChunkSceneProxy::~FBrickChunkSceneProxy()
 {
 	VertexBuffer.ReleaseResource();
+	TangentVertexBuffer.ReleaseResource();
 	IndexBuffer.ReleaseResource();
 	VertexFactory.ReleaseResource();
 
@@ -235,8 +235,10 @@ void FBrickChunkSceneProxy::CreateRenderThreadResources()
 	VertexFactory.SetParameters(Params);
 
 	VertexBuffer.InitResource();
+	TangentVertexBuffer.InitResource();
 	IndexBuffer.InitResource();
 	VertexFactory.PositionVertexBuffer = &VertexBuffer;
+	VertexFactory.TangentVertexBuffer = &TangentVertexBuffer;
 	VertexFactory.InitResource();
 }
 

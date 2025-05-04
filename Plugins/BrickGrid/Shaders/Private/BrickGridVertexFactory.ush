@@ -24,6 +24,9 @@ struct FVertexFactoryInput
 {
     float4 Position : ATTRIBUTE0;
 	
+    float3 TangentX : ATTRIBUTE1;
+    float4 TangentZ : ATTRIBUTE2;
+	
 	/** Unique vertex ID. */
 	uint VertexId : SV_VertexID;
 	/** This doesn't use instancing */
@@ -37,9 +40,10 @@ struct FVertexFactoryInterpolantsVSToPS
 {
 #if NUM_TEX_COORD_INTERPOLATORS
 	float4	TexCoords[(NUM_TEX_COORD_INTERPOLATORS+1)/2]	: TEXCOORD0;
-#elif USE_PARTICLE_SUBUVS
-	float4	TexCoords[1] : TEXCOORD0;
 #endif
+	
+    float4 TangentToWorld0 : TEXCOORD1_centroid;
+    float4 TangentToWorld2 : TEXCOORD2_centroid;
 	
     half4 Color : COLOR0;
 };
@@ -72,6 +76,11 @@ struct FVertexFactoryIntermediates
 {
 	/** The position of the vertex in translated world space */
 	float3 Position;
+
+	// Tangent matrix
+    half3x3 TangentToLocal;
+    half3x3 TangentToWorld;
+    half TangentToWorldSign;
 	
 	/** The color of the sprite. */
 	half4 Color;
@@ -79,6 +88,50 @@ struct FVertexFactoryIntermediates
 	/** Cached primitive and instance data */
     FSceneDataIntermediates SceneData;
 };
+
+// 获取示例数据
+FInstanceSceneData GetInstanceData()
+{
+    return GetSceneDataIntermediates().InstanceData; // 暂时使用场景UniformBuffer中的数据
+}
+
+// 计算切空间到本地空间的矩阵
+half3x3 CalcTangentToLocal(FVertexFactoryInput Input, inout float TangentSign)
+{
+    half3 TangentInputX = Input.TangentX;
+    half4 TangentInputZ = Input.TangentZ;
+
+    half3 TangentX = TangentInputX;
+    half4 TangentZ = TangentInputZ;
+    TangentX = TangentBias(TangentInputX);
+    TangentZ = TangentBias(TangentInputZ);
+
+    TangentSign = TangentZ.w;
+
+	// derive the binormal by getting the cross product of the normal and tangent
+    half3 TangentY = cross(TangentZ.xyz, TangentX) * TangentZ.w;
+	
+	// Recalculate TangentX off of the other two vectors
+	// This corrects quantization error since TangentX was passed in as a quantized vertex input
+	// The error shows up most in specular off of a mesh with a smoothed UV seam (normal is smooth, but tangents vary across the seam)
+    half3x3 Result;
+    Result[0] = cross(TangentY, TangentZ.xyz) * TangentZ.w;
+    Result[1] = TangentY;
+    Result[2] = TangentZ.xyz;
+
+    return Result;
+}
+
+// 计算切线空间到世界空间的矩阵
+half3x3 CalcTangentToWorldNoScale(FVertexFactoryIntermediates Intermediates, half3x3 TangentToLocal)
+{
+    half3x3 LocalToWorld = LWCToFloat3x3(GetInstanceData().LocalToWorld);
+    half3 InvScale = GetInstanceData().InvNonUniformScale;
+    LocalToWorld[0] *= InvScale.x;
+    LocalToWorld[1] *= InvScale.y;
+    LocalToWorld[2] *= InvScale.z;
+    return mul(TangentToLocal, LocalToWorld);
+}
 
 /**
  * Computes intermediates for the given vertex.
@@ -91,6 +144,11 @@ FVertexFactoryIntermediates GetVertexFactoryIntermediates(FVertexFactoryInput In
 {
     FVertexFactoryIntermediates Intermediates;
     Intermediates.Position = Input.Position.xyz;
+	
+    float TangentSign;
+    Intermediates.TangentToLocal = CalcTangentToLocal(Input, TangentSign);
+    Intermediates.TangentToWorld = CalcTangentToWorldNoScale(Intermediates, Intermediates.TangentToLocal);
+    Intermediates.TangentToWorldSign = TangentSign * GetInstanceData().DeterminantSign;
 	
     Intermediates.Color = float4(0, 0, 0, 1);
 
@@ -122,7 +180,10 @@ FMaterialPixelParameters GetMaterialPixelParameters(FVertexFactoryInterpolantsVS
 #endif	//NUM_MATERIAL_TEXCOORDS
 
 	Result.VertexColor = Interpolants.Color;
-
+    half3 TangentToWorld0 = Interpolants.TangentToWorld0.xyz;
+    half4 TangentToWorld2 = Interpolants.TangentToWorld2;
+    Result.TangentToWorld = AssembleTangentToWorld(TangentToWorld0, TangentToWorld2);
+    Result.PrimitiveId = 0;
 	Result.TwoSidedSign = 1;
 	return Result;
 }
@@ -140,9 +201,10 @@ FMaterialPixelParameters GetMaterialPixelParameters(FVertexFactoryInterpolantsVS
 FMaterialVertexParameters GetMaterialVertexParameters(FVertexFactoryInput Input, FVertexFactoryIntermediates Intermediates, float3 WorldPosition, float3x3 TangentToLocal)
 {
 	FMaterialVertexParameters Result = (FMaterialVertexParameters)0;
+    Result.SceneData = GetSceneDataIntermediates(); // 使用UniformBuffer
 	Result.WorldPosition = WorldPosition;
 	Result.VertexColor = Intermediates.Color;
-	Result.TangentToWorld = mul(TangentToLocal, GetLocalToWorld3x3());
+    Result.TangentToWorld = mul(TangentToLocal, GetLocalToWorld3x3(Result));
 	
 #if MANUAL_VERTEX_FETCH && NUM_MATERIAL_TEXCOORDS_VERTEX
 		const uint NumFetchTexCoords = MyMeshVF.VertexFetch_Parameters[VF_NumTexcoords_Index];
@@ -167,7 +229,8 @@ FMaterialVertexParameters GetMaterialVertexParameters(FVertexFactoryInput Input,
  */
 float4 VertexFactoryGetWorldPosition(FVertexFactoryInput Input, FVertexFactoryIntermediates Intermediates)
 {
-	return TransformLocalToTranslatedWorld(Intermediates.Position.xyz);
+    FLWCMatrix LocalToWorld = GetInstanceData().LocalToWorld;
+    return TransformLocalToTranslatedWorld(Intermediates.Position.xyz, LocalToWorld);
 }
 
 float4 VertexFactoryGetRasterizedWorldPosition(FVertexFactoryInput Input, FVertexFactoryIntermediates Intermediates, float4 TranslatedWorldPosition)
@@ -191,7 +254,8 @@ float3 VertexFactoryGetPositionForVertexLighting(FVertexFactoryInput Input, FVer
 FVertexFactoryInterpolantsVSToPS VertexFactoryGetInterpolantsVSToPS(FVertexFactoryInput Input, FVertexFactoryIntermediates Intermediates, FMaterialVertexParameters VertexParameters)
 {
 	FVertexFactoryInterpolantsVSToPS Interpolants;
-
+    Interpolants.TangentToWorld0 = float4(Intermediates.TangentToWorld[0], 0.0f);
+    Interpolants.TangentToWorld2 = float4(Intermediates.TangentToWorld[2], Intermediates.TangentToWorldSign);
 	Interpolants.Color = Intermediates.Color;
 	
 #if NUM_TEX_COORD_INTERPOLATORS
@@ -204,8 +268,6 @@ FVertexFactoryInterpolantsVSToPS VertexFactoryGetInterpolantsVSToPS(FVertexFacto
 	{
 		SetUV(Interpolants, CoordinateIndex, CustomizedUVs[CoordinateIndex]);
 	}
-#elif NUM_MATERIAL_TEXCOORDS_VERTEX == 0 && USE_PARTICLE_SUBUVS
-	SetUV(Interpolants, 0, MyMeshVF.VertexFetch_TexCoordBuffer[MyMeshVF.VertexFetch_Parameters[VF_NumTexcoords_Index] * (MyMeshVF.VertexFetch_Parameters[VF_VertexOffset] + Input.VertexId)]);
 #endif
 
 	return Interpolants;
@@ -234,14 +296,12 @@ float4 VertexFactoryGetPreviousWorldPosition(FVertexFactoryInput Input, FVertexF
  */
 float3x3 VertexFactoryGetTangentToLocal(FVertexFactoryInput Input, FVertexFactoryIntermediates Intermediates)
 {
-    float3x3 TangentToLocal = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
-	return TangentToLocal;
+    return Intermediates.TangentToLocal;
 }
 
 float3 VertexFactoryGetWorldNormal(FVertexFactoryInput Input, FVertexFactoryIntermediates Intermediates)
 {
-    float3 Normal = { 0, 0, 1 };
-    return Normal;
+    return Intermediates.TangentToWorld[2];
 }
 
 float4 VertexFactoryGetTranslatedPrimitiveVolumeBounds(FVertexFactoryInterpolantsVSToPS Interpolants)
@@ -254,4 +314,10 @@ uint VertexFactoryGetPrimitiveId(FVertexFactoryInterpolantsVSToPS Interpolants)
     return 0;
 }
 
+
+FSceneDataIntermediates GetSceneDataIntermediates(FVertexFactoryIntermediates Intermediates)
+{
+    return GetSceneDataIntermediates();
+}
+#define VF_IMPLEMENTED_GET_SCENE_DATA_INTERMEDIATES
 #include "/Engine/Private/VertexFactoryDefaultInterface.ush"

@@ -24,15 +24,35 @@ struct FVoxelVertex
 class FVoxelChunkVertexBuffer : public FVertexBuffer
 {
 public:
-	TArray<FVector3f> Vertices;
+	TArray<FVector4f> Vertices;
 
 	virtual void InitRHI() override
 	{
 		FRHIResourceCreateInfo CreateInfo(TEXT("FVoxelChunkVertexBuffer"));
-		VertexBufferRHI = RHICreateVertexBuffer(Vertices.Num() * sizeof(FVector3f), EBufferUsageFlags::Static, CreateInfo);
+		VertexBufferRHI = RHICreateVertexBuffer(Vertices.Num() * sizeof(FVector4f), EBufferUsageFlags::Static, CreateInfo);
 
-		void* Buffer = RHILockBuffer(VertexBufferRHI, 0, Vertices.Num() * sizeof(FVector3f), RLM_WriteOnly);
-		FMemory::Memcpy(Buffer, Vertices.GetData(), Vertices.Num() * sizeof(FVector3f));
+		void* Buffer = RHILockBuffer(VertexBufferRHI, 0, Vertices.Num() * sizeof(FVector4f), RLM_WriteOnly);
+		FMemory::Memcpy(Buffer, Vertices.GetData(), Vertices.Num() * sizeof(FVector4f));
+		RHIUnlockBuffer(VertexBufferRHI);
+	}
+};
+
+class FVoxelChunkTangentVertexBuffer : public FVertexBuffer
+{
+public:
+	virtual void InitRHI() override
+	{
+		struct FTangentData {
+			FPackedNormal TangentX, TangentZ;
+		};
+
+		FTangentData Data[6];
+		for (int32 i = 0; i < 6; ++i) { Data[i] = { FVector3f{-1.0f,  0.0f,  0.0f}, FVector3f{ 0.0f,  0.0f, -1.0f} }; }
+		constexpr uint32 BufferSize = 6 * sizeof(FTangentData);
+		FRHIResourceCreateInfo CreateInfo(TEXT("FVoxelChunkTangentVertexBuffer"));
+		VertexBufferRHI = RHICreateVertexBuffer(BufferSize, BUF_Static, CreateInfo);
+		void* LockedData = RHILockBuffer(VertexBufferRHI, 0, BufferSize, RLM_WriteOnly);
+		FMemory::Memcpy(LockedData, Data, BufferSize);
 		RHIUnlockBuffer(VertexBufferRHI);
 	}
 };
@@ -60,7 +80,7 @@ public:
 	{
 		TResourceArray<FVector2DHalf> Data;
 		Data = {
-			{ 0.0f,  0.0f }, { 1.0f,  0.0f }, { 1.0f,  1.0f }, { 1.0f,  1.0f }, { 0.0f,  1.0f }, { 0.0f,  0.0f }
+			{ 0.0f,  0.0f }, { 1.0f,  0.0f }, { 1.0f,  1.0f }, { 1.0f,  1.0f }, { 0.0f,  1.0f }, { 0.0f,  0.0f },
 		};
 		FRHIResourceCreateInfo CreateInfo(TEXT("FVoxelChunkUVBuffer"));
 		VertexBufferRHI = RHICreateVertexBuffer(Data.Num() * sizeof(FVector2DHalf), EBufferUsageFlags::Static, CreateInfo);
@@ -145,6 +165,7 @@ private:
 	* Test
 	*/
 	FVoxelChunkVertexBuffer VertexBuffer;
+	FVoxelChunkTangentVertexBuffer TangentVertexBuffer;
 	FVoxelChunkIndexBuffer IndexBuffer;
 	FBrickGridVertexFactory VertexFactory;
 

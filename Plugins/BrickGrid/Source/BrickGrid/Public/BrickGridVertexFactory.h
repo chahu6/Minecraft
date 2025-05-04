@@ -13,10 +13,10 @@ class FVertexBuffer;
 // Shader parameter
 BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FCustomShaderVFParameters, )
 
-	SHADER_PARAMETER_SRV(Buffer<float2>, VertexFetch_TexCoordBuffer)
-
 	// UV描述信息不会全部用到，先占位。
 	SHADER_PARAMETER(FIntVector4, VertexFetch_Parameters) //(ColorIndexMask, NumTexCoords, LightMapCoordIndex, EffectiveBaseVertexIndex)
+
+	SHADER_PARAMETER_SRV(Buffer<float2>, VertexFetch_TexCoordBuffer)
 
 END_GLOBAL_SHADER_PARAMETER_STRUCT()
 
@@ -83,4 +83,6 @@ public:
 		const FMeshBatchElement& BatchElement,
 		FMeshDrawSingleShaderBindings& ShaderBindings,
 		FVertexInputStreamArray& VertexStreams) const;
+
+private:
 };

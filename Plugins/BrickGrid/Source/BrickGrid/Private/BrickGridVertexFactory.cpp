@@ -8,29 +8,29 @@ void FBrickGridVertexFactory::InitRHI()
 	// Position
 	FVertexStreamComponent PosComponent;
 	PosComponent.VertexBuffer = PositionVertexBuffer;
-	PosComponent.Stride = sizeof(FVector3f);
+	PosComponent.Stride = sizeof(FVector4f);
 	PosComponent.Offset = 0;
 	PosComponent.VertexStreamUsage = EVertexStreamUsage::Default;
-	PosComponent.Type = VET_Float3;
+	PosComponent.Type = VET_Float4;
 	Elements.Add(AccessStreamComponent(PosComponent, 0));
 
 	// Tangent X
-	//FVertexStreamComponent TangentXComponent;
-	//TangentXComponent.VertexBuffer = TangentVertexBuffer;
-	//TangentXComponent.Stride = sizeof(FPackedNormal) * 2;
-	//TangentXComponent.Offset = 0;
-	//TangentXComponent.VertexStreamUsage = EVertexStreamUsage::Default;
-	//TangentXComponent.Type = VET_PackedNormal;
-	//Elements.Add(AccessStreamComponent(TangentXComponent, 1));
+	FVertexStreamComponent TangentXComponent;
+	TangentXComponent.VertexBuffer = TangentVertexBuffer;
+	TangentXComponent.Stride = sizeof(FPackedNormal) * 2;
+	TangentXComponent.Offset = 0;
+	TangentXComponent.VertexStreamUsage = EVertexStreamUsage::Default;
+	TangentXComponent.Type = VET_PackedNormal;
+	Elements.Add(AccessStreamComponent(TangentXComponent, 1));
 
 	// Tangent Z
-	/*FVertexStreamComponent TangentZComponent;
+	FVertexStreamComponent TangentZComponent;
 	TangentZComponent.VertexBuffer = TangentVertexBuffer;
 	TangentZComponent.Stride = sizeof(FPackedNormal) * 2;
 	TangentZComponent.Offset = sizeof(FPackedNormal);
 	TangentZComponent.VertexStreamUsage = EVertexStreamUsage::Default;
 	TangentZComponent.Type = VET_PackedNormal;
-	Elements.Add(AccessStreamComponent(TangentZComponent, 2));*/
+	Elements.Add(AccessStreamComponent(TangentZComponent, 2));
 
 	InitDeclaration(Elements, EVertexInputStreamType::Default);
 	check(IsValidRef(GetDeclaration()));
