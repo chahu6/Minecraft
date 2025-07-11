@@ -55,6 +55,7 @@ IMPLEMENT_VERTEX_FACTORY_TYPE(FBrickGridVertexFactory,
 
 void FMyMeshVFShaderParameters::Bind(const FShaderParameterMap& ParameterMap)
 {
+
 }
 
 void FMyMeshVFShaderParameters::GetElementShaderBindings(const FSceneInterface* Scene, const FSceneView* View, const FMeshMaterialShader* Shader, const EVertexInputStreamType InputStreamType, ERHIFeatureLevel::Type FeatureLevel, const FVertexFactory* VertexFactory, const FMeshBatchElement& BatchElement, FMeshDrawSingleShaderBindings& ShaderBindings, FVertexInputStreamArray& VertexStreams) const

@@ -16,24 +16,24 @@ void UBackpackComponent::BeginPlay()
 
 	Items.SetNum(InventorySize);
 
-	FItemStack ItemStack;
-	ItemStack.SetCount(1);
-	ItemStack.SetItemID(FMinecraftGameplayTags::Get().Workbench);
-	Items[0] = ItemStack;
+	//FItemStack ItemStack;
+	//ItemStack.SetCount(1);
+	//ItemStack.SetItemID(FMinecraftGameplayTags::Get().Workbench);
+	//Items[0] = ItemStack;
 
-	FItemStack WoodItemStack;
-	WoodItemStack.SetCount(64);
-	WoodItemStack.SetItemID(FMinecraftGameplayTags::Get().Log);
-	Items[1] = WoodItemStack;
+	//FItemStack WoodItemStack;
+	//WoodItemStack.SetCount(64);
+	//WoodItemStack.SetItemID(FMinecraftGameplayTags::Get().Log);
+	//Items[1] = WoodItemStack;
 
-	FItemStack ChestItemStack;
-	ChestItemStack.SetCount(1);
-	ChestItemStack.SetItemID(FMinecraftGameplayTags::Get().Chest);
-	Items[2] = ChestItemStack;
+	//FItemStack ChestItemStack;
+	//ChestItemStack.SetCount(1);
+	//ChestItemStack.SetItemID(FMinecraftGameplayTags::Get().Chest);
+	//Items[2] = ChestItemStack;
 
-	OnHotbarItemUpdateDelegate.Broadcast(0, Items[0]);
-	OnHotbarItemUpdateDelegate.Broadcast(1, Items[1]);
-	OnHotbarItemUpdateDelegate.Broadcast(2, Items[2]);
+	//OnHotbarItemUpdateDelegate.Broadcast(0, Items[0]);
+	//OnHotbarItemUpdateDelegate.Broadcast(1, Items[1]);
+	//OnHotbarItemUpdateDelegate.Broadcast(2, Items[2]);
 }
 
 int32 UBackpackComponent::GetSizeInventory_Implementation() const

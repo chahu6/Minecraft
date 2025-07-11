@@ -87,7 +87,6 @@ TGlobalResource<FVoxelChunkTangentBuffer> TangentBuffer;
 
 class FVoxelChunkVertexFactory : public FLocalVertexFactory
 {
-	//DECLARE_VERTEX_FACTORY_TYPE(FVoxelChunkVertexFactory);
 public:
 	FVoxelChunkVertexFactory(ERHIFeatureLevel::Type InFeatureLevel)
 		: FLocalVertexFactory(InFeatureLevel, "FVoxelChunkVertexFactory")
@@ -112,8 +111,6 @@ public:
 private:
 	const FPrimitiveSceneProxy* PrimitiveSceneProxy;
 };
-
-//IMPLEMENT_VERTEX_FACTORY_TYPE(FVoxelChunkVertexFactory, "/CustomMeshVS/LocalVertexFactory.ush", EVertexFactoryFlags::None);
 
 /** Scene proxy */
 class FVoxelChunkSceneProxy : public FPrimitiveSceneProxy
